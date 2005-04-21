@@ -1,12 +1,15 @@
-mvcEnv<-new.env(parent=.GlobalEnv)
+#mvcEnv<-new.env(parent=.GlobalEnv)
+#
+#assign("defaultPlotData", list(color="black", pch=1, highlit=FALSE, 
+#        hide=FALSE), mvcEnv)
+#assign("MVCList", list(), mvcEnv)
+## this will be the model name
+#assign("activeMVC", "", mvcEnv)
+#
+## I don't know any other way to know what methods each class of model has
+#assign("modelMethods", list(dfModel=c("createSubsetModel"),
+#        exprModel=c("createGOmodel"), graphModel=c()), mvcEnv)
 
-assign("defaultPlotData", list(color="black", pch=1, highlit=FALSE, 
-        hide=FALSE), mvcEnv)
-assign("MVCList", list(), mvcEnv)
-
-# I don't know any other way to know what methods each class of model has
-assign("modelMethods", list(dfModel=c("createSubsetModel"),
-        exprModel=c("createGOmodel"), graphModel=c()), mvcEnv)
 
 ##############
 # create a class for model objects
@@ -79,6 +82,22 @@ setReplaceMethod("linkData", "gModel", function(object,value)
          }
 )
 
+if (is.null(getGeneric("virtualData")))
+  setGeneric("virtualData", function(object)
+            standardGeneric("virtualData"))
+setMethod("virtualData", "gModel", function(object)
+         object@virtualData)
+
+if (is.null(getGeneric("virtualData<-")))
+  setGeneric("virtualData<-", function(object,value)
+            standardGeneric("virtualData<-"))
+setReplaceMethod("virtualData", "gModel", function(object,value)
+         {
+           object@virtualData<-value
+           object
+         }
+)
+
 ######
 # initialize methods
 ######
@@ -106,13 +125,14 @@ setMethod("initialize", "dfModel",
   function(.Object, mData, mName, linkData=NULL)
   {
     # need to create the virtualData slot 
-    defaultPlotData<-get("defaultPlotData", mvcEnv)
+    defaultPlotData<-list(color="black", pch=1, highlit=FALSE, hide=FALSE)
     
     numRows<-nrow(mData)
     if (length(defaultPlotData) > 0)
     {
       virData<-data.frame(rep(defaultPlotData[[1]], numRows), 
                           row.names=row.names(mData))
+      virData[,1]<-as.character(virData[,1])
       colnames(virData)<-names(defaultPlotData)[1]
     }
     if (length(defaultPlotData) > 1)

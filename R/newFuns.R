@@ -5,7 +5,7 @@
 getMVC<-function(mName)
 {
   mvcList<-get("MVCList", mvcEnv)
-  allNames<-getModelNames()
+  allNames<-getModelNames(sort=FALSE)
   index<-match(mName, allNames)
   curMVC<-mvcList[[index]]
   return(curMVC)
@@ -26,11 +26,20 @@ getActivePlot<-function()
   
 }
 
-getModelNames<-function()
+getModelNames<-function(sort=TRUE)
 {
   mvcList<-get("MVCList", mvcEnv)
-  allNames<-unlist(lapply(lapply(mvcList, model), modelName))
-  return(allNames)
+  if (length(mvcList) > 0)
+  {
+    allNames<-unlist(lapply(lapply(mvcList, model), modelName))
+    # return the names in alphabetical order
+    if (sort)
+      return(sort(allNames))
+    else
+      return(allNames)
+  }
+  else
+    return(NULL)
 }
 
 #######
@@ -43,26 +52,51 @@ getModelNames<-function()
 #######
 loadModel<-function(data, type, name, linkData=NULL)
 {
-  # first create the appropriate model object
-  newObject<-switch(type,
-    "exprSet"=new("exprModel", data=eval(as.name(data)), name=name),
-    "graph"=new("graphModel", modelData=eval(as.name(data)), modelName=name),
-    "data.frame"=new("dfModel", mData=eval(as.name(data)), mName=name, 
-                      linkData=linkData)
-  )
-
-  # now need to create a MVC object and add to MVCList in mvcEnv
-  # leave parentMVC slot as NULL
-  newMVC<-new("MVC", model=newObject, viewList=list(), childMVCList=list())
-
-  MVCList<-get("MVCList", mvcEnv)
-  if (length(MVCList) > 0)
-  { 
-    MVCList[length(MVCList)+1]<-newMVC
-    assign("MVCList", MVCList, mvcEnv)
+  booLoad<-TRUE
+  # should check that the model name is not already in use!!!
+  allMNames<-getModelNames()
+  if (length(allMNames) > 0)
+  {
+    if (name %in% allMNames)
+    {
+      booLoad<-FALSE
+      showLabel("That model name is already in use so a new MVC object could not be created.")
+    }
   }
-  else
-    assign("MVCList", list(newMVC), mvcEnv)
+
+  if (booLoad)
+  {
+    # first create the appropriate model object
+    newObject<-switch(type,
+      "exprSet"=new("exprModel", data=eval(as.name(data)), name=name),
+      "graph"=new("graphModel", modelData=eval(as.name(data)), modelName=name),
+      "data.frame"=new("dfModel", mData=eval(as.name(data)), mName=name, 
+                      linkData=linkData)
+    )
+
+    # now need to create a MVC object and add to MVCList in mvcEnv
+    # leave parentMVC slot as NULL
+    newMVC<-new("MVC", model=newObject, viewList=list(), 
+                controller=new.env(), childMVCList=list())
+
+    # need to add the default values to the new controller environment
+    setControllerDefaults(newMVC)
+
+    MVCList<-get("MVCList", mvcEnv)
+    if (length(MVCList) > 0)
+    { 
+      MVCList[[length(MVCList)+1]]<-newMVC
+      assign("MVCList", MVCList, mvcEnv)
+    }
+    else
+    {
+      assign("MVCList", list(newMVC), mvcEnv)
+      # if this is the first model, then it will be the active MVC
+      assign("activeMVC", modelName(model(newMVC)), mvcEnv)
+      # set the display menu
+      setDisplayMenu(modelName(model(newMVC)))
+    }
+  }
 }
 
 ########
@@ -77,3 +111,27 @@ getMethodsForModel<-function(modelName)
   curMethods<-modelMethods[[cmClass]]
   return(curMethods)
 }
+
+############
+# show a label in a Gtk window
+############
+showLabel<-function(lblText)
+{
+  win<-gtkWindow(show=FALSE)
+  hbox<-gtkHBox()
+  win$Add(hbox)
+  lbl<-gtkLabel(lblText)
+  gtkBoxPackStart(hbox,lbl,padding=5)
+  okBut<-gtkButton("Ok")
+  okBut$SetUsize(40,20)
+  gtkBoxPackStart(hbox,okBut,padding=5)
+  
+  gtkAddCallback(okBut,"clicked",
+    function(obj)
+    {
+      win$Destroy()
+    }
+  )
+  win$Show()
+}
+

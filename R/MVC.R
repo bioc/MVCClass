@@ -4,7 +4,8 @@
 #############
 
 setClass("MVC", representation(model="gModel", viewList="list", 
-                  controller="ANY", parentMVC="MVCNULL", childMVCList="list"))
+                  controller="environment", parentMVC="MVCNULL", 
+                  childMVCList="list"))
 
 setClassUnion("MVCNULL", members=c("MVC", "NULL"))
 
