@@ -81,7 +81,8 @@ loadModel<-function(data, type, name, linkData=NULL)
 
     # need to add the default values to the new controller environment
     setControllerDefaults(newMVC)
-
+    createDefaultCallEvents(newMVC)
+ 
     MVCList<-get("MVCList", mvcEnv)
     if (length(MVCList) > 0)
     { 

@@ -9,7 +9,7 @@
 # curplot is the plot information (one element from viewList)
 # xyloc is the x and y location that was clicked
 ##################
-identifyPoint<-function(curplot,xyloc)
+identifyPoint<-function(curplot, xyloc)
 {
 #  print(xyloc)
   # get the cxy of the active plot
@@ -27,11 +27,15 @@ identifyPoint<-function(curplot,xyloc)
   # need to get the data from the model
   mvcList<-get("MVCList", mvcEnv)
   
-
-  dfList<-get("dfList",dataEnv)
+#  dfList<-get("dfList",dataEnv)
   curData<-getData(modelName=plotDf)
-  x<-curData[plotRows,plotX]
-  y<-curData[plotRows,plotY]
+  rowIndices<-match(plotRows, rownames(curData))
+  colxIndex<-match(plotX, colnames(curData))
+  colyIndex<-match(plotY, colnames(curData))
+#  x<-curData[plotRows, plotX]
+#  y<-curData[plotRows, plotY]
+  x<-curData[rowIndices, colxIndex]
+  y<-curData[rowIndices, colyIndex]
 
   # check if x or y is a factor
   if (is(x,"factor"))
@@ -39,14 +43,14 @@ identifyPoint<-function(curplot,xyloc)
   if (is(y,"factor"))
     y<-as.numeric(y)
 
-  rowNames<-row.names(curData)
+  rowNames<-rownames(curData)
 
   # now need to identify the closest point
   totdiff<-(xyloc$x-x)^2+(xyloc$y-y)^2
   booClosest<-min(totdiff)==totdiff
   
   closestPoint<-rowNames[booClosest]
-  closestXY<-list(x=x[booClosest],y=y[booClosest])
+  closestXY<-list(x=x[booClosest], y=y[booClosest])
 #  print(closestXY)
 
   # need to ensure that the closestPoint was actually clicked
@@ -65,7 +69,7 @@ identifyPoint<-function(curplot,xyloc)
       y.within<-TRUE 
 
   if (x.within && y.within)
-    return(list(closestXY=closestXY,closestPoint=closestPoint))
+    return(list(closestXY=closestXY, closestPoint=closestPoint))
   else
     return(NULL)
 }
@@ -83,11 +87,6 @@ setViewDataView<-function()
   # reset values before opening new view
   if (length(get("frMVC", mvcEnv)) > 0)
     setEmptyView()       
-#  if (length(get("gtkTable",controlEnv)) > 0)
-#    setEmptyView()
-#  else
-#    # make sure old action gets set when the first window is loaded
-#    assign("oldAction",get("curAction",controlEnv),controlEnv)
 
   tab<-gtkTableNew(4, 4, TRUE)
   vbox<-get("vBox", mvcEnv)
@@ -96,8 +95,6 @@ setViewDataView<-function()
 
   gtkBoxPackStart(vbox, frMVC)
   assign("frMVC", frMVC, mvcEnv)
-#  gtkBoxPackStart(vbox,tab)
-#  assign("gtkTable",tab,controlEnv)
 
   loadedDF<-getLoadedDF()
 
@@ -136,11 +133,27 @@ setViewDataView<-function()
     {
       showDF<-get("showDF", controlEnv)
 
+      # need to also check that this data is not currently being shown in
+      # a spreadsheet
       if (showDF != "")
       {
-        # create and handle a message to create a view
-        vMessage<-new("gAddViewMessage", dataName=showDF, type="spreadView")
-        handleMessage(vMessage)
+        curMVC<-getMVC(showDF)
+        curviewList<-viewList(curMVC)
+        booSpreadView<-unlist(lapply(curviewList, function(x) {is(x, 
+                                 "spreadView")}))
+        # if there are any spread views then this data set is already shown
+        # in a spreadsheet
+        if (any(booSpreadView))
+          booCreate<-FALSE
+        else
+          booCreate<-TRUE
+
+        if (booCreate)
+        {
+          # create and handle a message to create a view
+          vMessage<-new("gAddViewMessage", dataName=showDF, type="spreadView")
+          handleMessage(vMessage)
+        }
       }
     }
   )
@@ -190,11 +203,6 @@ setPlotDView<-function()
   # reset values before opening new view
   if (length(get("frMVC", mvcEnv)) > 0)
     setEmptyView()
-#  if (length(get("gtkTable",controlEnv)) > 0)
-#    setEmptyView()
-#  else
-#    # make sure old action gets set when the first window is loaded
-#    assign("oldAction",get("curAction",controlEnv),controlEnv)
 
   tab<-gtkTableNew(8, 8, TRUE)
   vbox<-get("vBox", mvcEnv)
@@ -256,16 +264,13 @@ setPlotDView<-function()
         # then need to call plotting function
         dataF<-get("dataF", controlEnv)
         curDF<-getData(modelName=dataF)
-#        varNames<-names(curDF)
-#        numRows<-dim(curDF)[1]
-#        Xindex<-match(chosenX, varNames)
-#        Yindex<-match(chosenY, varNames)
-        DFrows<-rownames(curDF)
-        DFcolumns<-c(chosenX, chosenY)
 
-        # create a message to create a view
-        vMessage<-new("gAddViewMessage", dataName=dataF, type="plotView",
-                  plotType="sPlotView", dfRows=DFrows, dfColumns=DFcolumns)
+        DFrows<-rownames(curDF)
+#        DFcolumns<-c(chosenX, chosenY)
+
+        # 5/24/05 new message method
+        vMessage<-new("gAddViewMessage", dataName=dataF, type="sPlotView",
+                      dfRows=DFrows, colx=chosenX, coly=chosenY)
 #        print(vMessage)
         handleMessage(vMessage)
       }
@@ -452,122 +457,67 @@ setToggleInactive<-function(j, type, dataFr)
   }
 }
 
-###########
-# called whenever a view is being made
-# dataName is the modelName
-###########
-createView<-function(type, dataName, ...)
+
+#########
+# 5/24/05 create a graph view through initialize method
+#########
+initGraphView<-function(dataName, glayout, nShape)
 {
-  MVCList<-get("MVCList", mvcEnv)
-  allNames<-getModelNames(sort=FALSE)
-  mvcindex<-match(dataName, allNames)
-  curMVC<-getMVC(dataName)
-  controlEnv<-controller(curMVC)
+  win<-gtkWindow(show=FALSE)
 
-  booCreate<-TRUE
-  # check if the dataframe is already being shown in a spreadsheet
-  if (type=="spreadView")
-  {
-#    viewList<-get("viewList",viewEnv)
-    curviewList<-viewList(curMVC)
-    booSpreadView<-unlist(lapply(curviewList, function(x) {is(x, 
-                                 "spreadView")}))
-    # if there are any spread views then this data set is already shown in a
-    # spreadsheet
-    if (any(booSpreadView))
-#    {
-      booCreate<-FALSE
-#      curNames<-unlist(lapply(curviewList, function(x) {dataName(x)}))
-#      spreadNames<-curNames[booSpreadView]
-#      # only create new view if name is not in spread view names
-#      booCreate<-!(dataName %in% spreadNames)
-#    }
-  }
+  # this will create a gtk device on the window
+  retList<-createGtkDev(win)
+  win<-retList$win
+  drArea<-retList$drArea
 
-  if (booCreate)
-  {
-    # create the window
-    win<-gtkWindow(show=FALSE)     
-         
-    if (type=="spreadView")
-    {
-      newView<-createDataView(win, dataName)
-    }
-    if (type=="plotView")
-    {
-      # should check that plotType, dfRows and dfColumns came in the ... 
-      # parameter - need to just send any other parameters from ... 
-      paramList<-list(...)
-      if (all(c("plotType", "dfRows", "dfColumns") %in% names(paramList)))
-        newView<-createPlotView(win, dataName, ...)
-    }  
-    win<-win(newView)
+  win$Show()
 
-    assign("activeView", newView, controlEnv)
+  # set up the graph layout variable using agopen
+  # temporarily set the shape and width so won't get font size errors
+#  nodeShape<-nShape
+  nodeShape<-"ellipse"
 
-    # need to add a callback for focus_in_event
-    gtkAddCallback(win, "focus_in_event",
-      function(obj, ev)
-      {
-        if (is(newView, "plotView"))
-        {
-          # set the active device
-          dev.set(plotDevice(newView))
-        }
-        # set the active view
-        assign("activeView", newView, controlEnv)
-      }
-    )
+  # the graph data
+  actGraph<-getData(modelName=dataName)
+  Sys.sleep(0.5)
 
-    # add the key press events for pseudo-accelerators
-    createKeyPressEvent(win)        
+  curlayout<-agopen(actGraph, name=dataName, nodeAttrs=makeNodeAttrs(actGraph, 
+                shape=nodeShape, width=3))
 
-    # add the delete event
-    closeWin(newView)
-
-    # add a new sub menu item to the control window
-    winCounter<-get("winCounter", mvcEnv)
-    assign("winCounter", winCounter+1, mvcEnv)
-
-    curLabel<-paste("Window _", get("winCounter", mvcEnv),
-                    "  Ctrl+", get("winCounter", mvcEnv), sep="")
-    newMenuItem<-addSubMenuItem(curLabel, "activateWindow", "window",  
-                   winNum=get("winCounter", mvcEnv))
-
-    winNum(newView)<-get("winCounter", mvcEnv)
-
-    # set the title of the window
-    curTitle<-paste("Window ", get("winCounter", mvcEnv), sep="")
-    gtkWindowSetTitle(win, curTitle)
-
-    # add new object to viewList      
-    curviewList<-viewList(curMVC)
-    viewLen<-length(curviewList)
-    curviewList[[viewLen+1]]<-newView
-    viewList(curMVC)<-curviewList
-
-    # need to reassign the curMVC to MVCList
-    MVCList[[mvcindex]]<-curMVC
-    assign("MVCList", MVCList, mvcEnv)
-#    viewList<-get("viewList", viewEnv)
-#    viewLen<-length(viewList)
-#    viewList[[viewLen+1]]<-newView
-#    assign("viewList", viewList, viewEnv)
-  }
+  newRetList<-list(win=win, drArea=drArea, plotDevice=dev.cur(),
+                   plotPar=par(no.readonly=TRUE), graphLayout=curlayout)
+  return(newRetList)
 }
 
-###########
-# createDataView creates a gtk window that 
-# contains a spreadsheet of the data from one of the
-# loaded data sets.
-###########
-createDataView<-function(win, dfName)
-{        
+#########
+# 5/24/05 create a scatterplot view through initialize method
+# here just setting up the device
+#########
+initSPlotView<-function()
+{
+  win<-gtkWindow(show=FALSE)
+  
+  # this will create a gtk device on the window
+  retList<-createGtkDev(win)
+  win<-retList$win
+  drArea<-retList$drArea
+
+  newRetList<-list(win=win, drArea=drArea, plotDevice=dev.cur(),
+                   plotPar=par(no.readonly=TRUE))
+
+  return(newRetList)
+}
+
+#########
+# 5/24/05 create a spreadsheet view through initialize method
+#########
+initSpreadView<-function(dfName)
+{
+  win<-gtkWindow(show=FALSE)
   win$SetUsize(500, 400)
   newTable<-gtkTable(1, 1, TRUE)
 
   # actually get the data
-#  showdata<-getData(type="dataframe", name=dfName)
   showdata<-getData(modelName=dfName)
   # need to add one to include the row names as a column
   numCols<-(dim(showdata)[2])+1
@@ -603,10 +553,18 @@ createDataView<-function(win, dfName)
   win$Add(newTable)
   win$Show()
 
-  # need to store the window
-  curView<-new("spreadView", dataName=dfName, win=win, clist=showDfList)
- 
-  gtkAddCallback(showDfList, "select-row",
+  newRetList<-list(win=win, clist=showDfList)
+
+  return(newRetList)
+}
+
+#########
+# 5/24/05 add events specifically for spreadsheets
+#########
+addEventsforSpread<-function(curView)
+{
+  curclist<-clist(curView)
+  gtkAddCallback(curclist, "select-row",
     function(obj, row, col, ev)
     {
 #      if (get("clickEvent", controlEnv))
@@ -614,64 +572,150 @@ createDataView<-function(win, dfName)
     }
   )
    
-  gtkAddCallback(showDfList, "unselect-row",
+  gtkAddCallback(curclist, "unselect-row",
     function(obj, row, col, ev)
     {
 #      if (get("clickEvent", controlEnv))
 #        clickEvent(curView, row.names(showdata)[(row+1)], event="unselect")
     }
   )
-
-  return(curView)
 }
 
-#########
-# create plot views
-#########
-createPlotView<-function(win, dfName, plotType, ...)
+##########
+# 5/24/05 add events specifically for scatterplots
+##########
+addEventsforSPlots<-function(curView)
 {
-  # this will create a gtk device on the window
-  retList<-createGtkDev(win)
-  win<-retList$win
-  drArea<-retList$drArea
+  gtkAddCallback(drArea(curView), "button_press_event",
+    function(obj, ev)
+    {
+#      clickEvent(curView, ev)
+    }
+  )
+      
+  gtkAddCallback(drArea(curView), "motion-notify-event",
+    function(obj, ev)
+    {
+      motionEvent(curView, ev)
+    }
+  )  
+}
 
-  if (plotType=="sPlotView")
-  {
-    # make sure dfRows and dfColumns are in ... parameter
-    newView<-createSPlotView(win, dfName, drArea,...)
-  }
+############
+# 5/24/05 add events specifically for graphs
+############
+addEventsforGraphs<-function(curView)
+{
+  gtkAddCallback(drArea(curView), "button_press_event",
+    function(obj, ev)
+    {
+#      clickEvent(curView, ev)
+    }
+  )
+      
+  gtkAddCallback(drArea(curView), "motion-notify-event",
+    function(obj, ev)
+    {
+#      motionEvent(curView, ev)
+    }
+  )  
+}
+
+############
+# 5/24/05 add events for any type of view
+# this also adds the view to the viewlist and updates
+# the mvclist
+############
+addEventsforViews<-function(newView)
+{
+  dataName<-dataName(newView)
+
+  MVCList<-get("MVCList", mvcEnv)
+  allNames<-getModelNames(sort=FALSE)
+  mvcindex<-match(dataName, allNames)
+  curMVC<-getMVC(dataName)
+  controlEnv<-controller(curMVC)
+
+  win<-win(newView)
+
+  assign("activeView", newView, controlEnv)
+
+  # need to add a callback for focus_in_event
+  gtkAddCallback(win, "focus_in_event",
+    function(obj, ev)
+    {
+      if (is(newView, "plotView"))
+      {
+        # set the active device
+        dev.set(plotDevice(newView))
+      }
+      # set the active view
+      assign("activeView", newView, controlEnv)
+    }
+  )
+
+  # need a callback for focus_out_event to remove any open tooltips
+  gtkAddCallback(win, "focus_out_event",
+    function(obj, ev)
+    {
+      # no active view
+      assign("activeView", c(), controlEnv)
+    }
+  )
+
+  # add the key press events for pseudo-accelerators
+  createKeyPressEvent(win)        
+
+  # add the delete event
+  closeWin(newView)
+
+  # add a new sub menu item to the control window
+  winCounter<-get("winCounter", mvcEnv)
+  assign("winCounter", winCounter+1, mvcEnv)
+
+  curLabel<-paste("Window _", get("winCounter", mvcEnv),
+                  "  Ctrl+", get("winCounter", mvcEnv), sep="")
+  newMenuItem<-addSubMenuItem(curLabel, "activateWindow", "window",  
+                 winNum=get("winCounter", mvcEnv))
+
+  winNum(newView)<-get("winCounter", mvcEnv)
+
+  # set the title of the window
+  curTitle<-paste("Window ", get("winCounter", mvcEnv), sep="")
+  gtkWindowSetTitle(win, curTitle)
+
+  # add new object to viewList      
+  curviewList<-viewList(curMVC)
+  viewLen<-length(curviewList)
+  curviewList[[viewLen+1]]<-newView
+  viewList(curMVC)<-curviewList
+
+  # need to reassign the curMVC to MVCList
+  MVCList[[mvcindex]]<-curMVC
+  assign("MVCList", MVCList, mvcEnv)
 
   return(newView)
 }
 
-##########
-# create a sPlotView object, make a scatterplot and add callbacks
-##########
-createSPlotView<-function(win, dfName, drArea, dfRows, dfColumns)
+
+#########
+# 5/24/05 create plot of graph
+#########
+graphPlot<-function(curView)
 {
-  curView<-new("sPlotView", dataName=dfName, win=win, 
-                    plotDevice=dev.cur(), plotPar=par(no.readonly=TRUE),
-                    drArea=drArea, dfRows=dfRows, colx=dfColumns[1], 
-                    coly=dfColumns[2])
+  # set a few parameters that don't seem to be set correctly for a gtk device
+  par("bg"="transparent")
+  par("col"="black")
+  par("fg"="black") 
 
-  curView<-scatterplot(curView)
+  plot(curView@graphLayout)
 
-  gtkAddCallback(drArea(curView),"button_press_event",
-    function(obj,ev)
-    {
-#      clickEvent(curView,ev)
-    }
-  )
-      
-  gtkAddCallback(drArea(curView),"motion-notify-event",
-    function(obj,ev)
-    {
-#      motionEvent(curView,ev)
-    }
-  )
+  # reset the par slot
+  plotPar(curView)<-par(no.readonly=TRUE)
 
   return(curView)
 }
+
 
 #################
 # scatterplot is a function to plot a data set
@@ -761,9 +805,6 @@ scatterplot<-function(viewItem)
             col=backgr)
     }
   }
-#  # add a title
-#  title(get("viewMode", controlEnv), col.main=get("mainTitleColor", viewEnv))
-#  assign("plotTitle", get("viewMode", controlEnv), controlEnv)
 
   # need to update plot parameter usr
   plotPar(viewItem)<-par(no.readonly=TRUE)
@@ -833,4 +874,83 @@ createGtkDev<-function(w)
   return(list(win=w, drArea=drArea))
 }
 
+###########
+# checkPoint sees if the x,y values fall in a point from the dataframe
+# only called when the viewMode is identify
+###########
+checkPoint<-function(curx, cury, curPlot)
+{
+  # expecting this to be a plot
+  activeView<-get("activeView", viewEnv) 
+#  print(activeView) 
+
+  # set the user parameter
+  curPar<-plotPar(curPlot)
+  par("usr"=curPar$usr)
+
+  curbg<-plotPar(curPlot)$bg
+  if (curbg=="transparent")
+    curbg<-"white"
+
+  if (is(activeView, "plotView"))
+  {
+    xyloc<-list(x=curx, y=cury)
+
+    # convert to user coordinates
+    xyInches<-pix2inches(curx, cury)
+    xyUsr<-inches2usr(xyInches$x, xyInches$y)
+ 
+    curpt<-identifyPoint(curPlot, xyUsr)
+
+    if (!is.null(curpt))
+    {
+      # need to keep information about the current and old points
+      curPoint<-get("curIDpoint", viewEnv)
+
+      continue<-FALSE
+      if (length(curPoint$closestPoint) != length(curpt$closestPoint))
+        continue<-TRUE
+      else
+        if (any(curPoint$closestPoint != curpt$closestPoint))
+          continue<-TRUE
+      if (length(curPoint)==0)
+        continue<-TRUE
+
+      if (continue)
+      {
+        # remove old point highlight before adding new text
+        if (length(curPoint) > 0)
+        {
+          dfMessage<-new("gUpdateDataMessage", from=curPlot, where=curPoint)
+          handleMessage(dfMessage)
+
+          printText(curPoint,curPlot,curbg)
+        }
+        # now update new point
+        assign("curIDpoint",curpt,viewEnv)    
+
+        dfMessage<-new("gUpdateDataMessage", from=curPlot, where=curpt)
+
+        # now need to handle the message
+        handleMessage(dfMessage)      
+
+        printText(curpt,curPlot,get("highColor",dataEnv))
+      }
+    }
+
+    else
+    {
+      curPoint<-get("curIDpoint",viewEnv)
+      # also need to remove old point highlight
+      if (length(curPoint) > 0)
+      {
+        dfMessage<-new("gUpdateDataMessage", from=curPlot, where=curPoint)
+        handleMessage(dfMessage)
+
+        assign("curIDpoint",list(),viewEnv)
+        printText(curPoint,curPlot,curbg)
+      }
+    }
+  }
+}
 

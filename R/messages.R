@@ -181,7 +181,7 @@ setMethod("initialize", "gAddViewMessage",
 # generic functions for handling messages
 #####
 if (is.null(getGeneric("handleMessage")))
-  setGeneric("handleMessage", function(object,...)
+  setGeneric("handleMessage", function(object, ...)
             standardGeneric("handleMessage"))
 
 setMethod("handleMessage", "gUpdateViewMessage",
@@ -242,18 +242,22 @@ setMethod("handleMessage", "gAddDataMessage",
   }
 )
  
+#######
+# 5/24/05 want to initialize a view through methods rather than a function
+#######
 setMethod("handleMessage", "gAddViewMessage",
-  function(object,...)
+  function(object, ...)
   {
     dataName<-dataName(object)
     type<-type(object)
     mData<-mData(object)
+#    print(mData)
 
-    mData$dataName<-dataName
-    mData$type<-type
-   
-    do.call("createView",mData)
-#    createView(type=type, dataName=dataName, mData)    
+    if (length(mData) > 0)
+      newView<-new(type, dataName, mData)
+    else
+      newView<-new(type, dataName)
   }
 )
+
 

@@ -290,22 +290,65 @@ setMethod("clickEvent", "spreadView",
 setMethod("clickEvent", "sPlotView",
   function(object, where, ...)
   {
-    # only update the data if view mode is set and if the view mode is not
-    # identify - in identify mode only pay attention to motion event
-    viewMode<-get("viewMode", controlEnv)
-    if (viewMode != "" && viewMode != "identify")
+    activeMVC<-get("activeMVC", mvcEnv)
+    curMVC<-getMVC(activeMVC)
+    controlEnv<-controller(curMVC)
+
+    # see if there is a function to call
+    rightButtonClick<-get("rightButtonClick", controlEnv)
+    leftButtonClick<-get("leftButtonClick", controlEnv)
+    middleButtonClick<-get("middleButtonClick", controlEnv)
+
+    # see if any of the functions are active
+    activeRBCFun<-unlist(lapply(rightButtonClick, function(y)
+      {y$assigned==TRUE}))
+    activeLBCFun<-unlist(lapply(leftButtonClick, function(y)
+      {y$assigned==TRUE}))
+    activeMBCFun<-unlist(lapply(middleButtonClick, function(y)
+      {y$assigned==TRUE}))
+
+    # where will be the mouse click event information from Gtk
+    # check that the left button was pressed
+    if (gdkEventButtonGetButton(where)==1)
     {
-      #where will be the mouse click event information from Gtk
-    
-      # check that the left button was pressed
-      if (gdkEventButtonGetButton(where)==1)
+      if (any(activeLBCFun))
       {
         usri <- pix2inches(where[["X"]], where[["Y"]])
         usrc <- inches2usr(usri$x, usri$y)
 
-#        viewMode<-get("viewMode",controlEnv)
+        curPoint<-identifyPoint(object, usrc)
 
-        curPoint<-identifyPoint(object,usrc)
+        if (!is.null(curPoint))
+        {
+#          # if a point was clicked, then we want to create a 
+#          # gUpdateDataMessage
+#          dfMessage<-new("gUpdateDataMessage", from=object, where=curPoint)
+#          handleMessage(dfMessage)
+
+          curIndex<-which(activeLBCFun)
+          if (length(curIndex)==1)
+          { 
+            curEventFun<-mouseOver[[curIndex]][["eventFun"]]
+
+            # now call the function the user has set with the current
+            # node as the parameter - assume the function does not return
+            # anything to the motion notify event
+            actualFun<-callFun(curEventFun)
+            do.call(actualFun, list(curPoint$closestPoint))
+          }
+
+        }
+      }
+    }
+
+    if (gdkEventButtonGetButton(where)==2)
+    {
+      if (any(activeMBCFun))
+      {
+        usri <- pix2inches(where[["X"]], where[["Y"]])
+        usrc <- inches2usr(usri$x, usri$y)
+
+        curPoint<-identifyPoint(object, usrc)
 
         if (!is.null(curPoint))
         {
@@ -315,14 +358,24 @@ setMethod("clickEvent", "sPlotView",
           handleMessage(dfMessage)
         }
       }
-      # may want to add functionality if the right or middle 
-      # buttons are pressed
+    }
 
-      # for right click have a widget pop up that asks the 
-      # user which interact function to use??
-      if (gdkEventButtonGetButton(where)==3)
+    if (gdkEventButtonGetButton(where)==3)
+    {
+      if (any(activeRBCFun))
       {
-        
+        usri <- pix2inches(where[["X"]], where[["Y"]])
+        usrc <- inches2usr(usri$x, usri$y)
+
+        curPoint<-identifyPoint(object, usrc)
+
+        if (!is.null(curPoint))
+        {
+          # if a point was clicked, then we want to create a 
+          # gUpdateDataMessage
+          dfMessage<-new("gUpdateDataMessage", from=object, where=curPoint)
+          handleMessage(dfMessage)
+        }
       }
     }
   }
@@ -332,10 +385,21 @@ setMethod("clickEvent", "sPlotView",
 # a method for a motion notify event on a scatterplot
 ########
 setMethod("motionEvent", "sPlotView",
-  function(object,event,...)
+  function(object, event, ...)
   {
-    # only respond to motion events for identify view mode
-    if (get("viewMode",controlEnv)=="identify")
+    activeMVC<-get("activeMVC", mvcEnv)
+    curMVC<-getMVC(activeMVC)
+    controlEnv<-controller(curMVC)
+
+    # see if there is a function to call
+    mouseOver<-get("mouseOver", controlEnv)
+    # see if any of the functions are active
+    activeFun<-unlist(lapply(mouseOver, function(y){y$assigned==TRUE}))
+
+    # then there is an active function
+    if (any(activeFun))
+ #   # only respond to motion events for identify view mode
+ #   if (get("viewMode", controlEnv)=="identify")
     {
       curWin<-win(object)
       # potential problem - these depend on how the 
@@ -345,19 +409,125 @@ setMethod("motionEvent", "sPlotView",
       vrul<-gtkContainerGetChildren(gtkContainerGetChildren(
              gtkContainerGetChildren(curWin)[[1]])[[2]])[[1]]
 
-      hrul$SignalEmit("motion-notify-event",event)
-      vrul$SignalEmit("motion-notify-event",event)
+      hrul$SignalEmit("motion-notify-event", event)
+      vrul$SignalEmit("motion-notify-event", event)
       
       curx<-gdkEventMotionGetX(event)
       cury<-gdkEventMotionGetY(event)
 
+      xyloc<-list(x=curx, y=cury)
+
+      # convert to user coordinates
+      xyInches<-pix2inches(curx, cury)
+      xyUsr<-inches2usr(xyInches$x, xyInches$y)
+ 
       # also need to ensure that the plot has been added to viewList
       curDev<-dev.cur()
-      plotDev<-getPlotDev(getPlotsFromViews())
+      curViewList<-viewList(curMVC)
+      plotDev<-unlist(lapply(curViewList, function(x) {plotDevice(x)}))     
+#      plotDev<-getPlotDev(getPlotsFromViews())
       if (curDev %in% plotDev)
       {
-        checkPoint(curx,cury,object)
+#        checkPoint(curx, cury, object)
+        curPoint<-identifyPoint(object, xyUsr)
+
+        curIndex<-which(activeFun)
+        if (length(curIndex)==1)
+        {
+          curEventFun<-mouseOver[[curIndex]][["eventFun"]]
+
+          # now call the function the user has set with the current
+          # node as the parameter - assume the function does not return
+          # anything to the motion notify event
+          actualFun<-callFun(curEventFun)
+          do.call(actualFun, list(curPoint$closestPoint))
+        }
       }
     }
+  }
+)
+
+##########
+# 5/24/05
+# need to create an initialize method that will be called
+# when creating a view
+##########
+
+# dataName, dfRows, colx and coly are the only data needed to create scatterplot
+setMethod("initialize", "sPlotView", 
+  function(.Object, dataName, mData)
+  {
+    dfRows<-mData$dfRows
+    colx<-mData$colx
+    coly<-mData$coly
+
+    # create slot values
+    retList<-initSPlotView()
+
+    # fill the slots in the object
+    .Object@dataName<-dataName
+    .Object@win<-retList$win
+    .Object@plotDevice<-retList$plotDevice
+    .Object@plotPar<-retList$plotPar
+    .Object@drArea<-retList$drArea
+    .Object@dfRows<-dfRows
+    .Object@colx<-colx
+    .Object@coly<-coly
+
+    # create the actual plot
+    .Object<-scatterplot(.Object)
+
+    # finally add events to the plot
+    .Object<-addEventsforViews(.Object)
+    addEventsforSPlots(.Object)
+
+    .Object
+  }
+)
+
+setMethod("initialize", "spreadView", 
+  function(.Object, dataName)
+  {
+    # create the slot values
+    retList<-initSpreadView(dataName)
+   
+    # fill the slots in the object
+    .Object@dataName<-dataName
+    .Object@win<-retList$win
+    .Object@clist<-retList$clist
+
+    # finally add events to the view
+    .Object<-addEventsforViews(.Object)
+    addEventsforSpread(.Object)
+
+    .Object
+  }
+)
+
+setMethod("initialize", "graphView",
+  function(.Object, dataName, mData)
+  {
+    glayout<-mData$glayout
+    nShape<-mData$nShape
+
+    # create slot values
+    retList<-initGraphView(dataName, glayout, nShape)
+
+    # fill the slots in the object
+    .Object@dataName<-dataName
+    .Object@win<-retList$win
+    .Object@plotDevice<-retList$plotDevice
+    .Object@plotPar<-retList$plotPar
+    .Object@drArea<-retList$drArea
+    .Object@graphLayout<-retList$graphLayout
+
+    # create the actual plot
+    .Object<-graphPlot(.Object)
+
+    # finally add events to the plot
+    .Object<-addEventsforViews(.Object)
+    addEventsforGraphs(.Object)
+
+    .Object    
   }
 )
