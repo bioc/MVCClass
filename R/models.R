@@ -154,6 +154,51 @@ setMethod("initialize", "dfModel",
 )
 
 ##########
+# create a method to update a model
+##########
+if (is.null(getGeneric("updateModel")))
+  setGeneric("updateModel", function(object, type, data)
+            standardGeneric("updateModel"))
+
+setMethod("updateModel", "dfModel",
+  function(object, type, data)
+  {
+    # for a dataframe want to change the virtualData slot
+    virData<-virtualData(object)
+    
+    colIndex<-match(type, colnames(virData))
+    rowName<-names(data)
+    rowIndex<-match(rowName, rownames(virData))
+
+    oldValue<-virData[rowIndex, colIndex]
+    # update the value
+    virData[rowIndex, colIndex]<-unlist(data)
+
+    # now update the objects
+    virtualData(object)<-virData
+
+    # need to update the MVC object
+    activeMVC<-get("activeMVC", mvcEnv)
+    curMVC<-getMVC(activeMVC)
+    model(curMVC)<-object
+
+    # will also need to update the MVCList
+    mvcList <- get("MVCList", mvcEnv)
+    allNames <- getModelNames(sort = FALSE)
+    index <- match(activeMVC, allNames)
+    mvcList[[index]]<-curMVC
+    assign("MVCList", mvcList, mvcEnv)
+
+    # return the data needed to update the views
+    # need the old value to remove the old point from the plot before
+    # re-adding the point with the new value
+    viewData<-list(colName=type, rowName=names(data), oldValue=oldValue, 
+                   newValue=unlist(data))
+    return(viewData)
+  }
+)
+
+##########
 # create a method to derive a new model
 ##########
 

@@ -563,20 +563,26 @@ initSpreadView<-function(dfName)
 #########
 addEventsforSpread<-function(curView)
 {
+  activeMVC<-get("activeMVC", mvcEnv)
+  curMVC<-getMVC(activeMVC)
+  controlEnv<-controller(curMVC)
+
   curclist<-clist(curView)
   gtkAddCallback(curclist, "select-row",
     function(obj, row, col, ev)
     {
-#      if (get("clickEvent", controlEnv))
-#        clickEvent(curView, row.names(showdata)[(row+1)], event="select")
+      # need this variable to make sure don't end up in an infinite loop
+      if (get("contLoop", controlEnv)==FALSE)
+        clickEvent(curView, (row+1), event="select")
     }
   )
    
   gtkAddCallback(curclist, "unselect-row",
     function(obj, row, col, ev)
     {
-#      if (get("clickEvent", controlEnv))
-#        clickEvent(curView, row.names(showdata)[(row+1)], event="unselect")
+      # need this variable to make sure don't end up in an infinite loop
+      if (get("contLoop", controlEnv)==FALSE)
+        clickEvent(curView, (row+1), event="unselect")
     }
   )
 }
@@ -589,7 +595,7 @@ addEventsforSPlots<-function(curView)
   gtkAddCallback(drArea(curView), "button_press_event",
     function(obj, ev)
     {
-#      clickEvent(curView, ev)
+      clickEvent(curView, ev)
     }
   )
       
@@ -783,7 +789,7 @@ scatterplot<-function(viewItem)
       pointCex<-plotPar(viewItem)$cex
       curCex<-as.integer(pointCex)+1
       points(highPoints[,1], highPoints[,2], cex=curCex, 
-           col=get("highColor",dataEnv))
+           col="red")
     }
  
     # need to hide points

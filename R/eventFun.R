@@ -13,7 +13,10 @@
 ##############
 setClass("gEventFun", representation(callFun="character", 
                                   shortName="character", 
-                                  preprocessFun="character"))
+                                  preprocessFun="characterNULL"))
+
+# there may be no preprocessing functions
+setClassUnion("characterNULL", members=c("character", "NULL"))
 
 if (is.null(getGeneric("callFun")))
   setGeneric("callFun", function(object)

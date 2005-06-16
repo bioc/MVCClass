@@ -212,9 +212,9 @@ if (is.null(getGeneric("clickEvent")))
   setGeneric("clickEvent", function(object, where, ...)
             standardGeneric("clickEvent"))
 
-if (is.null(getGeneric("viewUpdateData")))
-  setGeneric("viewUpdateData", function(object, where, ...)
-            standardGeneric("viewUpdateData"))
+#if (is.null(getGeneric("viewUpdateData")))
+#  setGeneric("viewUpdateData", function(object, where, ...)
+#            standardGeneric("viewUpdateData"))
 
 # added 3/28/05
 if (is.null(getGeneric("identifyLoc")))
@@ -228,32 +228,141 @@ setMethod("identifyLoc", "sPlotView",
   }
 )
 
-##########
-# update the data based on interacting with a spreadsheet view
-##########
-#setMethod("viewUpdateData", "spreadView",
-#  function(object, where, ...)
-#  {
-#    # need to get the class of the model object
-#    # updateDFBySpread is expecting a data frame model
-#    if (is(getModel(dataName(object)), "dfModel"))
-#      retList<-updateDFBySpread(object, where, ...)
-#
-#    return(retList)
-#  }
-#)
+#########
+# added 6/5/05
+# make method to update a view depending on the view object
+# vData is the view data needed to update the view
+#########
+if (is.null(getGeneric("updateView")))
+  setGeneric("updateView", function(object, vData)
+            standardGeneric("updateView"))
 
-setMethod("viewUpdateData", "sPlotView",
-  function(object, where, ...)
+setMethod("updateView", "sPlotView",
+  function(object, vData)
   {
-    # need to get the class of the model object
-    # updateDFBysPlot is expecting a data frame model
-    if (is(getModel(dataName(object)), "dfModel"))
-      retList<-updateDFBysPlot(object, where)
+    # vData is a list with 4 elements: rowName, colName, oldValue and newValue
+    # will need to remove old value and draw point with new value
 
-    return(retList)
+    # get the model info.
+    activeMVC<-get("activeMVC", mvcEnv)
+    curMVC<-getMVC(activeMVC)
+    model<-model(curMVC)
+    modelData<-modelData(model)
+    virtualData<-virtualData(model)
+
+    # set the current device
+    curDevice<-plotDevice(object)
+    dev.set(curDevice)
+
+    # will need the background color
+    bgColor<-plotPar(object)$bg
+    if (bgColor=="transparent")
+      bgColor<-"white"
+
+    rowName<-vData$rowName
+    # this will be a column in the virtualData slot
+    colName<-vData$colName
+    oldValue<-vData$oldValue
+    newValue<-vData$newValue
+
+    # these are columns in the modelData slot
+    colx<-colx(object)
+    coly<-coly(object)
+    dfRows<-dfRows(object)
+    # only update this point if it is being shown in the current plot
+    if (rowName %in% dfRows)
+    {
+      # get the x and y values
+      rowIndex<-match(rowName, rownames(modelData))
+      xcolIndex<-match(colx, colnames(modelData))
+      ycolIndex<-match(coly, colnames(modelData))
+      xvalue<-modelData[rowIndex, xcolIndex]
+      yvalue<-modelData[rowIndex, ycolIndex]
+
+      pchIndex<-match("pch", colnames(virtualData))
+      pchValue<-virtualData[rowIndex, pchIndex]
+      colIndex<-match("color", colnames(virtualData))
+      colValue<-virtualData[rowIndex, colIndex]
+      highIndex<-match("highlit", colnames(virtualData))
+      highValue<-virtualData[rowIndex, highIndex]
+
+      # next remove the old point
+      # what about highlighting??? - would also need to remove this!
+      points(xvalue, yvalue, col=bgColor, pch=pchValue)
+
+      # remove highlighting if it's needed
+      if (highValue==TRUE && colName!="highlit")
+        points(xvalue, yvalue, col=bgColor, cex=2, pch=1)
+      if (colName=="highlit" && newValue==FALSE)
+        points(xvalue, yvalue, col=bgColor, cex=2, pch=1)
+
+      # only redraw the point if it's not supposed to be hidden
+      if (!(colName=="hide" && newValue==TRUE)) 
+      {
+        # then redraw the point
+        points(xvalue, yvalue, col=colValue, pch=pchValue)
+
+        # add highlighting if it's needed
+        if (highValue==TRUE)
+          points(xvalue, yvalue, col="red", pch=1, cex=2)
+      }
+    }
   }
 )
+
+#########
+#
+#########
+setMethod("updateView", "spreadView",
+  function(object, vData)
+  {
+    # vData is a list with 4 elements: rowName, colName, oldValue and newValue
+
+    # get the model info.
+    activeMVC<-get("activeMVC", mvcEnv)
+    curMVC<-getMVC(activeMVC)
+    model<-model(curMVC)
+    modelData<-modelData(model)
+    virtualData<-virtualData(model)
+
+    curCList<-clist(object)
+
+    colName<-vData$colName
+    rowName<-vData$rowName
+    rowIndex<-match(rowName, rownames(modelData))
+    
+    if (colName=="color" || colName=="pch")
+    {
+      # always select the row when a point is being colored
+      gtkCListSelectRow(curCList, rowIndex-1, -1)
+    }
+    else
+    {
+      # for highlight and hide need to toggle the selection
+      # if value==TRUE then select, otherwise unselect
+      newValue<-vData$newValue
+      if (newValue==TRUE)
+        gtkCListSelectRow(curCList, rowIndex-1, -1)
+      else
+      {
+        gtkCListUnselectRow(curCList, rowIndex-1, -1)
+      }
+    }    
+  }
+)
+
+setMethod("updateView", "graphView",
+  function(object, vData)
+  {}
+)
+
+########
+# added 6/5/05
+# make a method to redraw a view depending on the view object
+########
+if (is.null(getGeneric("redrawView")))
+  setGeneric("redrawView", function(object)
+            standardGeneric("redrawView"))
 
 ########
 # clickEvent for spreadView is called in response to a selected row
@@ -262,23 +371,35 @@ setMethod("viewUpdateData", "sPlotView",
 setMethod("clickEvent", "spreadView", 
   function(object, where, ...)
   {
-    cont<-TRUE
     extras<-list(...)
+    # event is select or unselect
     event<-extras$event
-    viewMode<-get("viewMode",controlEnv)
-    if (viewMode == "")
-      cont<-FALSE
-    # we don't need to update the data if the view mode is color and a
-    # row has been unselected
-    if (viewMode=="color" && event=="unselect")
-      cont<-FALSE
 
-    # only update the data if view mode is set
-    if (cont)
-    {
-      # where will be the list item that was clicked 
-      dfMessage<-new("gUpdateDataMessage", from=object, where=where, ...)
-      handleMessage(dfMessage)
+    # assume that the clickEvent for spreadView has the same callback
+    # function as the left button click because a row can only be selected
+    # or unselected with the left button
+    activeMVC<-get("activeMVC", mvcEnv)
+    curMVC<-getMVC(activeMVC)
+    controlEnv<-controller(curMVC)
+    modelData<-modelData(model(curMVC))
+    rowName<-rownames(modelData)[where]
+
+    # see if there is a function to call
+    leftButtonClick<-get("leftButtonClick", controlEnv)
+
+    # see if any of the functions are active
+    activeLBCFun<-unlist(lapply(leftButtonClick, function(y)
+      {y$assigned==TRUE}))
+
+    curIndex<-which(activeLBCFun)
+    if (length(curIndex)==1)
+    { 
+      curEventFun<-leftButtonClick[[curIndex]][["eventFun"]]
+
+      actualFun<-callFun(curEventFun)
+      # problem is that we can't list it as select or unselect event
+      # but that's ok because highlight and hide will be toggled anyway
+      do.call(actualFun, list(rowName))
     }
   }
 )
@@ -328,7 +449,7 @@ setMethod("clickEvent", "sPlotView",
           curIndex<-which(activeLBCFun)
           if (length(curIndex)==1)
           { 
-            curEventFun<-mouseOver[[curIndex]][["eventFun"]]
+            curEventFun<-leftButtonClick[[curIndex]][["eventFun"]]
 
             # now call the function the user has set with the current
             # node as the parameter - assume the function does not return
@@ -424,8 +545,13 @@ setMethod("motionEvent", "sPlotView",
       # also need to ensure that the plot has been added to viewList
       curDev<-dev.cur()
       curViewList<-viewList(curMVC)
-      plotDev<-unlist(lapply(curViewList, function(x) {plotDevice(x)}))     
-#      plotDev<-getPlotDev(getPlotsFromViews())
+
+      devicesInView<-unlist(lapply(curViewList, function(x) {is(x,
+                             "plotView")}))
+      # only look at views that have devices
+      viewsWithDevices<-curViewList[devicesInView]
+      plotDev<-unlist(lapply(viewsWithDevices, function(x) {plotDevice(x)}))
+
       if (curDev %in% plotDev)
       {
 #        checkPoint(curx, cury, object)

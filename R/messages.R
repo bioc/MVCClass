@@ -7,13 +7,11 @@ setClass("gMessage")
 setClass("gUpdateMessage", representation(type="character", mData="list"),
          contains="gMessage")
 setClass("gUpdateViewMessage", contains="gUpdateMessage")
-setClass("gUpdateDataMessage", representation(to="character"), 
-         contains="gUpdateMessage")
+setClass("gUpdateDataMessage", contains="gUpdateMessage")
 
-setClass("gAddMessage", representation(dataName="character", mData="list"), 
-         contains="gMessage")
-setClass("gAddViewMessage", representation(type="character"), 
-         contains="gAddMessage")
+setClass("gAddMessage", representation(dataName="character", mData="list",
+         type="character"), contains="gMessage")
+setClass("gAddViewMessage", contains="gAddMessage")
 setClass("gAddDataMessage", contains="gAddMessage")
 
 #####
@@ -24,7 +22,7 @@ if (is.null(getGeneric("type")))
             standardGeneric("type"))
 setMethod("type", "gUpdateMessage", function(object)
          object@type)
-setMethod("type", "gAddViewMessage", function(object)
+setMethod("type", "gAddMessage", function(object)
          object@type)
 
 if (is.null(getGeneric("mData")))
@@ -34,12 +32,6 @@ setMethod("mData", "gUpdateMessage", function(object)
          object@mData)
 setMethod("mData", "gAddMessage", function(object)
          object@mData)
-
-if (is.null(getGeneric("to")))
-  setGeneric("to", function(object)
-            standardGeneric("to"))
-setMethod("to", "gUpdateDataMessage", function(object)
-         object@to)
 
 if (is.null(getGeneric("dataName")))
   setGeneric("dataName", function(object)
@@ -51,15 +43,15 @@ setMethod("dataName", "gAddMessage", function(object)
 # setting the slots
 #####
 if (is.null(getGeneric("type<-")))
-  setGeneric("type<-",function(object,value)
+  setGeneric("type<-", function(object, value)
             standardGeneric("type<-"))
-setReplaceMethod("type","gUpdateMessage",function(object,value)
+setReplaceMethod("type", "gUpdateMessage", function(object, value)
          {
            object@type<-value
            object
          }
 )
-setReplaceMethod("type","gAddViewMessage", function(object,value)
+setReplaceMethod("type", "gAddMessage", function(object, value)
          {
            object@type<-value
            object
@@ -67,35 +59,25 @@ setReplaceMethod("type","gAddViewMessage", function(object,value)
 )
 
 if (is.null(getGeneric("mData<-")))
-  setGeneric("mData<-",function(object,value)
+  setGeneric("mData<-",function(object, value)
             standardGeneric("mData<-"))
-setReplaceMethod("mData","gUpdateMessage",function(object,value)
+setReplaceMethod("mData", "gUpdateMessage", function(object, value)
          {
            object@mData<-value
            object
          }
 )
-setReplaceMethod("mData", "gAddMessage", function(object,value)
+setReplaceMethod("mData", "gAddMessage", function(object, value)
          {
            object@mData<-value
-           object
-         }
-)
-
-if (is.null(getGeneric("to<-")))
-  setGeneric("to<-",function(object,value)
-            standardGeneric("to<-"))
-setReplaceMethod("to","gUpdateDataMessage",function(object,value)
-         {
-           object@to<-value
            object
          }
 )
 
 if (is.null(getGeneric("dataName<-")))
-  setGeneric("dataName<-",function(object,value)
+  setGeneric("dataName<-", function(object, value)
             standardGeneric("dataName<-"))
-setReplaceMethod("dataName","gAddMessage",function(object,value)
+setReplaceMethod("dataName", "gAddMessage", function(object, value)
          {
            object@dataName<-value
            object
@@ -106,21 +88,11 @@ setReplaceMethod("dataName","gAddMessage",function(object,value)
 # initialize methods
 #####
 setMethod("initialize", "gUpdateViewMessage", 
-  function(.Object, type, ...)
+  function(.Object, type, mData)
   {
-    # type is the type of change that was performed on the data (currently,
-    # the data can only be dataframes)
-    if (type=="reset")
-    {
-      .Object@type <- "replot"
-      .Object@mData <- list()
-    }
-    if (type=="modify")
-    {
-      Rname<-list(...)$Rname
-      .Object@type <- "updatePoints"
-      .Object@mData <- list(Rname=Rname)
-    }
+    .Object@type<-type
+    .Object@mData<-mData
+
     .Object
   }
 )
@@ -131,36 +103,26 @@ setMethod("initialize", "gUpdateViewMessage",
 # even more general???
 #####
 setMethod("initialize", "gUpdateDataMessage", 
-  function(.Object, from, where, ...)
+  function(.Object, type, mData)
   {
-    # put the update dataframe in a separate function in case the user
-    # ever wants to update a different type of data, then it will be easy
-    # to add a new function in place of updateDF
-    if (is(from,"genView"))
-      retList<-viewUpdateData(from, where, ...)
-
-    .Object@type<-retList$type
-    .Object@mData<-retList$mData
-    .Object@to<-retList$to
+    .Object@type<-type
+    .Object@mData<-mData
     
     .Object
   }
 )
 
+#######
+# data must be a list!!!
+# data may contain only the model data or it may contain the model data AND
+# the link data
+#######
 setMethod("initialize", "gAddDataMessage",
-  function(.Object, data, ...)
+  function(.Object, data, dataName, type)
   {
-    extraParam<-list(...)
-    if (length(extraParam) > 0)
-      dataName<-extraParam$dataName
-    else
-    {
-      dataName<-data
-      data<-eval(as.name(data))
-    }      
-
     .Object@dataName<-dataName
-    .Object@mData<-list(data=data)
+    .Object@mData<-data
+    .Object@type<-type
     
     .Object
   }
@@ -184,29 +146,64 @@ if (is.null(getGeneric("handleMessage")))
   setGeneric("handleMessage", function(object, ...)
             standardGeneric("handleMessage"))
 
+#####
+#
+#####
 setMethod("handleMessage", "gUpdateViewMessage",
-  function(object,...)
+  function(object, ...)
   {
-    # expect the data name to be in the ... parameter
-    curDataName<-list(...)$dataName 
-
-    # first determine which plots need to be updated
-    viewList<-get("viewList",viewEnv)
-    allDataNames<-unlist(lapply(viewList, function(x) {dataName(x)}))
-    booPlots<-unlist(lapply(viewList, function(x) {is(x,"plotView")}))
-    booSpread<-unlist(lapply(viewList, function(x) {is(x,"spreadView")}))
-
-    # the indices in the viewList of the scatterplots and spreadsheet that
-    # depend on the data name
-    plotIndex<-which(booPlots & (allDataNames %in% curDataName))
-    spreadIndex<-which(booSpread & (allDataNames %in% curDataName))
-
     type<-type(object)
-    data<-mData(object)
+    viewdata<-mData(object)
 
-    updatePlots(type,plotIndex,data) 
+    # now need to update the model
+    activeMVC<-get("activeMVC", mvcEnv)
+    curMVC<-getMVC(activeMVC)
+    curVList<-viewList(curMVC)
+    controlEnv<-controller(curMVC)
 
-    updateSpread(curDataName,spreadIndex,data)    
+    if (length(dev.list()) > 0)
+      activeDev<-dev.cur()
+
+    assign("contLoop", TRUE, controlEnv)
+    controller(curMVC)<-controlEnv
+    MVCList<-get("MVCList", mvcEnv)
+    allNames <- getModelNames(sort = FALSE)
+    index <- match(activeMVC, allNames)
+    MVCList[[index]]<-curMVC
+    assign("MVCList", MVCList, mvcEnv)
+
+    if (type=="updateView")
+    {
+      for (i in 1:length(curVList))
+      {
+        updateView(curVList[[i]], viewdata) 
+      }
+    }
+    if (type=="redrawView")
+    {
+      for (i in 1:length(curVList))
+      {
+        # for type of "redrawView", mData will be an empty list
+        redrawView(curVList[i])
+      }
+    }
+
+    activeMVC<-get("activeMVC", mvcEnv)
+    curMVC<-getMVC(activeMVC)
+    curVList<-viewList(curMVC)
+    controlEnv<-controller(curMVC)
+
+    assign("contLoop", FALSE, controlEnv)
+    controller(curMVC)<-controlEnv
+    MVCList<-get("MVCList", mvcEnv)
+    allNames <- getModelNames(sort = FALSE)
+    index <- match(activeMVC, allNames)
+    MVCList[[index]]<-curMVC
+    assign("MVCList", MVCList, mvcEnv)
+
+    # reset the active device
+    if (length(dev.list()) > 0)
+      dev.set(activeDev)
   }
 )
 
@@ -214,31 +211,44 @@ setMethod("handleMessage", "gUpdateDataMessage",
   function(object,...)
   {
     data<-mData(object)
-    name<-to(object)
     type<-type(object)
 
-    # could add a different function to change a different type of data
+    # now need to update the model
+    activeMVC<-get("activeMVC", mvcEnv)
+    curMVC<-getMVC(activeMVC)
+    curModel<-model(curMVC)
 
-    # this function changes a dataframe  
-    do.call("modify",data)
+    # a method for each model to update its data
+    viewdata<-updateModel(curModel, type, data)
  
     # update the views now that the data has changed
-    dfName<-data$dfName
-    Rname<-data$Rname
-    if (length(get("viewList",viewEnv)) > 0)
-      updateViews(dfName,type,Rname)
+    # check that the model has views also!
+    curVList<-viewList(curMVC)
+    if (length(curVList) > 0)
+    {
+      # create an update view message
+      # for now assume that all update view messages that come from update
+      # data will have type "updateView", rather than "redrawView"
+      uvMessage<-new("gUpdateViewMessage", type="updateView", mData=viewdata)
+      handleMessage(uvMessage)
+    }
   }
 )
 
+########
+# 6/1/05
+# load models through messages
+########
 setMethod("handleMessage", "gAddDataMessage",
-  function(object,...)
+  function(object, ...)
   {
-    curList<-mData(object)
-    data<-curList$data
+#    print(object)
+    data<-mData(object)$data
+    linkData<-mData(object)$linkData
     name<-dataName(object)
+    type<-type(object)
 
-    loadDFData(data,name)
-    checkIfPlotted(name)
+    loadModel(data, type, name, linkData)
   }
 )
  
