@@ -68,15 +68,15 @@ loadModel<-function(data, type, name, linkData=NULL)
   {
     # first create the appropriate model object
     newObject<-switch(type,
-      "exprSet"=new("exprModel", data=eval(as.name(data)), name=name),
-      "graph"=new("graphModel", modelData=eval(as.name(data)), modelName=name),
-      "data.frame"=new("dfModel", mData=eval(as.name(data)), mName=name, 
+      "exprSet"=new("exprModel", data=data, name=name),
+      "graph"=new("graphModel", modelData=data, modelName=name),
+      "data.frame"=new("dfModel", mData=data, mName=name, 
                       linkData=linkData)
     )
 
     # now need to create a MVC object and add to MVCList in mvcEnv
     # leave parentMVC slot as NULL
-    newMVC<-new("MVC", model=newObject, viewList=list(), 
+    newMVC<-new("MVC", model=newObject, viewList=list(), parentMVC="", 
                 controller=new.env(), childMVCList=list())
 
     # need to add the default values to the new controller environment

@@ -126,7 +126,6 @@ setMethod("initialize", "dfModel",
   {
     # need to create the virtualData slot 
     defaultPlotData<-list(color="black", pch=1, highlit=FALSE, hide=FALSE)
-    
     numRows<-nrow(mData)
     if (length(defaultPlotData) > 0)
     {
@@ -165,7 +164,8 @@ setMethod("updateModel", "dfModel",
   {
     # for a dataframe want to change the virtualData slot
     virData<-virtualData(object)
-    
+    dataName<-modelName(object)
+
     colIndex<-match(type, colnames(virData))
     rowName<-names(data)
     rowIndex<-match(rowName, rownames(virData))
@@ -178,14 +178,16 @@ setMethod("updateModel", "dfModel",
     virtualData(object)<-virData
 
     # need to update the MVC object
-    activeMVC<-get("activeMVC", mvcEnv)
-    curMVC<-getMVC(activeMVC)
+#    activeMVC<-get("activeMVC", mvcEnv)
+#    curMVC<-getMVC(activeMVC)
+    curMVC<-getMVC(dataName)
     model(curMVC)<-object
 
     # will also need to update the MVCList
     mvcList <- get("MVCList", mvcEnv)
     allNames <- getModelNames(sort = FALSE)
-    index <- match(activeMVC, allNames)
+#    index <- match(activeMVC, allNames)
+    index<-match(dataName, allNames)
     mvcList[[index]]<-curMVC
     assign("MVCList", mvcList, mvcEnv)
 

@@ -3,10 +3,12 @@
 # create a class for MVC objects
 #############
 
+#setClass("MVC", representation(model="gModel", viewList="list", 
+#                  controller="environment", parentMVC="MVCNULL", 
+#                  childMVCList="list"))
 setClass("MVC", representation(model="gModel", viewList="list", 
-                  controller="environment", parentMVC="MVCNULL", 
+                  controller="environment", parentMVC="character", 
                   childMVCList="list"))
-
 setClassUnion("MVCNULL", members=c("MVC", "NULL"))
 
 ########

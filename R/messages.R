@@ -4,8 +4,8 @@
 # a virtual class for message
 setClass("gMessage")
 
-setClass("gUpdateMessage", representation(type="character", mData="list"),
-         contains="gMessage")
+setClass("gUpdateMessage", representation(type="character", mData="list",
+          dataName="character"), contains="gMessage")
 setClass("gUpdateViewMessage", contains="gUpdateMessage")
 setClass("gUpdateDataMessage", contains="gUpdateMessage")
 
@@ -14,9 +14,23 @@ setClass("gAddMessage", representation(dataName="character", mData="list",
 setClass("gAddViewMessage", contains="gAddMessage")
 setClass("gAddDataMessage", contains="gAddMessage")
 
+# added 7/13/05 to create a child model
+setClass("gAddChildMessage", contains="gAddMessage")
+
+# added 7/14/05 to update a parent model
+setClass("gUpdateParentMessage",
+         representation(childUpdateDataMessage="gUpdateDataMessage"), 
+         contains="gMessage")
+
 #####
 # accessor functions
 #####
+if (is.null(getGeneric("childUpdateDataMessage")))
+  setGeneric("childUpdateDataMessage", function(object)
+            standardGeneric("childUpdateDataMessage"))
+setMethod("childUpdateDataMessage", "gUpdateParentMessage", function(object)
+         object@childUpdateDataMessage)
+
 if (is.null(getGeneric("type")))
   setGeneric("type", function(object)
             standardGeneric("type"))
@@ -38,10 +52,22 @@ if (is.null(getGeneric("dataName")))
             standardGeneric("dataName"))
 setMethod("dataName", "gAddMessage", function(object)
          object@dataName)
+setMethod("dataName", "gUpdateMessage", function(object)
+         object@dataName)
 
 #####
 # setting the slots
 #####
+if (is.null(getGeneric("childUpdateDataMessage<-")))
+  setGeneric("childUpdateDataMessage<-", function(object, value)
+            standardGeneric("childUpdateDataMessage<-"))
+setReplaceMethod("childUpdateDataMessage", "gUpdateParentMessage", function(object, value)
+         {
+           object@childUpdateDataMessage<-value
+           object
+         }
+)
+
 if (is.null(getGeneric("type<-")))
   setGeneric("type<-", function(object, value)
             standardGeneric("type<-"))
@@ -83,15 +109,33 @@ setReplaceMethod("dataName", "gAddMessage", function(object, value)
            object
          }
 )
+setReplaceMethod("dataName", "gUpdateMessage", function(object, value)
+         {
+           object@dataName<-value
+           object
+         }
+)
 
 #####
 # initialize methods
 #####
+# added 7/14/05
+setMethod("initialize", "gUpdateParentMessage",
+  function(.Object, childUpdateDataMessage)
+  {
+    .Object@childUpdateDataMessage<-childUpdateDataMessage
+    .Object
+  }
+)
+
 setMethod("initialize", "gUpdateViewMessage", 
-  function(.Object, type, mData)
+  function(.Object, type, mData, dataName="")
   {
     .Object@type<-type
     .Object@mData<-mData
+    if (dataName=="")
+      dataName<-get("activeMVC", mvcEnv)
+    .Object@dataName<-dataName
 
     .Object
   }
@@ -103,11 +147,14 @@ setMethod("initialize", "gUpdateViewMessage",
 # even more general???
 #####
 setMethod("initialize", "gUpdateDataMessage", 
-  function(.Object, type, mData)
+  function(.Object, type, mData, dataName="")
   {
     .Object@type<-type
     .Object@mData<-mData
-    
+    if (dataName=="")
+      dataName<-get("activeMVC", mvcEnv)
+    .Object@dataName<-dataName
+
     .Object
   }
 )
@@ -139,6 +186,18 @@ setMethod("initialize", "gAddViewMessage",
   }
 )
 
+# added 7/13/05 
+setMethod("initialize", "gAddChildMessage",
+  function(.Object, data, dataName, type)
+  {
+    .Object@dataName<-dataName
+    .Object@mData<-data
+    .Object@type<-type
+  
+    .Object
+  }
+)
+
 #####
 # generic functions for handling messages
 #####
@@ -149,15 +208,34 @@ if (is.null(getGeneric("handleMessage")))
 #####
 #
 #####
+setMethod("handleMessage", "gUpdateParentMessage",
+  function(object, ...)
+  {
+    # need to get the linkToParent function, which is stored in the linkData
+    # slot in the model object
+    childName<-dataName(childUpdateDataMessage(object))
+    curMVC<-getMVC(childName)
+
+    linkData<-linkData(model(curMVC))
+    # linkData is a list with 2 elements: linkToParent and linkToChild
+    linkToParent<-linkData$linkToParent
+
+    # newUpdateMessage will be the gUpdateDataMessage for the parent
+    newUpdateMessage<-linkToParent(childUpdateDataMessage(object))
+    handleMessage(newUpdateMessage)
+  }
+)
+
 setMethod("handleMessage", "gUpdateViewMessage",
   function(object, ...)
   {
     type<-type(object)
     viewdata<-mData(object)
+    dataName<-dataName(object)
 
     # now need to update the model
-    activeMVC<-get("activeMVC", mvcEnv)
-    curMVC<-getMVC(activeMVC)
+#    activeMVC<-get("activeMVC", mvcEnv)
+    curMVC<-getMVC(dataName)
     curVList<-viewList(curMVC)
     controlEnv<-controller(curMVC)
 
@@ -168,10 +246,11 @@ setMethod("handleMessage", "gUpdateViewMessage",
     controller(curMVC)<-controlEnv
     MVCList<-get("MVCList", mvcEnv)
     allNames <- getModelNames(sort = FALSE)
-    index <- match(activeMVC, allNames)
+#    index <- match(activeMVC, allNames)
+    index<-match(dataName, allNames)
     MVCList[[index]]<-curMVC
     assign("MVCList", MVCList, mvcEnv)
-
+    
     if (type=="updateView")
     {
       for (i in 1:length(curVList))
@@ -188,8 +267,10 @@ setMethod("handleMessage", "gUpdateViewMessage",
       }
     }
 
-    activeMVC<-get("activeMVC", mvcEnv)
-    curMVC<-getMVC(activeMVC)
+#    activeMVC<-get("activeMVC", mvcEnv)
+#    curMVC<-getMVC(activeMVC)
+    # need to get this again because the MVC object has changed
+    curMVC<-getMVC(dataName)
     curVList<-viewList(curMVC)
     controlEnv<-controller(curMVC)
 
@@ -197,7 +278,8 @@ setMethod("handleMessage", "gUpdateViewMessage",
     controller(curMVC)<-controlEnv
     MVCList<-get("MVCList", mvcEnv)
     allNames <- getModelNames(sort = FALSE)
-    index <- match(activeMVC, allNames)
+#    index <- match(activeMVC, allNames)
+    index<-match(dataName, allNames)
     MVCList[[index]]<-curMVC
     assign("MVCList", MVCList, mvcEnv)
 
@@ -207,15 +289,20 @@ setMethod("handleMessage", "gUpdateViewMessage",
   }
 )
 
+########
+# added on 7/14/05 so that we also update parent/children of the model
+########
 setMethod("handleMessage", "gUpdateDataMessage",
   function(object,...)
   {
+    updatedModels<-get("updatedModels", mvcEnv)
+
     data<-mData(object)
     type<-type(object)
+    dataName<-dataName(object)
 
     # now need to update the model
-    activeMVC<-get("activeMVC", mvcEnv)
-    curMVC<-getMVC(activeMVC)
+    curMVC<-getMVC(dataName)
     curModel<-model(curMVC)
 
     # a method for each model to update its data
@@ -229,9 +316,41 @@ setMethod("handleMessage", "gUpdateDataMessage",
       # create an update view message
       # for now assume that all update view messages that come from update
       # data will have type "updateView", rather than "redrawView"
-      uvMessage<-new("gUpdateViewMessage", type="updateView", mData=viewdata)
+      uvMessage<-new("gUpdateViewMessage", type="updateView", mData=viewdata,
+                      dataName=dataName)
       handleMessage(uvMessage)
     }
+    # this model has been updated
+    updatedModels[length(updatedModels)+1]<-dataName
+    assign("updatedModels", updatedModels, mvcEnv)
+
+    # after updating its views, now need to look for parent and children
+    parentName<-parentMVC(curMVC)
+    childrenName<-childMVCList(curMVC)
+
+    if (parentName != "")
+    {
+      sendToParent<-get("sendToParent", controller(curMVC))
+      if (sendToParent==TRUE)
+      {
+        # next check if this model has already been updated
+        if (!(parentName %in% updatedModels))
+        {
+          # parentMessage will be a new gUpdateDataMessage
+          parentMessage<-new("gUpdateParentMessage", 
+                             childUpdateDataMessage=object)
+          handleMessage(parentMessage)
+        }
+      }
+    }
+    if (length(childrenName) > 0)
+    {
+    }
+
+    activeMVC<-get("activeMVC", mvcEnv)
+    # then all models have been updated
+    if (dataName==activeMVC)
+      assign("updatedModels", "", mvcEnv)
   }
 )
 
@@ -270,4 +389,61 @@ setMethod("handleMessage", "gAddViewMessage",
   }
 )
 
+##########
+# 7/13/05 handle an add child message
+# here ... will contain the 2 functions:
+# LinkToParent and LinkToChild, which will be
+# used by the gUpdateParentMessage and gUpdateChildMessage
+# it will also contain the subset of the parent data that was
+# used to create this new model (variable called subsetParentData)
+##########
+setMethod("handleMessage", "gAddChildMessage",
+  function(object, ...)
+  {
+    # will need to follow some of the same steps as the handle message method
+    # for the gAddDataMessage class
+    data<-mData(object)$data
+#    linkData<-mData(object)$linkData
+    name<-dataName(object)
+    type<-type(object)
+
+    loadModel(data, type, name, linkData)
+
+    # then need to set some extra slots in the parent and child MVCs
+    activeMVC<-get("activeMVC", mvcEnv)
+    curMVC<-getMVC(activeMVC)
+    childMVC<-getMVC(name)
+    
+    # need to get the 2 functions that will go in linkData slot
+    extraPar<-list(...)
+    linkToParent<-extraPar$linkToParent
+    linkToChild<-extraPar$linkToChild
+    subsetParentData<-extraPar$subsetParentData
+
+    # reassign the child MVC List in the parent MVC object
+    curChildList<-childMVCList(curMVC)
+#    print(curChildList)
+#    print(length(curChildList))
+#    print(name)
+    curChildList[length(curChildList)+1]<-name
+    childMVCList(curMVC)<-curChildList
+#    print(curChildList)
+
+    # assign the parentMVC in the child MVC object
+    parentMVC(childMVC)<-activeMVC
+
+    linkData(model(childMVC))<-list(linkToParent=linkToParent, 
+                                    linkToChild=linkToChild)
+    assign("subsetParentData", subsetParentData, controller(childMVC))
+
+    # now need to reassign these MVC objects to the MVCList
+    MVCList<-get("MVCList", mvcEnv)
+    allNames <- getModelNames(sort = FALSE)
+    parentIndex <- match(activeMVC, allNames)
+    MVCList[[parentIndex]]<-curMVC
+    childIndex <- match(name, allNames)
+    MVCList[[childIndex]]<-childMVC
+    assign("MVCList", MVCList, mvcEnv)
+  }
+)
 

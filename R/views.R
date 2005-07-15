@@ -244,8 +244,10 @@ setMethod("updateView", "sPlotView",
     # will need to remove old value and draw point with new value
 
     # get the model info.
-    activeMVC<-get("activeMVC", mvcEnv)
-    curMVC<-getMVC(activeMVC)
+#    activeMVC<-get("activeMVC", mvcEnv)
+#    curMVC<-getMVC(activeMVC)
+    dataName<-dataName(object)
+    curMVC<-getMVC(dataName)
     model<-model(curMVC)
     modelData<-modelData(model)
     virtualData<-virtualData(model)
@@ -319,8 +321,10 @@ setMethod("updateView", "spreadView",
     # vData is a list with 4 elements: rowName, colName, oldValue and newValue
 
     # get the model info.
-    activeMVC<-get("activeMVC", mvcEnv)
-    curMVC<-getMVC(activeMVC)
+#    activeMVC<-get("activeMVC", mvcEnv)
+#    curMVC<-getMVC(activeMVC)
+    dataName<-dataName(object)
+    curMVC<-getMVC(dataName)
     model<-model(curMVC)
     modelData<-modelData(model)
     virtualData<-virtualData(model)
@@ -572,6 +576,77 @@ setMethod("motionEvent", "sPlotView",
     }
   }
 )
+
+#############
+# added 6/28/05 so that the graphView has a motionEvent
+#############
+setMethod("motionEvent", "graphView",
+  function(object, event, ...)
+  {
+    activeMVC<-get("activeMVC", mvcEnv)
+    curMVC<-getMVC(activeMVC)
+    controlEnv<-controller(curMVC)
+
+    # see if there is a function to call
+    mouseOver<-get("mouseOver", controlEnv)
+    # see if any of the functions are active
+    activeFun<-unlist(lapply(mouseOver, function(y){y$assigned==TRUE}))
+
+    # then there is an active function
+    if (any(activeFun))
+    {
+      curWin<-win(object)
+      # potential problem - these depend on how the 
+      # scatterplot window is set up
+      # SHOULD AT LEAST CHECK THEIR CLASSES!!
+      hrul<-gtkContainerGetChildren(gtkContainerGetChildren(curWin)[[1]])[[1]]
+      vrul<-gtkContainerGetChildren(gtkContainerGetChildren(
+             gtkContainerGetChildren(curWin)[[1]])[[2]])[[1]]
+
+      hrul$SignalEmit("motion-notify-event", event)
+      vrul$SignalEmit("motion-notify-event", event)
+      
+      curx<-gdkEventMotionGetX(event)
+      cury<-gdkEventMotionGetY(event)
+
+      xyloc<-list(x=curx, y=cury)
+
+      # convert to user coordinates
+      xyInches<-pix2inches(curx, cury)
+      xyUsr<-inches2usr(xyInches$x, xyInches$y)
+ 
+      # also need to ensure that the plot has been added to viewList
+      curDev<-dev.cur()
+      curViewList<-viewList(curMVC)
+
+      devicesInView<-unlist(lapply(curViewList, function(x) {is(x,
+                             "plotView")}))
+      # only look at views that have devices
+      viewsWithDevices<-curViewList[devicesInView]
+      plotDev<-unlist(lapply(viewsWithDevices, function(x) {plotDevice(x)}))
+
+      if (curDev %in% plotDev)
+      {
+        curNode<-identifyNode(object, xyUsr)
+
+        curIndex<-which(activeFun)
+        if (length(curIndex)==1)
+        {
+          curEventFun<-mouseOver[[curIndex]][["eventFun"]]
+
+          # now call the function the user has set with the current
+          # node as the parameter - assume the function does not return
+          # anything to the motion notify event
+          actualFun<-callFun(curEventFun)
+#          do.call(actualFun, list(curPoint$closestPoint))
+          do.call(actualFun, list(curNode))
+        }
+      }
+    }
+  }
+)
+
+
 
 ##########
 # 5/24/05

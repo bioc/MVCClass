@@ -474,15 +474,18 @@ initGraphView<-function(dataName, glayout, nShape)
 
   # set up the graph layout variable using agopen
   # temporarily set the shape and width so won't get font size errors
-#  nodeShape<-nShape
-  nodeShape<-"ellipse"
+  nodeShape<-nShape
+#  nodeShape<-"ellipse"
+
 
   # the graph data
   actGraph<-getData(modelName=dataName)
   Sys.sleep(0.5)
 
-  curlayout<-agopen(actGraph, name=dataName, nodeAttrs=makeNodeAttrs(actGraph, 
-                shape=nodeShape, width=3))
+#  curlayout<-agopen(actGraph, name=dataName, nodeAttrs=makeNodeAttrs(actGraph, 
+#                shape=nodeShape, width=3))
+  curlayout<-agopen(actGraph, name=dataName, nodeAttrs=makeNodeAttrs(actGraph,
+                label="", shape=nodeShape))
 
   newRetList<-list(win=win, drArea=drArea, plotDevice=dev.cur(),
                    plotPar=par(no.readonly=TRUE), graphLayout=curlayout)
@@ -622,7 +625,7 @@ addEventsforGraphs<-function(curView)
   gtkAddCallback(drArea(curView), "motion-notify-event",
     function(obj, ev)
     {
-#      motionEvent(curView, ev)
+      motionEvent(curView, ev)
     }
   )  
 }
