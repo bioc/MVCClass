@@ -18,8 +18,17 @@ setClass("gAddDataMessage", contains="gAddMessage")
 setClass("gAddChildMessage", contains="gAddMessage")
 
 # added 7/14/05 to update a parent model
+# the slot for this class tells the parent what the child update data
+# message was
 setClass("gUpdateParentMessage",
          representation(childUpdateDataMessage="gUpdateDataMessage"), 
+         contains="gMessage")
+# added 7/19/05 to update a child model
+# the slot for this class tells the child what the parent update data
+# message was
+setClass("gUpdateChildMessage",
+         representation(parentUpdateDataMessage="gUpdateDataMessage",
+         childName="character"),
          contains="gMessage")
 
 #####
@@ -30,6 +39,18 @@ if (is.null(getGeneric("childUpdateDataMessage")))
             standardGeneric("childUpdateDataMessage"))
 setMethod("childUpdateDataMessage", "gUpdateParentMessage", function(object)
          object@childUpdateDataMessage)
+
+if (is.null(getGeneric("parentUpdateDataMessage")))
+  setGeneric("parentUpdateDataMessage", function(object)
+            standardGeneric("parentUpdateDataMessage"))
+setMethod("parentUpdateDataMessage", "gUpdateChildMessage", function(object)
+         object@parentUpdateDataMessage)
+
+if (is.null(getGeneric("childName")))
+  setGeneric("childName", function(object)
+            standardGeneric("childName"))
+setMethod("childName", "gUpdateChildMessage", function(object)
+         object@childName)
 
 if (is.null(getGeneric("type")))
   setGeneric("type", function(object)
@@ -64,6 +85,26 @@ if (is.null(getGeneric("childUpdateDataMessage<-")))
 setReplaceMethod("childUpdateDataMessage", "gUpdateParentMessage", function(object, value)
          {
            object@childUpdateDataMessage<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("parentUpdateDataMessage<-")))
+  setGeneric("parentUpdateDataMessage<-", function(object, value)
+            standardGeneric("parentUpdateDataMessage<-"))
+setReplaceMethod("parentUpdateDataMessage", "gUpdateChildMessage", function(object, value)
+         {
+           object@parentUpdateDataMessage<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("childName<-")))
+  setGeneric("childName<-", function(object, value)
+            standardGeneric("childName<-"))
+setReplaceMethod("childName", "gUpdateChildMessage", function(object, value)
+         {
+           object@childName<-value
            object
          }
 )
@@ -119,6 +160,16 @@ setReplaceMethod("dataName", "gUpdateMessage", function(object, value)
 #####
 # initialize methods
 #####
+# added 7/20/05
+setMethod("initialize", "gUpdateChildMessage",
+  function(.Object, parentUpdateDataMessage, childName)
+  {
+    .Object@parentUpdateDataMessage<-parentUpdateDataMessage
+    .Object@childName<-childName
+    .Object
+  }
+)
+
 # added 7/14/05
 setMethod("initialize", "gUpdateParentMessage",
   function(.Object, childUpdateDataMessage)
@@ -208,6 +259,27 @@ if (is.null(getGeneric("handleMessage")))
 #####
 #
 #####
+setMethod("handleMessage", "gUpdateChildMessage",
+  function(object, ...)
+  {
+    curchildName<-childName(object)
+   
+    curMVC<-getMVC(curchildName)
+    linkData<-linkData(model(curMVC))
+    linkToChild<-linkData$linkToChild
+    
+    # send linkToChild the gUpdateChildMessage object so linkToChild will
+    # get both the gUpdateDataMessage from the parent MVC and it will get
+    # the current childName
+    newUpdateMessage<-linkToChild(object)
+    # there may be no update message for the child if the child does
+    # not contain the data that changed in the parent (i.e. the child is a
+    # subset of the parent)
+    if (!is.null(newUpdateMessage))
+      handleMessage(newUpdateMessage)
+  }
+)
+
 setMethod("handleMessage", "gUpdateParentMessage",
   function(object, ...)
   {
@@ -220,8 +292,10 @@ setMethod("handleMessage", "gUpdateParentMessage",
     # linkData is a list with 2 elements: linkToParent and linkToChild
     linkToParent<-linkData$linkToParent
 
+    # send linkToParent the gUpdateParentMessage object, which will contain
+    # the gUpdateDataMessage for the child MVC
     # newUpdateMessage will be the gUpdateDataMessage for the parent
-    newUpdateMessage<-linkToParent(childUpdateDataMessage(object))
+    newUpdateMessage<-linkToParent(object)
     handleMessage(newUpdateMessage)
   }
 )
@@ -345,6 +419,21 @@ setMethod("handleMessage", "gUpdateDataMessage",
     }
     if (length(childrenName) > 0)
     {
+      sendToChild<-get("sendToChild", controller(curMVC))
+      # can have multiple children (can only have one parent)
+      for (i in 1:length(childrenName))
+      {
+        # next check if this model has already been updated
+        if (!(childrenName[[i]] %in% updatedModels))
+        {
+          # childMessage will be a new gUpdateDataMessage
+          childMessage<-new("gUpdateChildMessage", 
+                            parentUpdateDataMessage=object, 
+                            childName=childrenName[[i]])
+          # need to know which child is being updated
+          handleMessage(childMessage)
+        }
+      }
     }
 
     activeMVC<-get("activeMVC", mvcEnv)
@@ -404,10 +493,11 @@ setMethod("handleMessage", "gAddChildMessage",
     # for the gAddDataMessage class
     data<-mData(object)$data
 #    linkData<-mData(object)$linkData
+    virtualData<-mData(object)$virtualData
     name<-dataName(object)
     type<-type(object)
 
-    loadModel(data, type, name, linkData)
+    loadModel(data, type, name, virtualData=virtualData)
 
     # then need to set some extra slots in the parent and child MVCs
     activeMVC<-get("activeMVC", mvcEnv)

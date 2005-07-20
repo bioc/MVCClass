@@ -323,8 +323,7 @@ setMethod("updateView", "spreadView",
     # get the model info.
 #    activeMVC<-get("activeMVC", mvcEnv)
 #    curMVC<-getMVC(activeMVC)
-    dataName<-dataName(object)
-    curMVC<-getMVC(dataName)
+    curMVC<-getMVC(dataName(object))
     model<-model(curMVC)
     modelData<-modelData(model)
     virtualData<-virtualData(model)
@@ -382,28 +381,34 @@ setMethod("clickEvent", "spreadView",
     # assume that the clickEvent for spreadView has the same callback
     # function as the left button click because a row can only be selected
     # or unselected with the left button
+
+    # may want to check if the view clicked on is from the activeMVC
+    # for now only allow views from the activeMVC to respond to click events
     activeMVC<-get("activeMVC", mvcEnv)
-    curMVC<-getMVC(activeMVC)
-    controlEnv<-controller(curMVC)
-    modelData<-modelData(model(curMVC))
-    rowName<-rownames(modelData)[where]
+    if (dataName(object) == activeMVC)
+    {
+      curMVC<-getMVC(dataName(object))
+      controlEnv<-controller(curMVC)
+      modelData<-modelData(model(curMVC))
+      rowName<-rownames(modelData)[where]
 
-    # see if there is a function to call
-    leftButtonClick<-get("leftButtonClick", controlEnv)
+      # see if there is a function to call
+      leftButtonClick<-get("leftButtonClick", controlEnv)
 
-    # see if any of the functions are active
-    activeLBCFun<-unlist(lapply(leftButtonClick, function(y)
-      {y$assigned==TRUE}))
+      # see if any of the functions are active
+      activeLBCFun<-unlist(lapply(leftButtonClick, function(y)
+        {y$assigned==TRUE}))
 
-    curIndex<-which(activeLBCFun)
-    if (length(curIndex)==1)
-    { 
-      curEventFun<-leftButtonClick[[curIndex]][["eventFun"]]
+      curIndex<-which(activeLBCFun)
+      if (length(curIndex)==1)
+      { 
+        curEventFun<-leftButtonClick[[curIndex]][["eventFun"]]
 
-      actualFun<-callFun(curEventFun)
-      # problem is that we can't list it as select or unselect event
-      # but that's ok because highlight and hide will be toggled anyway
-      do.call(actualFun, list(rowName))
+        actualFun<-callFun(curEventFun)
+        # problem is that we can't list it as select or unselect event
+        # but that's ok because highlight and hide will be toggled anyway
+        do.call(actualFun, list(rowName))
+      }
     }
   }
 )
@@ -415,91 +420,106 @@ setMethod("clickEvent", "spreadView",
 setMethod("clickEvent", "sPlotView",
   function(object, where, ...)
   {
+    # may want to check if the view clicked on is from the activeMVC
+    # for now only allow views from the activeMVC to respond to click events
     activeMVC<-get("activeMVC", mvcEnv)
-    curMVC<-getMVC(activeMVC)
-    controlEnv<-controller(curMVC)
-
-    # see if there is a function to call
-    rightButtonClick<-get("rightButtonClick", controlEnv)
-    leftButtonClick<-get("leftButtonClick", controlEnv)
-    middleButtonClick<-get("middleButtonClick", controlEnv)
-
-    # see if any of the functions are active
-    activeRBCFun<-unlist(lapply(rightButtonClick, function(y)
-      {y$assigned==TRUE}))
-    activeLBCFun<-unlist(lapply(leftButtonClick, function(y)
-      {y$assigned==TRUE}))
-    activeMBCFun<-unlist(lapply(middleButtonClick, function(y)
-      {y$assigned==TRUE}))
-
-    # where will be the mouse click event information from Gtk
-    # check that the left button was pressed
-    if (gdkEventButtonGetButton(where)==1)
+    if (dataName(object) == activeMVC)
     {
-      if (any(activeLBCFun))
+      curMVC<-getMVC(dataName(object))
+      controlEnv<-controller(curMVC)
+
+      # see if there is a function to call
+      rightButtonClick<-get("rightButtonClick", controlEnv)
+      leftButtonClick<-get("leftButtonClick", controlEnv)
+      middleButtonClick<-get("middleButtonClick", controlEnv)
+
+      # see if any of the functions are active
+      activeRBCFun<-unlist(lapply(rightButtonClick, function(y)
+        {y$assigned==TRUE}))
+      activeLBCFun<-unlist(lapply(leftButtonClick, function(y)
+        {y$assigned==TRUE}))
+      activeMBCFun<-unlist(lapply(middleButtonClick, function(y)
+        {y$assigned==TRUE}))
+
+      # where will be the mouse click event information from Gtk
+      # check that the left button was pressed
+      if (gdkEventButtonGetButton(where)==1)
       {
-        usri <- pix2inches(where[["X"]], where[["Y"]])
-        usrc <- inches2usr(usri$x, usri$y)
-
-        curPoint<-identifyPoint(object, usrc)
-
-        if (!is.null(curPoint))
+        if (any(activeLBCFun))
         {
-#          # if a point was clicked, then we want to create a 
-#          # gUpdateDataMessage
-#          dfMessage<-new("gUpdateDataMessage", from=object, where=curPoint)
-#          handleMessage(dfMessage)
+          usri <- pix2inches(where[["X"]], where[["Y"]])
+          usrc <- inches2usr(usri$x, usri$y)
 
-          curIndex<-which(activeLBCFun)
-          if (length(curIndex)==1)
-          { 
-            curEventFun<-leftButtonClick[[curIndex]][["eventFun"]]
+          curPoint<-identifyPoint(object, usrc)
 
-            # now call the function the user has set with the current
-            # node as the parameter - assume the function does not return
-            # anything to the motion notify event
-            actualFun<-callFun(curEventFun)
-            do.call(actualFun, list(curPoint$closestPoint))
+          if (!is.null(curPoint))
+          {
+#            # if a point was clicked, then we want to create a 
+#            # gUpdateDataMessage
+#            dfMessage<-new("gUpdateDataMessage", from=object, where=curPoint)
+#            handleMessage(dfMessage)
+
+            curIndex<-which(activeLBCFun)
+            if (length(curIndex)==1)
+            { 
+              curEventFun<-leftButtonClick[[curIndex]][["eventFun"]]
+
+              # now call the function the user has set with the current
+              # point as the parameter
+              actualFun<-callFun(curEventFun)
+              do.call(actualFun, list(curPoint$closestPoint))
+            }
           }
-
         }
       }
-    }
 
-    if (gdkEventButtonGetButton(where)==2)
-    {
-      if (any(activeMBCFun))
+      if (gdkEventButtonGetButton(where)==2)
       {
-        usri <- pix2inches(where[["X"]], where[["Y"]])
-        usrc <- inches2usr(usri$x, usri$y)
-
-        curPoint<-identifyPoint(object, usrc)
-
-        if (!is.null(curPoint))
+        if (any(activeMBCFun))
         {
-          # if a point was clicked, then we want to create a 
-          # gUpdateDataMessage
-          dfMessage<-new("gUpdateDataMessage", from=object, where=curPoint)
-          handleMessage(dfMessage)
+          usri <- pix2inches(where[["X"]], where[["Y"]])
+          usrc <- inches2usr(usri$x, usri$y)
+
+          curPoint<-identifyPoint(object, usrc)
+
+          if (!is.null(curPoint))
+          {
+            curIndex<-which(activeMBCFun)
+            if (length(curIndex)==1)
+            { 
+              curEventFun<-middleButtonClick[[curIndex]][["eventFun"]]
+
+              # now call the function the user has set with the current
+              # point as the parameter 
+              actualFun<-callFun(curEventFun)
+              do.call(actualFun, list(curPoint$closestPoint))
+            }
+          }
         }
       }
-    }
 
-    if (gdkEventButtonGetButton(where)==3)
-    {
-      if (any(activeRBCFun))
+      if (gdkEventButtonGetButton(where)==3)
       {
-        usri <- pix2inches(where[["X"]], where[["Y"]])
-        usrc <- inches2usr(usri$x, usri$y)
-
-        curPoint<-identifyPoint(object, usrc)
-
-        if (!is.null(curPoint))
+        if (any(activeRBCFun))
         {
-          # if a point was clicked, then we want to create a 
-          # gUpdateDataMessage
-          dfMessage<-new("gUpdateDataMessage", from=object, where=curPoint)
-          handleMessage(dfMessage)
+          usri <- pix2inches(where[["X"]], where[["Y"]])
+          usrc <- inches2usr(usri$x, usri$y)
+
+          curPoint<-identifyPoint(object, usrc)
+
+          if (!is.null(curPoint))
+          {
+            curIndex<-which(activeRBCFun)
+            if (length(curIndex)==1)
+            {
+              curEventFun<-rightButtonClick[[curIndex]][["eventFun"]]
+  
+              # now call the function the user has set with the current
+              # point as the parameter
+              actualFun<-callFun(curEventFun)
+              do.call(actualFun, list(curPoint$closestPoint))
+            }
+          }
         }
       }
     }
@@ -512,65 +532,69 @@ setMethod("clickEvent", "sPlotView",
 setMethod("motionEvent", "sPlotView",
   function(object, event, ...)
   {
+    # may want to check if the view clicked on is from the activeMVC
+    # for now only allow views from the activeMVC to respond to click events
     activeMVC<-get("activeMVC", mvcEnv)
-    curMVC<-getMVC(activeMVC)
-    controlEnv<-controller(curMVC)
-
-    # see if there is a function to call
-    mouseOver<-get("mouseOver", controlEnv)
-    # see if any of the functions are active
-    activeFun<-unlist(lapply(mouseOver, function(y){y$assigned==TRUE}))
-
-    # then there is an active function
-    if (any(activeFun))
- #   # only respond to motion events for identify view mode
- #   if (get("viewMode", controlEnv)=="identify")
+    if (dataName(object) == activeMVC)
     {
-      curWin<-win(object)
-      # potential problem - these depend on how the 
-      # scatterplot window is set up
-      # SHOULD AT LEAST CHECK THEIR CLASSES!!
-      hrul<-gtkContainerGetChildren(gtkContainerGetChildren(curWin)[[1]])[[1]]
-      vrul<-gtkContainerGetChildren(gtkContainerGetChildren(
+      curMVC<-getMVC(dataName(object))
+      controlEnv<-controller(curMVC)
+
+      # see if there is a function to call
+      mouseOver<-get("mouseOver", controlEnv)
+      # see if any of the functions are active
+      activeFun<-unlist(lapply(mouseOver, function(y){y$assigned==TRUE}))
+
+      # then there is an active function
+      if (any(activeFun))
+      {
+        curWin<-win(object)
+        # potential problem - these depend on how the 
+        # scatterplot window is set up
+        # SHOULD AT LEAST CHECK THEIR CLASSES!!
+        hrul<-gtkContainerGetChildren(
+             gtkContainerGetChildren(curWin)[[1]])[[1]]
+        vrul<-gtkContainerGetChildren(gtkContainerGetChildren(
              gtkContainerGetChildren(curWin)[[1]])[[2]])[[1]]
 
-      hrul$SignalEmit("motion-notify-event", event)
-      vrul$SignalEmit("motion-notify-event", event)
+        hrul$SignalEmit("motion-notify-event", event)
+        vrul$SignalEmit("motion-notify-event", event)
       
-      curx<-gdkEventMotionGetX(event)
-      cury<-gdkEventMotionGetY(event)
+        curx<-gdkEventMotionGetX(event)
+        cury<-gdkEventMotionGetY(event)
 
-      xyloc<-list(x=curx, y=cury)
+        xyloc<-list(x=curx, y=cury)
 
-      # convert to user coordinates
-      xyInches<-pix2inches(curx, cury)
-      xyUsr<-inches2usr(xyInches$x, xyInches$y)
+        # convert to user coordinates
+        xyInches<-pix2inches(curx, cury)
+        xyUsr<-inches2usr(xyInches$x, xyInches$y)
  
-      # also need to ensure that the plot has been added to viewList
-      curDev<-dev.cur()
-      curViewList<-viewList(curMVC)
+        # also need to ensure that the plot has been added to viewList
+        curDev<-dev.cur()
+        curViewList<-viewList(curMVC)
 
-      devicesInView<-unlist(lapply(curViewList, function(x) {is(x,
+        devicesInView<-unlist(lapply(curViewList, function(x) {is(x,
                              "plotView")}))
-      # only look at views that have devices
-      viewsWithDevices<-curViewList[devicesInView]
-      plotDev<-unlist(lapply(viewsWithDevices, function(x) {plotDevice(x)}))
+        # only look at views that have devices
+        viewsWithDevices<-curViewList[devicesInView]
+        plotDev<-unlist(lapply(viewsWithDevices, function(x) {plotDevice(x)}))
 
-      if (curDev %in% plotDev)
-      {
-#        checkPoint(curx, cury, object)
-        curPoint<-identifyPoint(object, xyUsr)
-
-        curIndex<-which(activeFun)
-        if (length(curIndex)==1)
+        if (curDev %in% plotDev)
         {
-          curEventFun<-mouseOver[[curIndex]][["eventFun"]]
+#          checkPoint(curx, cury, object)
+          curPoint<-identifyPoint(object, xyUsr)
 
-          # now call the function the user has set with the current
-          # node as the parameter - assume the function does not return
-          # anything to the motion notify event
-          actualFun<-callFun(curEventFun)
-          do.call(actualFun, list(curPoint$closestPoint))
+          curIndex<-which(activeFun)
+          if (length(curIndex)==1)
+          {
+            curEventFun<-mouseOver[[curIndex]][["eventFun"]]
+
+            # now call the function the user has set with the current
+            # point as the parameter - assume the function does not return
+            # anything to the motion notify event
+            actualFun<-callFun(curEventFun)
+            do.call(actualFun, list(curPoint$closestPoint))
+          }
         }
       }
     }
@@ -583,63 +607,68 @@ setMethod("motionEvent", "sPlotView",
 setMethod("motionEvent", "graphView",
   function(object, event, ...)
   {
+    # may want to check if the view clicked on is from the activeMVC
+    # for now only allow views from the activeMVC to respond to click events
     activeMVC<-get("activeMVC", mvcEnv)
-    curMVC<-getMVC(activeMVC)
-    controlEnv<-controller(curMVC)
-
-    # see if there is a function to call
-    mouseOver<-get("mouseOver", controlEnv)
-    # see if any of the functions are active
-    activeFun<-unlist(lapply(mouseOver, function(y){y$assigned==TRUE}))
-
-    # then there is an active function
-    if (any(activeFun))
+    if (dataName(object) == activeMVC)
     {
-      curWin<-win(object)
-      # potential problem - these depend on how the 
-      # scatterplot window is set up
-      # SHOULD AT LEAST CHECK THEIR CLASSES!!
-      hrul<-gtkContainerGetChildren(gtkContainerGetChildren(curWin)[[1]])[[1]]
-      vrul<-gtkContainerGetChildren(gtkContainerGetChildren(
+      curMVC<-getMVC(dataName(object))
+      controlEnv<-controller(curMVC)
+
+      # see if there is a function to call
+      mouseOver<-get("mouseOver", controlEnv)
+      # see if any of the functions are active
+      activeFun<-unlist(lapply(mouseOver, function(y){y$assigned==TRUE}))
+
+      # then there is an active function
+      if (any(activeFun))
+      {
+        curWin<-win(object)
+        # potential problem - these depend on how the 
+        # plot window is set up
+        # SHOULD AT LEAST CHECK THEIR CLASSES!!
+        hrul<-gtkContainerGetChildren(
+             gtkContainerGetChildren(curWin)[[1]])[[1]]
+        vrul<-gtkContainerGetChildren(gtkContainerGetChildren(
              gtkContainerGetChildren(curWin)[[1]])[[2]])[[1]]
 
-      hrul$SignalEmit("motion-notify-event", event)
-      vrul$SignalEmit("motion-notify-event", event)
+        hrul$SignalEmit("motion-notify-event", event)
+        vrul$SignalEmit("motion-notify-event", event)
       
-      curx<-gdkEventMotionGetX(event)
-      cury<-gdkEventMotionGetY(event)
+        curx<-gdkEventMotionGetX(event)
+        cury<-gdkEventMotionGetY(event)
 
-      xyloc<-list(x=curx, y=cury)
+        xyloc<-list(x=curx, y=cury)
 
-      # convert to user coordinates
-      xyInches<-pix2inches(curx, cury)
-      xyUsr<-inches2usr(xyInches$x, xyInches$y)
+        # convert to user coordinates
+        xyInches<-pix2inches(curx, cury)
+        xyUsr<-inches2usr(xyInches$x, xyInches$y)
  
-      # also need to ensure that the plot has been added to viewList
-      curDev<-dev.cur()
-      curViewList<-viewList(curMVC)
+        # also need to ensure that the plot has been added to viewList
+        curDev<-dev.cur()
+        curViewList<-viewList(curMVC)
 
-      devicesInView<-unlist(lapply(curViewList, function(x) {is(x,
+        devicesInView<-unlist(lapply(curViewList, function(x) {is(x,
                              "plotView")}))
-      # only look at views that have devices
-      viewsWithDevices<-curViewList[devicesInView]
-      plotDev<-unlist(lapply(viewsWithDevices, function(x) {plotDevice(x)}))
+        # only look at views that have devices
+        viewsWithDevices<-curViewList[devicesInView]
+        plotDev<-unlist(lapply(viewsWithDevices, function(x) {plotDevice(x)}))
 
-      if (curDev %in% plotDev)
-      {
-        curNode<-identifyNode(object, xyUsr)
-
-        curIndex<-which(activeFun)
-        if (length(curIndex)==1)
+        if (curDev %in% plotDev)
         {
-          curEventFun<-mouseOver[[curIndex]][["eventFun"]]
+          curNode<-identifyNode(object, xyUsr)
 
-          # now call the function the user has set with the current
-          # node as the parameter - assume the function does not return
-          # anything to the motion notify event
-          actualFun<-callFun(curEventFun)
-#          do.call(actualFun, list(curPoint$closestPoint))
-          do.call(actualFun, list(curNode))
+          curIndex<-which(activeFun)
+          if (length(curIndex)==1)
+          { 
+            curEventFun<-mouseOver[[curIndex]][["eventFun"]]
+
+            # now call the function the user has set with the current
+            # node as the parameter - assume the function does not return
+            # anything to the motion notify event
+            actualFun<-callFun(curEventFun)
+            do.call(actualFun, list(curNode))
+          }
         }
       }
     }

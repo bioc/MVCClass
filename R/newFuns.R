@@ -50,7 +50,7 @@ getModelNames<-function(sort=TRUE)
 # name is the character string name of the model
 # linkData is the link data
 #######
-loadModel<-function(data, type, name, linkData=NULL)
+loadModel<-function(data, type, name, linkData=NULL, virtualData=NULL)
 {
   booLoad<-TRUE
   # should check that the model name is not already in use!!!
@@ -71,7 +71,7 @@ loadModel<-function(data, type, name, linkData=NULL)
       "exprSet"=new("exprModel", data=data, name=name),
       "graph"=new("graphModel", modelData=data, modelName=name),
       "data.frame"=new("dfModel", mData=data, mName=name, 
-                      linkData=linkData)
+                      linkData=linkData, virtualData=virtualData)
     )
 
     # now need to create a MVC object and add to MVCList in mvcEnv

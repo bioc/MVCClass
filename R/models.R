@@ -122,27 +122,31 @@ setReplaceMethod("virtualData", "gModel", function(object,value)
 #)
 
 setMethod("initialize", "dfModel",
-  function(.Object, mData, mName, linkData=NULL)
+  function(.Object, mData, mName, linkData=NULL, virtualData=NULL)
   {
-    # need to create the virtualData slot 
-    defaultPlotData<-list(color="black", pch=1, highlit=FALSE, hide=FALSE)
-    numRows<-nrow(mData)
-    if (length(defaultPlotData) > 0)
+    if (is.null(virtualData))
     {
-      virData<-data.frame(rep(defaultPlotData[[1]], numRows), 
-                          row.names=row.names(mData))
-      virData[,1]<-as.character(virData[,1])
-      colnames(virData)<-names(defaultPlotData)[1]
-    }
-    if (length(defaultPlotData) > 1)
-    {
-      for (i in 2:length(defaultPlotData))
+      # need to create the virtualData slot 
+      defaultPlotData<-list(color="black", pch=1, highlit=FALSE, hide=FALSE)
+      numRows<-nrow(mData)
+      if (length(defaultPlotData) > 0)
       {
-        virData[,i]<-rep(defaultPlotData[[i]], numRows)
+        virData<-data.frame(rep(defaultPlotData[[1]], numRows), 
+                            row.names=row.names(mData))
+        virData[,1]<-as.character(virData[,1])
+        colnames(virData)<-names(defaultPlotData)[1]
       }
-      colnames(virData)<-names(defaultPlotData)
+      if (length(defaultPlotData) > 1)
+      {
+        for (i in 2:length(defaultPlotData))
+        {
+          virData[,i]<-rep(defaultPlotData[[i]], numRows)
+        }
+        colnames(virData)<-names(defaultPlotData)
+      }
     }
-    
+    else
+      virData<-virtualData
     # now assign values to the object and then return object
     .Object@modelData<-mData
     .Object@linkData<-linkData
