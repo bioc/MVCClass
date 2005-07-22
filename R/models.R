@@ -1,15 +1,3 @@
-#mvcEnv<-new.env(parent=.GlobalEnv)
-#
-#assign("defaultPlotData", list(color="black", pch=1, highlit=FALSE, 
-#        hide=FALSE), mvcEnv)
-#assign("MVCList", list(), mvcEnv)
-## this will be the model name
-#assign("activeMVC", "", mvcEnv)
-#
-## I don't know any other way to know what methods each class of model has
-#assign("modelMethods", list(dfModel=c("createSubsetModel"),
-#        exprModel=c("createGOmodel"), graphModel=c()), mvcEnv)
-
 
 ##############
 # create a class for model objects
@@ -181,16 +169,14 @@ setMethod("updateModel", "dfModel",
     # now update the objects
     virtualData(object)<-virData
 
-    # need to update the MVC object
-#    activeMVC<-get("activeMVC", mvcEnv)
-#    curMVC<-getMVC(activeMVC)
+    # need to update the MVC object - may not be the active MVC
     curMVC<-getMVC(dataName)
     model(curMVC)<-object
 
     # will also need to update the MVCList
     mvcList <- get("MVCList", mvcEnv)
     allNames <- getModelNames(sort = FALSE)
-#    index <- match(activeMVC, allNames)
+
     index<-match(dataName, allNames)
     mvcList[[index]]<-curMVC
     assign("MVCList", mvcList, mvcEnv)

@@ -307,8 +307,7 @@ setMethod("handleMessage", "gUpdateViewMessage",
     viewdata<-mData(object)
     dataName<-dataName(object)
 
-    # now need to update the model
-#    activeMVC<-get("activeMVC", mvcEnv)
+    # now need to update the view - note it may not be the active MVC
     curMVC<-getMVC(dataName)
     curVList<-viewList(curMVC)
     controlEnv<-controller(curMVC)
@@ -320,7 +319,7 @@ setMethod("handleMessage", "gUpdateViewMessage",
     controller(curMVC)<-controlEnv
     MVCList<-get("MVCList", mvcEnv)
     allNames <- getModelNames(sort = FALSE)
-#    index <- match(activeMVC, allNames)
+
     index<-match(dataName, allNames)
     MVCList[[index]]<-curMVC
     assign("MVCList", MVCList, mvcEnv)
@@ -341,8 +340,6 @@ setMethod("handleMessage", "gUpdateViewMessage",
       }
     }
 
-#    activeMVC<-get("activeMVC", mvcEnv)
-#    curMVC<-getMVC(activeMVC)
     # need to get this again because the MVC object has changed
     curMVC<-getMVC(dataName)
     curVList<-viewList(curMVC)
@@ -352,7 +349,7 @@ setMethod("handleMessage", "gUpdateViewMessage",
     controller(curMVC)<-controlEnv
     MVCList<-get("MVCList", mvcEnv)
     allNames <- getModelNames(sort = FALSE)
-#    index <- match(activeMVC, allNames)
+
     index<-match(dataName, allNames)
     MVCList[[index]]<-curMVC
     assign("MVCList", MVCList, mvcEnv)

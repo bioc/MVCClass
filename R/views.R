@@ -244,8 +244,6 @@ setMethod("updateView", "sPlotView",
     # will need to remove old value and draw point with new value
 
     # get the model info.
-#    activeMVC<-get("activeMVC", mvcEnv)
-#    curMVC<-getMVC(activeMVC)
     dataName<-dataName(object)
     curMVC<-getMVC(dataName)
     model<-model(curMVC)
@@ -272,7 +270,7 @@ setMethod("updateView", "sPlotView",
     coly<-coly(object)
     dfRows<-dfRows(object)
     # only update this point if it is being shown in the current plot
-    if (rowName %in% dfRows)
+    if (all(rowName %in% dfRows))
     {
       # get the x and y values
       rowIndex<-match(rowName, rownames(modelData))
@@ -293,19 +291,19 @@ setMethod("updateView", "sPlotView",
       points(xvalue, yvalue, col=bgColor, pch=pchValue)
 
       # remove highlighting if it's needed
-      if (highValue==TRUE && colName!="highlit")
+      if (all(highValue==TRUE) && colName!="highlit")
         points(xvalue, yvalue, col=bgColor, cex=2, pch=1)
-      if (colName=="highlit" && newValue==FALSE)
+      if (colName=="highlit" && all(newValue==FALSE))
         points(xvalue, yvalue, col=bgColor, cex=2, pch=1)
 
       # only redraw the point if it's not supposed to be hidden
-      if (!(colName=="hide" && newValue==TRUE)) 
+      if (!(colName=="hide" && all(newValue==TRUE))) 
       {
         # then redraw the point
         points(xvalue, yvalue, col=colValue, pch=pchValue)
 
         # add highlighting if it's needed
-        if (highValue==TRUE)
+        if (all(highValue==TRUE))
           points(xvalue, yvalue, col="red", pch=1, cex=2)
       }
     }
@@ -320,9 +318,7 @@ setMethod("updateView", "spreadView",
   {
     # vData is a list with 4 elements: rowName, colName, oldValue and newValue
 
-    # get the model info.
-#    activeMVC<-get("activeMVC", mvcEnv)
-#    curMVC<-getMVC(activeMVC)
+    # get the model info. - may not be from the active MVC
     curMVC<-getMVC(dataName(object))
     model<-model(curMVC)
     modelData<-modelData(model)

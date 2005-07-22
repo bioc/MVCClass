@@ -96,7 +96,10 @@ setViewDataView<-function()
   gtkBoxPackStart(vbox, frMVC)
   assign("frMVC", frMVC, mvcEnv)
 
-  loadedDF<-getLoadedDF()
+#  loadedDF<-getLoadedDF()
+  # 7/21/05
+  # only allow users to make spreadsheet of the active MVC
+  loadedDF<-activeMVC
 
   frAvail<-gtkFrame("Available Data")
   boxForAvail<-gtkHBox(TRUE, 2)
@@ -212,7 +215,10 @@ setPlotDView<-function()
   gtkBoxPackStart(vbox, frMVC)
   assign("frMVC", frMVC, mvcEnv)
 
-  loadedDF<-getLoadedDF()
+#  loadedDF<-getLoadedDF()
+  # changed 7/21/05
+  # only allow users to plot the active MVC
+  loadedDF<-activeMVC
 
   frLoaded<-gtkFrame("Loaded Data")
   boxForLoaded<-gtkVBox(TRUE, 2)
