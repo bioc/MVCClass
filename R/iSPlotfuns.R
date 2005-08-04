@@ -476,6 +476,9 @@ initGraphView<-function(dataName, glayout, nShape)
   win<-retList$win
   drArea<-retList$drArea
 
+  curMVC<-getMVC(dataName)
+  virData<-virtualData(model(curMVC))
+
   win$Show()
 
   # set up the graph layout variable using agopen
@@ -483,15 +486,29 @@ initGraphView<-function(dataName, glayout, nShape)
   nodeShape<-nShape
 #  nodeShape<-"ellipse"
 
-
   # the graph data
   actGraph<-getData(modelName=dataName)
   Sys.sleep(0.5)
 
 #  curlayout<-agopen(actGraph, name=dataName, nodeAttrs=makeNodeAttrs(actGraph, 
 #                shape=nodeShape, width=3))
-  curlayout<-agopen(actGraph, name=dataName, nodeAttrs=makeNodeAttrs(actGraph,
-                label="", shape=nodeShape))
+  # for now make the labels on the nodes blank (because having trouble
+  # plotting them)
+  if (is.null(virData))
+  {
+#    print(dataName)
+    curlayout<-agopen(actGraph, name=dataName, nodeAttrs=makeNodeAttrs
+               (actGraph, label="", shape=nodeShape, fillcolor="transparent"))
+  }
+  else
+  {
+    # use the fillcolors that are already in the virtualData slot
+    # not sure if other view info should be used (in addition to fillcolor)
+    curFillColors<-unlist(lapply(AgNode(virData), fillcolor))
+    print(curFillColors)
+    curlayout<-agopen(actGraph, name=dataName, nodeAttrs=makeNodeAttrs
+               (actGraph, label="", shape=nodeShape, fillcolor=curFillColors))
+  }
 
   newRetList<-list(win=win, drArea=drArea, plotDevice=dev.cur(),
                    plotPar=par(no.readonly=TRUE), graphLayout=curlayout)
@@ -624,7 +641,7 @@ addEventsforGraphs<-function(curView)
   gtkAddCallback(drArea(curView), "button_press_event",
     function(obj, ev)
     {
-#      clickEvent(curView, ev)
+      clickEvent(curView, ev)
     }
   )
       
@@ -723,7 +740,11 @@ graphPlot<-function(curView)
   par("col"="black")
   par("fg"="black") 
 
-  plot(curView@graphLayout)
+  # need to get layout from the model
+  curName<-dataName(curView)
+  curModel<-model(getMVC(curName))
+  plot(curModel@virtualData)
+#  plot(curView@graphLayout)
 
   # reset the par slot
   plotPar(curView)<-par(no.readonly=TRUE)

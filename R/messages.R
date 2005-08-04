@@ -375,10 +375,12 @@ setMethod("handleMessage", "gUpdateDataMessage",
     # now need to update the model
     curMVC<-getMVC(dataName)
     curModel<-model(curMVC)
+    # will get an error here if print statement is used when the model to
+    # be updated is a graph
 
     # a method for each model to update its data
     viewdata<-updateModel(curModel, type, data)
- 
+
     # update the views now that the data has changed
     # check that the model has views also!
     curVList<-viewList(curMVC)
@@ -391,8 +393,12 @@ setMethod("handleMessage", "gUpdateDataMessage",
                       dataName=dataName)
       handleMessage(uvMessage)
     }
+
     # this model has been updated
-    updatedModels[length(updatedModels)+1]<-dataName
+    if (is.null(updatedModels))
+      updatedModels<-c(dataName)
+    else
+      updatedModels[length(updatedModels)+1]<-dataName
     assign("updatedModels", updatedModels, mvcEnv)
 
     # after updating its views, now need to look for parent and children
@@ -437,7 +443,7 @@ setMethod("handleMessage", "gUpdateDataMessage",
     # then all models have been updated
     if (dataName==activeMVC)
       assign("updatedModels", "", mvcEnv)
-  }
+ }
 )
 
 ########

@@ -1,7 +1,12 @@
 
-#x<-new("dfModel", mData=USArrests, mName="USArrests")
-#newx<-new("dfModel", mData=USJudgeRatings, mName="Ratings")
-#y<-new("MVC", model=x, viewList=list(), childMVCList=list())
-#newy<-new("MVC", model=newx, viewList=list(), childMVCList=list())
+#load(file="~/proj-svn/Rpacks/iSNetwork/data/testGraph.Rdata")
+#library(iSNetwork)
+#createControlWindow()
 
-#getModel("Ratings")
+# this works if only one MVC with one view (for a graph)
+#MVCList<-get("MVCList", mvcEnv)
+#view1<-viewList(MVCList[[1]])[[1]]
+
+#curlayout<-graphLayout(view1)
+#getNodeXY(curlayout)
+#getNodeNames(curlayout)

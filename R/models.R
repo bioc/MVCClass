@@ -10,8 +10,17 @@
 setClass("gModel", representation(modelData="ANY", linkData="ANY", 
          virtualData="ANY", modelName="character"), contains=("VIRTUAL"))
 
+# couldn't get RagraphNULL to pass the installation - didn't recognize
+# Ragraph class
+#setClassUnion("RagraphNULL", members=c("Ragraph", "NULL"))
+
 # for a model that has graph data
-setClass("graphModel", representation(modelData="graph"), contains="gModel")
+# initially the virtualData slot for graphModel will be NULL (until a 
+# view is created)
+#setClass("graphModel", representation(modelData="graph", 
+#                       virtualData="RagraphNULL"), contains="gModel")
+setClass("graphModel", representation(modelData="ANY"), contains="gModel")
+
 # for a model that has expression data - 
 # the data list should include an exprSet object and maybe a vector of LL ids
 setClass("exprModel", representation(modelData="exprSet"), contains="gModel")
@@ -187,6 +196,51 @@ setMethod("updateModel", "dfModel",
     viewData<-list(colName=type, rowName=names(data), oldValue=oldValue, 
                    newValue=unlist(data))
     return(viewData)
+  }
+)
+
+########
+# 7/29/05 update the virtualData slot in the model due to a change
+# in the node values (in the future may want to update edges)
+########
+setMethod("updateModel", "graphModel",
+  function(object, type, data)
+  {
+    if (type=="node") 
+    {
+#      print(data)
+      newNode<-data[[1]]
+      dataName<-modelName(object)
+      curMVC<-getMVC(dataName)
+
+      # data will be the new node
+      # need to update the virtual data slot
+      virData<-virtualData(object)
+      curNodes<-AgNode(virData)
+      allNodeNames<-unlist(lapply(curNodes, name))
+      curName<-name(newNode)
+      curIndex<-match(curName, allNodeNames)
+
+      # update the model
+      curNodes[[curIndex]]<-newNode
+      AgNode(virData)<-curNodes
+      virtualData(object)<-virData
+      model(curMVC)<-object
+
+      # need to update the MVC list
+      mvcList <- get("MVCList", mvcEnv)
+      allModelNames <- getModelNames(sort = FALSE)
+      index<-match(dataName, allModelNames)
+      mvcList[[index]]<-curMVC
+      assign("MVCList", mvcList, mvcEnv)
+      
+      # need to return a list
+      return(list(newNode=newNode))
+    }
+    # for the future
+    if (type=="edge")
+    {
+    }
   }
 )
 

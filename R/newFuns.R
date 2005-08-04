@@ -18,14 +18,6 @@ getModel<-function(mName)
   return(curModel)
 }
 
-getActivePlot<-function()
-{
-  activeDev<-as.numeric(dev.cur())
-  mvcList<-get("MVCList", mvcEnv)
-  viewLists<-lapply(mvcList, viewList) 
-  
-}
-
 getModelNames<-function(sort=TRUE)
 {
   mvcList<-get("MVCList", mvcEnv)

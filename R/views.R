@@ -16,8 +16,10 @@ setClass("sPlotView", representation(dfRows="character", colx="character",
 setClass("spreadView", representation(clist="GtkCList"), 
          contains="genView")
 
-setClass("graphView", representation(graphLayout="Ragraph"),
-                          contains="plotView")
+#setClass("graphView", representation(graphLayout="Ragraph"),
+#                          contains="plotView")
+# 7/28/05 put the graphLayout info in the graphModel object
+setClass("graphView", contains="plotView")
 
 #####
 # accessor functions
@@ -82,11 +84,11 @@ if (is.null(getGeneric("clist")))
 setMethod("clist", "spreadView", function(object)
          object@clist)
 
-if (is.null(getGeneric("graphLayout")))
-  setGeneric("graphLayout", function(object)
-            standardGeneric("graphLayout"))
-setMethod("graphLayout", "graphView", function(object)
-         object@graphLayout)
+#if (is.null(getGeneric("graphLayout")))
+#  setGeneric("graphLayout", function(object)
+#            standardGeneric("graphLayout"))
+#setMethod("graphLayout", "graphView", function(object)
+#         object@graphLayout)
 
 #####
 # setting the slots
@@ -191,15 +193,15 @@ setReplaceMethod("clist","spreadView",function(object,value)
          }
 )
 
-if (is.null(getGeneric("graphLayout<-")))
-  setGeneric("graphLayout<-", function(object,value)
-            standardGeneric("graphLayout<-"))
-setReplaceMethod("graphLayout", "graphView", function(object,value)
-         {
-           object@graphLayout<-value
-           object
-         }
-)
+#if (is.null(getGeneric("graphLayout<-")))
+#  setGeneric("graphLayout<-", function(object,value)
+#            standardGeneric("graphLayout<-"))
+#setReplaceMethod("graphLayout", "graphView", function(object,value)
+#         {
+#           object@graphLayout<-value
+#           object
+#         }
+#)
 
 #####
 # generic functions for gtk events on view objects
@@ -350,9 +352,22 @@ setMethod("updateView", "spreadView",
   }
 )
 
+##########
+# 7/29/05 vData is the changed node
+# may want to change this in the future if you want to update edges
+##########
 setMethod("updateView", "graphView",
   function(object, vData)
-  {}
+  {
+    curdev<-dev.cur()
+    plotdev<-plotDevice(object)
+    dev.set(plotdev)
+
+    # need to call drawAgNode based on the new node passed in vData
+    drawAgNode(vData$newNode)
+
+    dev.set(curdev)
+  }
 )
 
 ########
@@ -597,6 +612,69 @@ setMethod("motionEvent", "sPlotView",
   }
 )
 
+##########
+# 7/27/05
+##########
+setMethod("clickEvent", "graphView",
+  function(object, where, ...)
+  {
+    # may want to check if the view clicked on is from the activeMVC
+    # for now only allow views from the activeMVC to respond to click events
+    activeMVC<-get("activeMVC", mvcEnv)
+    if (dataName(object) == activeMVC)
+    {
+      curMVC<-getMVC(dataName(object))
+      controlEnv<-controller(curMVC)
+      curLayout<-virtualData(model(curMVC))
+
+      # see if there is a function to call
+      rightButtonClick<-get("rightButtonClick", controlEnv)
+      leftButtonClick<-get("leftButtonClick", controlEnv)
+      middleButtonClick<-get("middleButtonClick", controlEnv)
+
+      # see if any of the functions are active
+      activeRBCFun<-unlist(lapply(rightButtonClick, function(y)
+        {y$assigned==TRUE}))
+      activeLBCFun<-unlist(lapply(leftButtonClick, function(y)
+        {y$assigned==TRUE}))
+      activeMBCFun<-unlist(lapply(middleButtonClick, function(y)
+        {y$assigned==TRUE}))
+
+      # where will be the mouse click event information from Gtk
+      # check that the left button was pressed
+      if (gdkEventButtonGetButton(where)==1)
+      {
+        if (any(activeLBCFun))
+        {
+          curWin<-win(object)
+
+          xyloc<-list(x=where[["X"]], y=where[["Y"]])
+
+          # convert to user coordinates
+          xyUsr<-pix2usr(where[["X"]], where[["Y"]])      
+#          print(xyUsr)
+
+          curNode<-identifyNode(object, xyUsr)
+
+          if (!is.null(curNode))
+          {
+            curIndex<-which(activeLBCFun)
+            if (length(curIndex)==1)
+            { 
+              curEventFun<-leftButtonClick[[curIndex]][["eventFun"]]
+
+              # now call the function the user has set with the current
+              # point as the parameter
+              actualFun<-callFun(curEventFun)
+              do.call(actualFun, list(curNode))
+            }
+          }
+        }
+      }
+    }    
+  }
+)
+
 #############
 # added 6/28/05 so that the graphView has a motionEvent
 #############
@@ -610,6 +688,7 @@ setMethod("motionEvent", "graphView",
     {
       curMVC<-getMVC(dataName(object))
       controlEnv<-controller(curMVC)
+      curLayout<-virtualData(model(curMVC))
 
       # see if there is a function to call
       mouseOver<-get("mouseOver", controlEnv)
@@ -637,9 +716,8 @@ setMethod("motionEvent", "graphView",
         xyloc<-list(x=curx, y=cury)
 
         # convert to user coordinates
-        xyInches<-pix2inches(curx, cury)
-        xyUsr<-inches2usr(xyInches$x, xyInches$y)
- 
+        xyUsr<-pix2usr(curx, cury)
+
         # also need to ensure that the plot has been added to viewList
         curDev<-dev.cur()
         curViewList<-viewList(curMVC)
@@ -745,7 +823,17 @@ setMethod("initialize", "graphView",
     .Object@plotDevice<-retList$plotDevice
     .Object@plotPar<-retList$plotPar
     .Object@drArea<-retList$drArea
-    .Object@graphLayout<-retList$graphLayout
+#    .Object@graphLayout<-retList$graphLayout
+
+    # need to update the virtualData slot in the model
+    curMVC<-getMVC(dataName)
+    virtualData(model(curMVC))<-retList$graphLayout
+    # then need to update MVCList
+    MVCList<-get("MVCList", mvcEnv)
+    allNames<-getModelNames(sort=FALSE)
+    mvcindex<-match(dataName, allNames)    
+    MVCList[[mvcindex]]<-curMVC
+    assign("MVCList", MVCList, mvcEnv)
 
     # create the actual plot
     .Object<-graphPlot(.Object)
