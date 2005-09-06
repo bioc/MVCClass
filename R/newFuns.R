@@ -60,9 +60,11 @@ loadModel<-function(data, type, name, linkData=NULL, virtualData=NULL)
   {
     # first create the appropriate model object
     newObject<-switch(type,
-      "exprSet"=new("exprModel", data=data, name=name),
-      "graph"=new("graphModel", modelData=data, modelName=name),
-      "data.frame"=new("dfModel", mData=data, mName=name, 
+      "exprSet"=new("exprModel", modelData=data, modelName=name, 
+                      linkData=linkData, virtualData=virtualData),
+      "graph"=new("graphModel", modelData=data, modelName=name,
+                      linkData=linkData, virtualData=virtualData),
+      "data.frame"=new("dfModel", modelData=data, modelName=name, 
                       linkData=linkData, virtualData=virtualData)
     )
 
@@ -123,6 +125,7 @@ showLabel<-function(lblText)
     function(obj)
     {
       win$Destroy()
+      return(TRUE)
     }
   )
   win$Show()

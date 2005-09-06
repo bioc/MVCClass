@@ -21,6 +21,11 @@ setClass("spreadView", representation(clist="GtkCList"),
 # 7/28/05 put the graphLayout info in the graphModel object
 setClass("graphView", contains="plotView")
 
+# 9/1/05 not sure if I need to store anything else about a heatmap
+# decided to store the list of row and column reorderings returned from the
+# heatmap function (just in case I need it later)
+setClass("heatmapView", representation(ordering="list"), contains="plotView")
+
 #####
 # accessor functions
 #####
@@ -90,13 +95,19 @@ setMethod("clist", "spreadView", function(object)
 #setMethod("graphLayout", "graphView", function(object)
 #         object@graphLayout)
 
+if (is.null(getGeneric("ordering")))
+  setGeneric("ordering", function(object)
+            standardGeneric("ordering"))
+setMethod("ordering", "heatmapView", function(object)
+         object@ordering)
+
 #####
 # setting the slots
 #####
 if (is.null(getGeneric("dataName<-")))
-  setGeneric("dataName<-",function(object,value)
+  setGeneric("dataName<-",function(object, value)
             standardGeneric("dataName<-"))
-setReplaceMethod("dataName","genView",function(object,value)
+setReplaceMethod("dataName","genView",function(object, value)
          {
            object@dataName<-value
            object
@@ -104,9 +115,9 @@ setReplaceMethod("dataName","genView",function(object,value)
 )
 
 if (is.null(getGeneric("win<-")))
-  setGeneric("win<-",function(object,value)
+  setGeneric("win<-",function(object, value)
             standardGeneric("win<-"))
-setReplaceMethod("win","genView",function(object,value)
+setReplaceMethod("win","genView",function(object, value)
          {
            object@win<-value
            object
@@ -114,9 +125,9 @@ setReplaceMethod("win","genView",function(object,value)
 )
 
 if (is.null(getGeneric("winNum<-")))
-  setGeneric("winNum<-",function(object,value)
+  setGeneric("winNum<-",function(object, value)
             standardGeneric("winNum<-"))
-setReplaceMethod("winNum","genView",function(object,value)
+setReplaceMethod("winNum","genView",function(object, value)
          {
            object@winNum<-value
            object
@@ -124,9 +135,9 @@ setReplaceMethod("winNum","genView",function(object,value)
 )
 
 if (is.null(getGeneric("plotDevice<-")))
-  setGeneric("plotDevice<-",function(object,value)
+  setGeneric("plotDevice<-",function(object, value)
             standardGeneric("plotDevice<-"))
-setReplaceMethod("plotDevice","plotView",function(object,value)
+setReplaceMethod("plotDevice","plotView",function(object, value)
          {
            object@plotDevice<-value
            object
@@ -134,9 +145,9 @@ setReplaceMethod("plotDevice","plotView",function(object,value)
 )
 
 if (is.null(getGeneric("plotPar<-")))
-  setGeneric("plotPar<-",function(object,value)
+  setGeneric("plotPar<-",function(object, value)
             standardGeneric("plotPar<-"))
-setReplaceMethod("plotPar","plotView",function(object,value)
+setReplaceMethod("plotPar","plotView",function(object, value)
          {
            object@plotPar<-value
            object
@@ -144,9 +155,9 @@ setReplaceMethod("plotPar","plotView",function(object,value)
 )
 
 if (is.null(getGeneric("drArea<-")))
-  setGeneric("drArea<-",function(object,value)
+  setGeneric("drArea<-",function(object, value)
             standardGeneric("drArea<-"))
-setReplaceMethod("drArea","plotView",function(object,value)
+setReplaceMethod("drArea","plotView",function(object, value)
          {
            object@drArea<-value
            object
@@ -154,9 +165,9 @@ setReplaceMethod("drArea","plotView",function(object,value)
 )
 
 if (is.null(getGeneric("dfRows<-")))
-  setGeneric("dfRows<-",function(object,value)
+  setGeneric("dfRows<-",function(object, value)
             standardGeneric("dfRows<-"))
-setReplaceMethod("dfRows","sPlotView",function(object,value)
+setReplaceMethod("dfRows","sPlotView",function(object, value)
          {
            object@dfRows<-value
            object
@@ -174,9 +185,9 @@ setReplaceMethod("colx","sPlotView",function(object,value)
 )
 
 if (is.null(getGeneric("coly<-")))
-  setGeneric("coly<-",function(object,value)
+  setGeneric("coly<-",function(object, value)
             standardGeneric("coly<-"))
-setReplaceMethod("coly","sPlotView",function(object,value)
+setReplaceMethod("coly","sPlotView",function(object, value)
          {
            object@coly<-value
            object
@@ -184,9 +195,9 @@ setReplaceMethod("coly","sPlotView",function(object,value)
 )
 
 if (is.null(getGeneric("clist<-")))
-  setGeneric("clist<-",function(object,value)
+  setGeneric("clist<-",function(object, value)
             standardGeneric("clist<-"))
-setReplaceMethod("clist","spreadView",function(object,value)
+setReplaceMethod("clist","spreadView",function(object, value)
          {
            object@clist<-value
            object
@@ -202,6 +213,16 @@ setReplaceMethod("clist","spreadView",function(object,value)
 #           object
 #         }
 #)
+
+if (is.null(getGeneric("ordering<-")))
+  setGeneric("ordering<-", function(object, value)
+            standardGeneric("ordering<-"))
+setReplaceMethod("ordering", "heatmapView", function(object, value)
+         {
+           object@ordering<-value
+           object
+         }
+)
 
 #####
 # generic functions for gtk events on view objects
@@ -370,6 +391,69 @@ setMethod("updateView", "graphView",
   }
 )
 
+####
+# need to create this method (not sure what I want to update in the view)
+####
+setMethod("updateView", "heatmapView",
+  function(object, vData)
+  {
+    # currently the only possible way to update the heatmap is to remove
+    # certain genes from the heatmap (if hide=TRUE), which will require
+    # redrawing the whole map
+
+    # vData is a list with 4 elements: rowName, colName, oldValue and newValue
+    # will need to remove old value and draw point with new value
+
+    curdev<-dev.cur()
+
+    # get the model info.
+    dataName<-dataName(object)
+    curMVC<-getMVC(dataName)
+    model<-model(curMVC)
+    modelData<-modelData(model)
+    virtualData<-virtualData(model)
+
+    if (vData$colName == "hide")
+    {
+      # set the current device
+      pDevice<-plotDevice(object)
+      dev.set(pDevice)
+
+      # this will be the genes to hide
+      # need to check all genes to see which ones to hide
+      if (any(virtualData$hide))
+      {
+        rowsToHide<-which(virtualData$hide)
+        newmodelData<-modelData[-rowsToHide,]
+      }
+      else
+        newmodelData<-modelData
+
+      retList<-heatmap(exprs(newmodelData))
+      
+      # need to reset the ordering value in heatmapView
+      ordering(object)<-retList
+
+      curviewList<-viewList(curMVC)
+      # need to reassign the current view list
+      # which element in the viewList is it?
+      allDevices<- unlist(lapply(curviewList, plotDevice))
+      devIndex<-match(pDevice, allDevices)
+      curviewList[[devIndex]]<-object
+
+      # then need to reassign the current MVC
+      viewList(curMVC)<-curviewList
+      MVCList<-get("MVCList", mvcEnv)
+      allNames<-getModelNames(sort=FALSE)
+      mIndex<-match(dataName, allNames)
+      MVCList[[mIndex]]<-curMVC
+      assign("MVCList", MVCList, mvcEnv)      
+
+      dev.set(curdev)
+    }
+  }
+)
+
 ########
 # added 6/5/05
 # make a method to redraw a view depending on the view object
@@ -421,6 +505,9 @@ setMethod("clickEvent", "spreadView",
         do.call(actualFun, list(rowName))
       }
     }
+    # return TRUE if there are no errors because gtkAddCallback is expecting
+    # a boolean
+    return(TRUE)
   }
 )
 
@@ -465,10 +552,8 @@ setMethod("clickEvent", "sPlotView",
 
           if (!is.null(curPoint))
           {
-#            # if a point was clicked, then we want to create a 
-#            # gUpdateDataMessage
-#            dfMessage<-new("gUpdateDataMessage", from=object, where=curPoint)
-#            handleMessage(dfMessage)
+            # if a point was clicked, then we want to create a 
+            # gUpdateDataMessage this is done in the active eventFun function
 
             curIndex<-which(activeLBCFun)
             if (length(curIndex)==1)
@@ -534,6 +619,9 @@ setMethod("clickEvent", "sPlotView",
         }
       }
     }
+    # return TRUE if there are no errors because gtkAddCallback is expecting
+    # a boolean
+    return(TRUE)
   }
 )
 
@@ -609,6 +697,9 @@ setMethod("motionEvent", "sPlotView",
         }
       }
     }
+    # return TRUE if there are no errors because gtkAddCallback is expecting
+    # a boolean
+    return(TRUE)
   }
 )
 
@@ -655,6 +746,7 @@ setMethod("clickEvent", "graphView",
 #          print(xyUsr)
 
           curNode<-identifyNode(object, xyUsr)
+#          print(curNode)
 
           if (!is.null(curNode))
           {
@@ -671,7 +763,10 @@ setMethod("clickEvent", "graphView",
           }
         }
       }
-    }    
+    }
+    # return TRUE if there are no errors because gtkAddCallback is expecting
+    # a boolean
+    return(TRUE)
   }
 )
 
@@ -746,6 +841,9 @@ setMethod("motionEvent", "graphView",
         }
       }
     }
+    # return TRUE if there are no errors because gtkAddCallback is expecting
+    # a boolean
+    return(TRUE)
   }
 )
 
@@ -845,3 +943,31 @@ setMethod("initialize", "graphView",
     .Object    
   }
 )
+
+setMethod("initialize", "heatmapView",
+  function(.Object, dataName, mData)
+  {
+    # create slot values - can use the same method as used for initializing
+    # a scatterplot view
+    retList<-initSPlotView()
+
+    # fill the slots in the object
+    .Object@dataName<-dataName
+    .Object@win<-retList$win
+    .Object@plotDevice<-retList$plotDevice
+    .Object@plotPar<-retList$plotPar
+    .Object@drArea<-retList$drArea
+    .Object@ordering<-list()
+
+    # create the actual plot
+    .Object<-heatmapPlot(.Object)
+
+    # finally add events to the plot
+    .Object<-addEventsforViews(.Object)
+    # not specifically adding any events for a heatmap right now (such as
+    # click event or motion event)
+
+    .Object    
+  }
+)
+

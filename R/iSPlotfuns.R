@@ -125,6 +125,7 @@ setViewDataView<-function()
       # need to get the active element in the list
       selItem<-gtkChildren(objchild)[[1]][["label"]]
       assign("showDF", selItem, controlEnv)
+      return(TRUE)
     }
   )
 
@@ -158,6 +159,7 @@ setViewDataView<-function()
           handleMessage(vMessage)
         }
       }
+      return(TRUE)
     }
   )
 }
@@ -253,6 +255,7 @@ setPlotDView<-function()
       assign("dataF", selItem, controlEnv)
 
       setVariables(selItem, frVar)
+      return(TRUE)
     }
   )
 
@@ -280,6 +283,7 @@ setPlotDView<-function()
 #        print(vMessage)
         handleMessage(vMessage)
       }
+      return(TRUE)
     }
   )
 }
@@ -505,7 +509,7 @@ initGraphView<-function(dataName, glayout, nShape)
     # use the fillcolors that are already in the virtualData slot
     # not sure if other view info should be used (in addition to fillcolor)
     curFillColors<-unlist(lapply(AgNode(virData), fillcolor))
-    print(curFillColors)
+#    print(curFillColors)
     curlayout<-agopen(actGraph, name=dataName, nodeAttrs=makeNodeAttrs
                (actGraph, label="", shape=nodeShape, fillcolor=curFillColors))
   }
@@ -600,6 +604,7 @@ addEventsforSpread<-function(curView)
       # need this variable to make sure don't end up in an infinite loop
       if (get("contLoop", controlEnv)==FALSE)
         clickEvent(curView, (row+1), event="select")
+      return(TRUE)
     }
   )
    
@@ -609,6 +614,7 @@ addEventsforSpread<-function(curView)
       # need this variable to make sure don't end up in an infinite loop
       if (get("contLoop", controlEnv)==FALSE)
         clickEvent(curView, (row+1), event="unselect")
+      return(TRUE)
     }
   )
 }
@@ -622,6 +628,7 @@ addEventsforSPlots<-function(curView)
     function(obj, ev)
     {
       clickEvent(curView, ev)
+      return(TRUE)
     }
   )
       
@@ -629,6 +636,7 @@ addEventsforSPlots<-function(curView)
     function(obj, ev)
     {
       motionEvent(curView, ev)
+      return(TRUE)
     }
   )  
 }
@@ -642,6 +650,7 @@ addEventsforGraphs<-function(curView)
     function(obj, ev)
     {
       clickEvent(curView, ev)
+      return(TRUE)
     }
   )
       
@@ -649,6 +658,7 @@ addEventsforGraphs<-function(curView)
     function(obj, ev)
     {
       motionEvent(curView, ev)
+      return(TRUE)
     }
   )  
 }
@@ -683,6 +693,7 @@ addEventsforViews<-function(newView)
       }
       # set the active view
       assign("activeView", newView, controlEnv)
+      return(TRUE)
     }
   )
 
@@ -692,6 +703,7 @@ addEventsforViews<-function(newView)
     {
       # no active view
       assign("activeView", c(), controlEnv)
+      return(TRUE)
     }
   )
 
@@ -843,6 +855,42 @@ scatterplot<-function(viewItem)
   }
 
   # need to update plot parameter usr
+  plotPar(viewItem)<-par(no.readonly=TRUE)
+
+  return(viewItem)
+}
+
+###########
+# 9/1/05 create a heatmap view for an exprSet model
+###########
+heatmapPlot<-function(viewItem)
+{
+  dName<-dataName(viewItem)
+  curMVC<-getMVC(dName)
+  mData<-modelData(model(curMVC))
+  vData<-virtualData(model(curMVC))
+  
+  # check if any genes are hidden
+  curHidden<-vData$hide
+  if (any(curHidden))
+  {
+    # then subset the model data
+    mData<-mData[-which(curHidden),]
+  }
+
+  dev<-plotDevice(viewItem)
+  dev.set(dev)
+  w<-win(viewItem)
+  w$Show()
+
+  par(bg="transparent")
+  par(col="black")
+  par(fg="black")
+
+  # now plot the heatmap
+  retList<-heatmap(exprs(mData))
+  ordering(viewItem)<-retList
+
   plotPar(viewItem)<-par(no.readonly=TRUE)
 
   return(viewItem)

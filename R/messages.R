@@ -7,7 +7,12 @@ setClass("gMessage")
 setClass("gUpdateMessage", representation(type="character", mData="list",
           dataName="character"), contains="gMessage")
 setClass("gUpdateViewMessage", contains="gUpdateMessage")
-setClass("gUpdateDataMessage", contains="gUpdateMessage")
+#setClass("gUpdateDataMessage", contains="gUpdateMessage")
+# 9/5/05 added the 'from' slot so we can loop through all linked models 
+# when updating the data (without storing a global variable to ensure
+# that the loop is not infinite)
+setClass("gUpdateDataMessage", representation(from="character"), 
+          contains="gUpdateMessage")
 
 setClass("gAddMessage", representation(dataName="character", mData="list",
          type="character"), contains="gMessage")
@@ -34,6 +39,12 @@ setClass("gUpdateChildMessage",
 #####
 # accessor functions
 #####
+if (is.null(getGeneric("from")))
+  setGeneric("from", function(object)
+            standardGeneric("from"))
+setMethod("from", "gUpdateDataMessage", function(object)
+         object@from)
+
 if (is.null(getGeneric("childUpdateDataMessage")))
   setGeneric("childUpdateDataMessage", function(object)
             standardGeneric("childUpdateDataMessage"))
@@ -79,6 +90,16 @@ setMethod("dataName", "gUpdateMessage", function(object)
 #####
 # setting the slots
 #####
+if (is.null(getGeneric("from<-")))
+  setGeneric("from<-", function(object, value)
+            standardGeneric("from<-"))
+setReplaceMethod("from", "gUpdateDataMessage", function(object, value)
+         {
+           object@from<-value
+           object
+         }
+)
+
 if (is.null(getGeneric("childUpdateDataMessage<-")))
   setGeneric("childUpdateDataMessage<-", function(object, value)
             standardGeneric("childUpdateDataMessage<-"))
@@ -198,13 +219,16 @@ setMethod("initialize", "gUpdateViewMessage",
 # even more general???
 #####
 setMethod("initialize", "gUpdateDataMessage", 
-  function(.Object, type, mData, dataName="")
+  function(.Object, type, mData, dataName="", from="")
   {
     .Object@type<-type
     .Object@mData<-mData
     if (dataName=="")
       dataName<-get("activeMVC", mvcEnv)
+    if (from=="")
+      from<-dataName
     .Object@dataName<-dataName
+    .Object@from<-from
 
     .Object
   }
@@ -276,7 +300,12 @@ setMethod("handleMessage", "gUpdateChildMessage",
     # not contain the data that changed in the parent (i.e. the child is a
     # subset of the parent)
     if (!is.null(newUpdateMessage))
+    {
+      # set the from slot so the update data message knows that this message
+      # came from the parent
+      from(newUpdateMessage)<-dataName(parentUpdateDataMessage(object))
       handleMessage(newUpdateMessage)
+    }
   }
 )
 
@@ -296,6 +325,9 @@ setMethod("handleMessage", "gUpdateParentMessage",
     # the gUpdateDataMessage for the child MVC
     # newUpdateMessage will be the gUpdateDataMessage for the parent
     newUpdateMessage<-linkToParent(object)
+    # set the from slot so the update data message knows that this message
+    # came from a child
+    from(newUpdateMessage)<-dataName(childUpdateDataMessage(object))
     handleMessage(newUpdateMessage)
   }
 )
@@ -336,7 +368,7 @@ setMethod("handleMessage", "gUpdateViewMessage",
       for (i in 1:length(curVList))
       {
         # for type of "redrawView", mData will be an empty list
-        redrawView(curVList[i])
+        redrawView(curVList[[i]])
       }
     }
 
@@ -366,11 +398,11 @@ setMethod("handleMessage", "gUpdateViewMessage",
 setMethod("handleMessage", "gUpdateDataMessage",
   function(object,...)
   {
-    updatedModels<-get("updatedModels", mvcEnv)
-
     data<-mData(object)
     type<-type(object)
     dataName<-dataName(object)
+    from<-from(object)
+#    print(dataName)
 
     # now need to update the model
     curMVC<-getMVC(dataName)
@@ -394,30 +426,21 @@ setMethod("handleMessage", "gUpdateDataMessage",
       handleMessage(uvMessage)
     }
 
-    # this model has been updated
-    if (is.null(updatedModels))
-      updatedModels<-c(dataName)
-    else
-      updatedModels[length(updatedModels)+1]<-dataName
-    assign("updatedModels", updatedModels, mvcEnv)
-
     # after updating its views, now need to look for parent and children
     parentName<-parentMVC(curMVC)
     childrenName<-childMVCList(curMVC)
 
-    if (parentName != "")
+    # only send the message if there is a parent model and if that parent 
+    # model is not where the update data message came from
+    if (!(parentName %in% c("", from)))
     {
       sendToParent<-get("sendToParent", controller(curMVC))
       if (sendToParent==TRUE)
       {
-        # next check if this model has already been updated
-        if (!(parentName %in% updatedModels))
-        {
-          # parentMessage will be a new gUpdateDataMessage
-          parentMessage<-new("gUpdateParentMessage", 
-                             childUpdateDataMessage=object)
-          handleMessage(parentMessage)
-        }
+        # parentMessage will be a new gUpdateDataMessage
+        parentMessage<-new("gUpdateParentMessage", 
+                           childUpdateDataMessage=object)
+        handleMessage(parentMessage)
       }
     }
     if (length(childrenName) > 0)
@@ -426,8 +449,9 @@ setMethod("handleMessage", "gUpdateDataMessage",
       # can have multiple children (can only have one parent)
       for (i in 1:length(childrenName))
       {
-        # next check if this model has already been updated
-        if (!(childrenName[[i]] %in% updatedModels))
+        # only pass the message on to the children if there are children
+        # and the child is not where the update data message came from
+        if (!(childrenName[[i]] %in% c("", from)))
         {
           # childMessage will be a new gUpdateDataMessage
           childMessage<-new("gUpdateChildMessage", 
@@ -438,12 +462,7 @@ setMethod("handleMessage", "gUpdateDataMessage",
         }
       }
     }
-
-    activeMVC<-get("activeMVC", mvcEnv)
-    # then all models have been updated
-    if (dataName==activeMVC)
-      assign("updatedModels", "", mvcEnv)
- }
+  }
 )
 
 ########

@@ -99,37 +99,19 @@ setReplaceMethod("virtualData", "gModel", function(object,value)
 # initialize methods
 ######
 
-#setMethod("initialize", "exprModel", 
-#  function(.Object, data, name, linkData=NULL)
-#  {
-#    getChipType()
-#
-#    curChip<-get("chipType", controlEnv)
-#    library(curChip, character.only=TRUE)
-#    affyids<-rownames(exprs(data))
-#    curEnv<-paste(curChip, "LOCUSID", sep="")
-#
-#    # get the locus link ids (the link data???)
-#    llids<-mget(affyids, eval(as.name(curEnv)))
-#    .Object@modelData<-data
-#    .Object@linkData<-llids
-#    .Object@modelName<-name
-#    .Object
-#  }
-#)
-
-setMethod("initialize", "dfModel",
-  function(.Object, mData, mName, linkData=NULL, virtualData=NULL)
+setMethod("initialize", "exprModel", 
+  function(.Object, modelData, modelName, linkData=NULL, virtualData=NULL)
   {
     if (is.null(virtualData))
     {
-      # need to create the virtualData slot 
+      # need to create the virtualData slot - will be the same as the
+      # virtualData slot for a dfModel
       defaultPlotData<-list(color="black", pch=1, highlit=FALSE, hide=FALSE)
-      numRows<-nrow(mData)
+      numRows<-nrow(exprs(modelData))
       if (length(defaultPlotData) > 0)
       {
         virData<-data.frame(rep(defaultPlotData[[1]], numRows), 
-                            row.names=row.names(mData))
+                            row.names=rownames(exprs(modelData)))
         virData[,1]<-as.character(virData[,1])
         colnames(virData)<-names(defaultPlotData)[1]
       }
@@ -145,10 +127,52 @@ setMethod("initialize", "dfModel",
     else
       virData<-virtualData
     # now assign values to the object and then return object
-    .Object@modelData<-mData
+    .Object@modelData<-modelData
     .Object@linkData<-linkData
     .Object@virtualData<-virData
-    .Object@modelName<-mName
+    .Object@modelName<-modelName
+    .Object
+  }
+)
+
+#######
+#
+#######
+setMethod("initialize", "dfModel",
+  function(.Object, modelData, modelName, linkData=NULL, virtualData=NULL)
+  {
+    # need to check the class of the model data
+    if (is(modelData, "matrix"))
+      modelData<-as.data.frame(modelData)
+
+    if (is.null(virtualData))
+    {
+      # need to create the virtualData slot 
+      defaultPlotData<-list(color="black", pch=1, highlit=FALSE, hide=FALSE)
+      numRows<-nrow(modelData)
+      if (length(defaultPlotData) > 0)
+      {
+        virData<-data.frame(rep(defaultPlotData[[1]], numRows), 
+                            row.names=rownames(modelData))
+        virData[,1]<-as.character(virData[,1])
+        colnames(virData)<-names(defaultPlotData)[1]
+      }
+      if (length(defaultPlotData) > 1)
+      {
+        for (i in 2:length(defaultPlotData))
+        {
+          virData[,i]<-rep(defaultPlotData[[i]], numRows)
+        }
+        colnames(virData)<-names(defaultPlotData)
+      }
+    }
+    else
+      virData<-virtualData
+    # now assign values to the object and then return object
+    .Object@modelData<-modelData
+    .Object@linkData<-linkData
+    .Object@virtualData<-virData
+    .Object@modelName<-modelName
     .Object
   }
 )
@@ -159,6 +183,51 @@ setMethod("initialize", "dfModel",
 if (is.null(getGeneric("updateModel")))
   setGeneric("updateModel", function(object, type, data)
             standardGeneric("updateModel"))
+
+###########
+# 8/31/05 need to determine how the update model method will work for 
+# an exprSet model
+#
+# for the virtualData slot for an exprModel is the same as for a dfModel
+###########
+setMethod("updateModel", "exprModel",
+  function(object, type, data)
+  {
+    # for a dataframe want to change the virtualData slot
+    virData<-virtualData(object)
+    dataName<-modelName(object)
+
+    colIndex<-match(type, colnames(virData))
+    rowName<-names(data)
+    rowIndex<-match(rowName, rownames(virData))
+
+    oldValue<-virData[rowIndex, colIndex]
+    # update the value
+    virData[rowIndex, colIndex]<-unlist(data)
+
+    # now update the objects
+    virtualData(object)<-virData
+
+    # need to update the MVC object - may not be the active MVC
+    curMVC<-getMVC(dataName)
+    model(curMVC)<-object
+
+    # will also need to update the MVCList
+    mvcList <- get("MVCList", mvcEnv)
+    allNames <- getModelNames(sort = FALSE)
+
+    index<-match(dataName, allNames)
+    mvcList[[index]]<-curMVC
+    assign("MVCList", mvcList, mvcEnv)
+
+    # return the data needed to update the views
+    # need the old value to remove the old point from the plot before
+    # re-adding the point with the new value
+    viewData<-list(colName=type, rowName=names(data), oldValue=oldValue, 
+                   newValue=unlist(data))
+    return(viewData)
+  }
+)
 
 setMethod("updateModel", "dfModel",
   function(object, type, data)
