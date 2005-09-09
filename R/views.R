@@ -311,7 +311,7 @@ setMethod("updateView", "sPlotView",
 
       # next remove the old point
       # what about highlighting??? - would also need to remove this!
-      points(xvalue, yvalue, col=bgColor, pch=pchValue)
+      points(xvalue, yvalue, col=bgColor, pch=as.numeric(pchValue))
 
       # remove highlighting if it's needed
       if (all(highValue==TRUE) && colName!="highlit")
@@ -323,7 +323,7 @@ setMethod("updateView", "sPlotView",
       if (!(colName=="hide" && all(newValue==TRUE))) 
       {
         # then redraw the point
-        points(xvalue, yvalue, col=colValue, pch=pchValue)
+        points(xvalue, yvalue, col=colValue, pch=as.numeric(pchValue))
 
         # add highlighting if it's needed
         if (all(highValue==TRUE))

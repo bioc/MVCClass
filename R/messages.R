@@ -400,6 +400,7 @@ setMethod("handleMessage", "gUpdateDataMessage",
   {
     data<-mData(object)
     type<-type(object)
+
     dataName<-dataName(object)
     from<-from(object)
 #    print(dataName)

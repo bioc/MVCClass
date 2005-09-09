@@ -198,7 +198,7 @@ setMethod("updateModel", "exprModel",
     dataName<-modelName(object)
 
     colIndex<-match(type, colnames(virData))
-    rowName<-names(data)
+    rowName<-unique(names(data))
     rowIndex<-match(rowName, rownames(virData))
 
     oldValue<-virData[rowIndex, colIndex]
@@ -223,7 +223,7 @@ setMethod("updateModel", "exprModel",
     # return the data needed to update the views
     # need the old value to remove the old point from the plot before
     # re-adding the point with the new value
-    viewData<-list(colName=type, rowName=names(data), oldValue=oldValue, 
+    viewData<-list(colName=type, rowName=rowName, oldValue=oldValue, 
                    newValue=unlist(data))
     return(viewData)
   }
@@ -237,7 +237,7 @@ setMethod("updateModel", "dfModel",
     dataName<-modelName(object)
 
     colIndex<-match(type, colnames(virData))
-    rowName<-names(data)
+    rowName<-unique(names(data))
     rowIndex<-match(rowName, rownames(virData))
 
     oldValue<-virData[rowIndex, colIndex]
@@ -262,7 +262,7 @@ setMethod("updateModel", "dfModel",
     # return the data needed to update the views
     # need the old value to remove the old point from the plot before
     # re-adding the point with the new value
-    viewData<-list(colName=type, rowName=names(data), oldValue=oldValue, 
+    viewData<-list(colName=type, rowName=rowName, oldValue=oldValue, 
                    newValue=unlist(data))
     return(viewData)
   }
@@ -275,7 +275,8 @@ setMethod("updateModel", "dfModel",
 setMethod("updateModel", "graphModel",
   function(object, type, data)
   {
-    if (type=="node") 
+    nameType<-names(type)
+    if (nameType=="node") 
     {
 #      print(data)
       newNode<-data[[1]]
@@ -307,7 +308,7 @@ setMethod("updateModel", "graphModel",
       return(list(newNode=newNode))
     }
     # for the future
-    if (type=="edge")
+    if (nameType=="edge")
     {
     }
   }
