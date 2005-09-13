@@ -4,10 +4,11 @@
 ##############
 # a virtual model class that all model classes will be derived from
 # modelData will be the actual model data, linkData will be any data
-# that links the model to its parent model, virtualData is any data that
+# that links the model to its parent model (a list of 2 functions:
+# linkToParent and linkToChild), virtualData is any data that
 # is needed for views of the model, and modelName is the name of the model
 # (a way for the user to refer to the data)
-setClass("gModel", representation(modelData="ANY", linkData="ANY", 
+setClass("gModel", representation(modelData="ANY", linkData="list", 
          virtualData="ANY", modelName="character"), contains=("VIRTUAL"))
 
 # couldn't get RagraphNULL to pass the installation - didn't recognize
@@ -19,7 +20,7 @@ setClass("gModel", representation(modelData="ANY", linkData="ANY",
 # view is created)
 #setClass("graphModel", representation(modelData="graph", 
 #                       virtualData="RagraphNULL"), contains="gModel")
-setClass("graphModel", representation(modelData="ANY"), contains="gModel")
+setClass("graphModel", representation(modelData="graph"), contains="gModel")
 
 # for a model that has expression data - 
 # the data list should include an exprSet object and maybe a vector of LL ids
@@ -100,7 +101,7 @@ setReplaceMethod("virtualData", "gModel", function(object,value)
 ######
 
 setMethod("initialize", "exprModel", 
-  function(.Object, modelData, modelName, linkData=NULL, virtualData=NULL)
+  function(.Object, modelData, modelName, linkData=list(), virtualData=NULL)
   {
     if (is.null(virtualData))
     {
@@ -126,6 +127,7 @@ setMethod("initialize", "exprModel",
     }
     else
       virData<-virtualData
+
     # now assign values to the object and then return object
     .Object@modelData<-modelData
     .Object@linkData<-linkData
@@ -139,7 +141,7 @@ setMethod("initialize", "exprModel",
 #
 #######
 setMethod("initialize", "dfModel",
-  function(.Object, modelData, modelName, linkData=NULL, virtualData=NULL)
+  function(.Object, modelData, modelName, linkData=list(), virtualData=NULL)
   {
     # need to check the class of the model data
     if (is(modelData, "matrix"))
@@ -278,24 +280,35 @@ setMethod("updateModel", "graphModel",
     nameType<-names(type)
     if (nameType=="node") 
     {
-#      print(data)
-      newNode<-data[[1]]
+      # if data is only one AgNode, then make it a list with one element
+      if (!is(data, "list"))
+      {
+        data<-list(data)
+        # this will give the node name
+        names(data)<-name(data)
+      }
       dataName<-modelName(object)
       curMVC<-getMVC(dataName)
-
-      # data will be the new node
       # need to update the virtual data slot
       virData<-virtualData(object)
       curNodes<-AgNode(virData)
       allNodeNames<-unlist(lapply(curNodes, name))
-      curName<-name(newNode)
-      curIndex<-match(curName, allNodeNames)
 
-      # update the model
-      curNodes[[curIndex]]<-newNode
+      for (i in 1:length(data))
+      {
+        # data will be the new node(s)
+        newNode<-data[[i]]
+        curName<-name(newNode)
+        curIndex<-match(curName, allNodeNames)
+
+        # update the nodes
+        curNodes[[curIndex]]<-newNode
+      }
+
+      # now update the model
       AgNode(virData)<-curNodes
       virtualData(object)<-virData
-      model(curMVC)<-object
+      model(curMVC)<-object      
 
       # need to update the MVC list
       mvcList <- get("MVCList", mvcEnv)
@@ -303,108 +316,14 @@ setMethod("updateModel", "graphModel",
       index<-match(dataName, allModelNames)
       mvcList[[index]]<-curMVC
       assign("MVCList", mvcList, mvcEnv)
-      
-      # need to return a list
-      return(list(newNode=newNode))
+
+      # need to return a list, but data is already a list of AgNode(s)
+      return(data)
     }
     # for the future
     if (nameType=="edge")
     {
     }
-  }
-)
-
-##########
-# create a method to derive a new model
-##########
-
-if (is.null(getGeneric("createGOmodel")))
-  setGeneric("createGOmodel", function(object, Ontology="MF")
-            standardGeneric("createGOmodel"))
-setMethod("createGOmodel", "exprModel", function(object, Ontology="MF")
-  {
-    # need to load the GOstats library
-    require(GOstats) || stop("Must have the GOstats library")
-    # need to get the locus link ids from the linkData slot
-    llids<-unique(as.character(unlist(linkData(object))))
-    # now create the graph
-    curGraph<-makeGOGraph(llids)
-
-    # next need to create the link data
-    
-    # from makeGOGraph function
-    newGOids <- mget(llids, env = GOLOCUSID2GO, ifnotfound = NA)
-    if (length(newGOids) == 1)
-      bd <- is.na(newGOids[[1]])
-    else 
-      bd <- is.na(newGOids)
-    newGOids <- newGOids[!bd]
-
-    newGOids <- lapply(newGOids, function(x) x[sapply(x, function(x) {
-        if (is.na(x$Ontology))
-            return(FALSE)
-        else x$Ontology == Ontology
-    })])
-
-    # remove any LLids from list that have no GO ids in this ontology
-    GOlen<-unlist(lapply(newGOids, length))
-    newGOids<-newGOids[-which(GOlen==0)]
-
-    # this will give a list with LLids as names and GO terms as the elements
-    LLtoGO<-lapply(newGOids, names)
-
-    # now need to look at the parent GO terms for each element in LLtoGO
-    for (i in 1:length(LLtoGO))
-    {
-      
-    }
-    
-  }
-)
-
-############
-# this will take a data frame model and create a new data frame model
-# that is a subset of the original model
-# the subset will be determined by the rownames and colnames
-# mName is the name of the new model
-############
-if (is.null(getGeneric("createSubsetModel")))
-  setGeneric("createSubsetModel", function(object, mName, subsetData)
-            standardGeneric("createSubsetModel"))
-
-# expect subsetData for dfModel to be a list with elements rNames and
-# cNames (for row names and column names) 
-setMethod("createSubsetModel", "dfModel", 
-  function(object, mName, subsetData)
-  {
-    rNames<-subsetData$rNames
-    cNames<-subsetData$cNames
-
-    # will need to update modelData 
-    mData<-modelData(object)
-
-    # if the rownames or colnames variable is empty then assume the user
-    # doesn't want to subset that dimension
-    if (length(rNames) == 0)
-      rNames<-row.names(mData)
-    if (length(cNames) == 0)
-      cNames<-colnames(mData)
-
-    matchCIndex<-match(cNames, colnames(mData))
-    matchRIndex<-match(rNames, row.names(mData))
-
-    newmData<-mData[matchRIndex, matchCIndex]
-
-    # need to create the link data
-    # the keys in the data frame model are the row names
-    # so make a dataframe linking the keys between the two models
-    lData<-data.frame(cbind(rNames, rNames))
-    colnames(lData)<-c("parentKey", "childKey")
-
-    # this function is in iSNetwork in winControl.R!!!!!!!!
-    loadModel(data=newmData, type="data.frame", name=mName, linkData=lData) 
-#    newModel<-new("dfModel", mData=newmData, mName=mName, linkData=lData)
-#    return(newModel)
   }
 )
 

@@ -6,8 +6,9 @@ setClass("gMessage")
 
 setClass("gUpdateMessage", representation(type="character", mData="list",
           dataName="character"), contains="gMessage")
+
 setClass("gUpdateViewMessage", contains="gUpdateMessage")
-#setClass("gUpdateDataMessage", contains="gUpdateMessage")
+
 # 9/5/05 added the 'from' slot so we can loop through all linked models 
 # when updating the data (without storing a global variable to ensure
 # that the loop is not infinite)
@@ -214,9 +215,7 @@ setMethod("initialize", "gUpdateViewMessage",
 )
 
 #####
-# have the 
-# any type of view can update a dataframe - should this be 
-# even more general???
+# update the data stored in the modelData slot of a model
 #####
 setMethod("initialize", "gUpdateDataMessage", 
   function(.Object, type, mData, dataName="", from="")
@@ -403,7 +402,6 @@ setMethod("handleMessage", "gUpdateDataMessage",
 
     dataName<-dataName(object)
     from<-from(object)
-#    print(dataName)
 
     # now need to update the model
     curMVC<-getMVC(dataName)
@@ -424,6 +422,7 @@ setMethod("handleMessage", "gUpdateDataMessage",
       # data will have type "updateView", rather than "redrawView"
       uvMessage<-new("gUpdateViewMessage", type="updateView", mData=viewdata,
                       dataName=dataName)
+#      print(uvMessage)
       handleMessage(uvMessage)
     }
 
@@ -473,9 +472,10 @@ setMethod("handleMessage", "gUpdateDataMessage",
 setMethod("handleMessage", "gAddDataMessage",
   function(object, ...)
   {
-#    print(object)
     data<-mData(object)$data
     linkData<-mData(object)$linkData
+    if (is.null(linkData))
+      linkData<-list()
     name<-dataName(object)
     type<-type(object)
 
@@ -492,7 +492,6 @@ setMethod("handleMessage", "gAddViewMessage",
     dataName<-dataName(object)
     type<-type(object)
     mData<-mData(object)
-#    print(mData)
 
     if (length(mData) > 0)
       newView<-new(type, dataName, mData)
@@ -515,7 +514,6 @@ setMethod("handleMessage", "gAddChildMessage",
     # will need to follow some of the same steps as the handle message method
     # for the gAddDataMessage class
     data<-mData(object)$data
-#    linkData<-mData(object)$linkData
     virtualData<-mData(object)$virtualData
     name<-dataName(object)
     type<-type(object)
@@ -535,12 +533,8 @@ setMethod("handleMessage", "gAddChildMessage",
 
     # reassign the child MVC List in the parent MVC object
     curChildList<-childMVCList(curMVC)
-#    print(curChildList)
-#    print(length(curChildList))
-#    print(name)
     curChildList[length(curChildList)+1]<-name
     childMVCList(curMVC)<-curChildList
-#    print(curChildList)
 
     # assign the parentMVC in the child MVC object
     parentMVC(childMVC)<-activeMVC

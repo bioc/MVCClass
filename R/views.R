@@ -7,8 +7,7 @@ setClass("genView", representation(dataName="character", win="GtkWindow",
 
 setClass("plotView", representation(plotDevice="numeric", plotPar="list",
          drArea="GtkDrawingArea"), contains="genView")
-#setClass("sPlotView", representation(dfRows="numeric", colx="numeric", 
-#         coly="numeric"), contains="plotView")
+
 # store the row names and column names rather than their indices
 setClass("sPlotView", representation(dfRows="character", colx="character",
          coly="character"), contains="plotView")
@@ -16,8 +15,6 @@ setClass("sPlotView", representation(dfRows="character", colx="character",
 setClass("spreadView", representation(clist="GtkCList"), 
          contains="genView")
 
-#setClass("graphView", representation(graphLayout="Ragraph"),
-#                          contains="plotView")
 # 7/28/05 put the graphLayout info in the graphModel object
 setClass("graphView", contains="plotView")
 
@@ -88,12 +85,6 @@ if (is.null(getGeneric("clist")))
             standardGeneric("clist"))
 setMethod("clist", "spreadView", function(object)
          object@clist)
-
-#if (is.null(getGeneric("graphLayout")))
-#  setGeneric("graphLayout", function(object)
-#            standardGeneric("graphLayout"))
-#setMethod("graphLayout", "graphView", function(object)
-#         object@graphLayout)
 
 if (is.null(getGeneric("ordering")))
   setGeneric("ordering", function(object)
@@ -204,16 +195,6 @@ setReplaceMethod("clist","spreadView",function(object, value)
          }
 )
 
-#if (is.null(getGeneric("graphLayout<-")))
-#  setGeneric("graphLayout<-", function(object,value)
-#            standardGeneric("graphLayout<-"))
-#setReplaceMethod("graphLayout", "graphView", function(object,value)
-#         {
-#           object@graphLayout<-value
-#           object
-#         }
-#)
-
 if (is.null(getGeneric("ordering<-")))
   setGeneric("ordering<-", function(object, value)
             standardGeneric("ordering<-"))
@@ -234,22 +215,6 @@ if (is.null(getGeneric("motionEvent")))
 if (is.null(getGeneric("clickEvent")))
   setGeneric("clickEvent", function(object, where, ...)
             standardGeneric("clickEvent"))
-
-#if (is.null(getGeneric("viewUpdateData")))
-#  setGeneric("viewUpdateData", function(object, where, ...)
-#            standardGeneric("viewUpdateData"))
-
-# added 3/28/05
-if (is.null(getGeneric("identifyLoc")))
-  setGeneric("identifyLoc", function(object, xyloc)
-            standardGeneric("identifyLoc"))
-
-setMethod("identifyLoc", "sPlotView",
-  function(object, xyloc)
-  {
-    identifyPoint(object, xyloc)
-  }
-)
 
 #########
 # added 6/5/05
@@ -385,7 +350,8 @@ setMethod("updateView", "graphView",
     dev.set(plotdev)
 
     # need to call drawAgNode based on the new node passed in vData
-    drawAgNode(vData$newNode)
+    # vData is a list of AgNodes that may have length > 1
+    x<-lapply(vData, drawAgNode)
 
     dev.set(curdev)
   }
@@ -413,7 +379,7 @@ setMethod("updateView", "heatmapView",
     modelData<-modelData(model)
     virtualData<-virtualData(model)
 
-    if (vData$colName == "hide")
+    if (any(vData$colName == "hide"))
     {
       # set the current device
       pDevice<-plotDevice(object)
@@ -662,8 +628,6 @@ setMethod("motionEvent", "sPlotView",
         curx<-gdkEventMotionGetX(event)
         cury<-gdkEventMotionGetY(event)
 
-        xyloc<-list(x=curx, y=cury)
-
         # convert to user coordinates
         xyInches<-pix2inches(curx, cury)
         xyUsr<-inches2usr(xyInches$x, xyInches$y)
@@ -680,7 +644,6 @@ setMethod("motionEvent", "sPlotView",
 
         if (curDev %in% plotDev)
         {
-#          checkPoint(curx, cury, object)
           curPoint<-identifyPoint(object, xyUsr)
 
           curIndex<-which(activeFun)
@@ -739,14 +702,9 @@ setMethod("clickEvent", "graphView",
         {
           curWin<-win(object)
 
-          xyloc<-list(x=where[["X"]], y=where[["Y"]])
-
           # convert to user coordinates
           xyUsr<-pix2usr(where[["X"]], where[["Y"]])      
-#          print(xyUsr)
-
           curNode<-identifyNode(object, xyUsr)
-#          print(curNode)
 
           if (!is.null(curNode))
           {
@@ -754,6 +712,56 @@ setMethod("clickEvent", "graphView",
             if (length(curIndex)==1)
             { 
               curEventFun<-leftButtonClick[[curIndex]][["eventFun"]]
+
+              # now call the function the user has set with the current
+              # point as the parameter
+              actualFun<-callFun(curEventFun)
+              do.call(actualFun, list(curNode))
+            }
+          }
+        }
+      }
+      if (gdkEventButtonGetButton(where)==2)
+      {
+        if (any(activeMBCFun))
+        {
+          curWin<-win(object)
+
+          # convert to user coordinates
+          xyUsr<-pix2usr(where[["X"]], where[["Y"]])      
+          curNode<-identifyNode(object, xyUsr)
+
+          if (!is.null(curNode))
+          {
+            curIndex<-which(activeMBCFun)
+            if (length(curIndex)==1)
+            { 
+              curEventFun<-middleButtonClick[[curIndex]][["eventFun"]]
+
+              # now call the function the user has set with the current
+              # point as the parameter
+              actualFun<-callFun(curEventFun)
+              do.call(actualFun, list(curNode))
+            }
+          }
+        }
+      }
+      if (gdkEventButtonGetButton(where)==3)
+      {
+        if (any(activeRBCFun))
+        {
+          curWin<-win(object)
+
+          # convert to user coordinates
+          xyUsr<-pix2usr(where[["X"]], where[["Y"]])      
+          curNode<-identifyNode(object, xyUsr)
+
+          if (!is.null(curNode))
+          {
+            curIndex<-which(activeRBCFun)
+            if (length(curIndex)==1)
+            { 
+              curEventFun<-rightButtonClick[[curIndex]][["eventFun"]]
 
               # now call the function the user has set with the current
               # point as the parameter
@@ -808,8 +816,6 @@ setMethod("motionEvent", "graphView",
         curx<-gdkEventMotionGetX(event)
         cury<-gdkEventMotionGetY(event)
 
-        xyloc<-list(x=curx, y=cury)
-
         # convert to user coordinates
         xyUsr<-pix2usr(curx, cury)
 
@@ -846,8 +852,6 @@ setMethod("motionEvent", "graphView",
     return(TRUE)
   }
 )
-
-
 
 ##########
 # 5/24/05
@@ -921,7 +925,6 @@ setMethod("initialize", "graphView",
     .Object@plotDevice<-retList$plotDevice
     .Object@plotPar<-retList$plotPar
     .Object@drArea<-retList$drArea
-#    .Object@graphLayout<-retList$graphLayout
 
     # need to update the virtualData slot in the model
     curMVC<-getMVC(dataName)

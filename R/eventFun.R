@@ -8,7 +8,8 @@
 #
 # a few notes:
 #  callFun must be a function that takes one parameter - an object of 
-#   class AgNode
+#   class AgNode (if the model is a graph) or a point (if the model is a 
+#   data frame)
 #  preprocessing functions must not take any parameters
 ##############
 # there may be no preprocessing functions
@@ -17,9 +18,6 @@ setClassUnion("characterNULL", members=c("character", "NULL"))
 setClass("gEventFun", representation(callFun="character", 
                                   shortName="character", 
                                   preprocessFun="characterNULL"))
-
-## there may be no preprocessing functions
-#setClassUnion("characterNULL", members=c("character", "NULL"))
 
 if (is.null(getGeneric("callFun")))
   setGeneric("callFun", function(object)

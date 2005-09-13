@@ -1,5 +1,6 @@
 #########
-# functions from iSPlot
+# some functions from iSPlot
+# and some are new
 #########
 
 ##################
@@ -11,7 +12,6 @@
 ##################
 identifyPoint<-function(curplot, xyloc)
 {
-#  print(xyloc)
   # get the cxy of the active plot
   cxy<-par("cxy")
   pointWidth<-cxy[1]
@@ -27,13 +27,11 @@ identifyPoint<-function(curplot, xyloc)
   # need to get the data from the model
   mvcList<-get("MVCList", mvcEnv)
   
-#  dfList<-get("dfList",dataEnv)
   curData<-getData(modelName=plotDf)
   rowIndices<-match(plotRows, rownames(curData))
   colxIndex<-match(plotX, colnames(curData))
   colyIndex<-match(plotY, colnames(curData))
-#  x<-curData[plotRows, plotX]
-#  y<-curData[plotRows, plotY]
+
   x<-curData[rowIndices, colxIndex]
   y<-curData[rowIndices, colyIndex]
 
@@ -76,6 +74,7 @@ identifyPoint<-function(curplot, xyloc)
 
 #############
 # setViewDataView allows the user to view the data
+# this should be put in winControl.R in iSNetwork
 #############
 setViewDataView<-function()
 {
@@ -96,7 +95,6 @@ setViewDataView<-function()
   gtkBoxPackStart(vbox, frMVC)
   assign("frMVC", frMVC, mvcEnv)
 
-#  loadedDF<-getLoadedDF()
   # 7/21/05
   # only allow users to make spreadsheet of the active MVC
   loadedDF<-activeMVC
@@ -166,6 +164,7 @@ setViewDataView<-function()
 
 ##########
 # different from the iSPlot version
+# check all of the loaded models and return only those that are of type dfModel
 ##########
 getLoadedDF<-function()
 {
@@ -197,6 +196,7 @@ testDfClass<-function(x)
 # setPlotDView sets the control window so it
 # shows the view of loaded dataframes to
 # choose which one to plot
+# should be put in winControl.R in iSNetwork
 ##############
 setPlotDView<-function()
 {
@@ -217,7 +217,6 @@ setPlotDView<-function()
   gtkBoxPackStart(vbox, frMVC)
   assign("frMVC", frMVC, mvcEnv)
 
-#  loadedDF<-getLoadedDF()
   # changed 7/21/05
   # only allow users to plot the active MVC
   loadedDF<-activeMVC
@@ -275,7 +274,6 @@ setPlotDView<-function()
         curDF<-getData(modelName=dataF)
 
         DFrows<-rownames(curDF)
-#        DFcolumns<-c(chosenX, chosenY)
 
         # 5/24/05 new message method
         vMessage<-new("gAddViewMessage", dataName=dataF, type="sPlotView",
@@ -488,30 +486,29 @@ initGraphView<-function(dataName, glayout, nShape)
   # set up the graph layout variable using agopen
   # temporarily set the shape and width so won't get font size errors
   nodeShape<-nShape
-#  nodeShape<-"ellipse"
 
   # the graph data
   actGraph<-getData(modelName=dataName)
   Sys.sleep(0.5)
 
-#  curlayout<-agopen(actGraph, name=dataName, nodeAttrs=makeNodeAttrs(actGraph, 
-#                shape=nodeShape, width=3))
   # for now make the labels on the nodes blank (because having trouble
   # plotting them)
   if (is.null(virData))
   {
-#    print(dataName)
     curlayout<-agopen(actGraph, name=dataName, nodeAttrs=makeNodeAttrs
                (actGraph, label="", shape=nodeShape, fillcolor="transparent"))
   }
   else
   {
     # use the fillcolors that are already in the virtualData slot
-    # not sure if other view info should be used (in addition to fillcolor)
+    # not sure if other view info should be used (in addition to fillcolor,
+    # like color)
     curFillColors<-unlist(lapply(AgNode(virData), fillcolor))
+    curColors<-unlist(lapply(AgNode(virData), color))
 #    print(curFillColors)
     curlayout<-agopen(actGraph, name=dataName, nodeAttrs=makeNodeAttrs
-               (actGraph, label="", shape=nodeShape, fillcolor=curFillColors))
+               (actGraph, label="", shape=nodeShape, color=curColors, 
+                fillcolor=curFillColors))
   }
 
   newRetList<-list(win=win, drArea=drArea, plotDevice=dev.cur(),
@@ -756,7 +753,6 @@ graphPlot<-function(curView)
   curName<-dataName(curView)
   curModel<-model(getMVC(curName))
   plot(curModel@virtualData)
-#  plot(curView@graphLayout)
 
   # reset the par slot
   plotPar(curView)<-par(no.readonly=TRUE)
@@ -813,14 +809,10 @@ scatterplot<-function(viewItem)
 
   # couldn't put in the parameter list directly 
   # note: may have more than one point here and this can cover up the change
-#  plot(plotDF, col=paramList$col, pch=paramList$pch)
   if (length(curvirtualData) > 0)
     plot(plotDF, col=paramList$col, pch=paramList$pch )
   else
     plot(plotDF)
-#  print(plotDF)
-#  print(paramList$col)
-#  print(paramList$pch)
 
   if (length(curvirtualData) > 0)
   {
@@ -958,83 +950,12 @@ createGtkDev<-function(w)
   return(list(win=w, drArea=drArea))
 }
 
-###########
-# checkPoint sees if the x,y values fall in a point from the dataframe
-# only called when the viewMode is identify
-###########
-checkPoint<-function(curx, cury, curPlot)
+################
+# getPlotDev makes a vector of the device element in the plotList
+################
+getPlotDev<-function(plotList)
 {
-  # expecting this to be a plot
-  activeView<-get("activeView", viewEnv) 
-#  print(activeView) 
-
-  # set the user parameter
-  curPar<-plotPar(curPlot)
-  par("usr"=curPar$usr)
-
-  curbg<-plotPar(curPlot)$bg
-  if (curbg=="transparent")
-    curbg<-"white"
-
-  if (is(activeView, "plotView"))
-  {
-    xyloc<-list(x=curx, y=cury)
-
-    # convert to user coordinates
-    xyInches<-pix2inches(curx, cury)
-    xyUsr<-inches2usr(xyInches$x, xyInches$y)
- 
-    curpt<-identifyPoint(curPlot, xyUsr)
-
-    if (!is.null(curpt))
-    {
-      # need to keep information about the current and old points
-      curPoint<-get("curIDpoint", viewEnv)
-
-      continue<-FALSE
-      if (length(curPoint$closestPoint) != length(curpt$closestPoint))
-        continue<-TRUE
-      else
-        if (any(curPoint$closestPoint != curpt$closestPoint))
-          continue<-TRUE
-      if (length(curPoint)==0)
-        continue<-TRUE
-
-      if (continue)
-      {
-        # remove old point highlight before adding new text
-        if (length(curPoint) > 0)
-        {
-          dfMessage<-new("gUpdateDataMessage", from=curPlot, where=curPoint)
-          handleMessage(dfMessage)
-
-          printText(curPoint,curPlot,curbg)
-        }
-        # now update new point
-        assign("curIDpoint",curpt,viewEnv)    
-
-        dfMessage<-new("gUpdateDataMessage", from=curPlot, where=curpt)
-
-        # now need to handle the message
-        handleMessage(dfMessage)      
-
-        printText(curpt,curPlot,get("highColor",dataEnv))
-      }
-    }
-
-    else
-    {
-      curPoint<-get("curIDpoint",viewEnv)
-      # also need to remove old point highlight
-      if (length(curPoint) > 0)
-      {
-        dfMessage<-new("gUpdateDataMessage", from=curPlot, where=curPoint)
-        handleMessage(dfMessage)
-
-        assign("curIDpoint",list(),viewEnv)
-        printText(curPoint,curPlot,curbg)
-      }
-    }
-  }
+  dev.ele<-lapply(plotList,function(x){plotDevice(x)})
+  dev.ele<-unlist(dev.ele)
+  return(dev.ele)
 }
-

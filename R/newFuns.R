@@ -35,14 +35,14 @@ getModelNames<-function(sort=TRUE)
 }
 
 #######
-## SHOULD PUT THIS IN MVCClass package
+## should this be in MVCClass package or iSNetwork????
 # load the data into the mvcEnv
 # data is the name of data variable
 # type determines the model class
 # name is the character string name of the model
 # linkData is the link data
 #######
-loadModel<-function(data, type, name, linkData=NULL, virtualData=NULL)
+loadModel<-function(data, type, name, linkData=list(), virtualData=NULL)
 {
   booLoad<-TRUE
   # should check that the model name is not already in use!!!
@@ -92,19 +92,6 @@ loadModel<-function(data, type, name, linkData=NULL, virtualData=NULL)
       setDisplayMenu(modelName(model(newMVC)))
     }
   }
-}
-
-########
-# need to get the methods that derive a new model
-########
-getMethodsForModel<-function(modelName)
-{
-  # first need to get the class type of the model
-  curModel<-getModel(modelName)
-  cmClass<-class(curModel)
-  modelMethods<-get("modelMethods", mvcEnv)
-  curMethods<-modelMethods[[cmClass]]
-  return(curMethods)
 }
 
 ############
