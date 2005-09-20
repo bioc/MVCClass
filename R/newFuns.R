@@ -2,6 +2,9 @@
 # new functions for these new classes
 ##########
 
+#######
+# called by many functions in MVCClass and iSNetwork
+#######
 getMVC<-function(mName)
 {
   mvcList<-get("MVCList", mvcEnv)
@@ -11,13 +14,9 @@ getMVC<-function(mName)
   return(curMVC)
 }
 
-getModel<-function(mName)
-{
-  curMVC<-getMVC(mName)
-  curModel<-model(curMVC)
-  return(curModel)
-}
-
+#########
+# called by many functions in MVCClass and iSNetwork
+#########
 getModelNames<-function(sort=TRUE)
 {
   mvcList<-get("MVCList", mvcEnv)
@@ -41,6 +40,8 @@ getModelNames<-function(sort=TRUE)
 # type determines the model class
 # name is the character string name of the model
 # linkData is the link data
+#
+# called by handleMessage method for gAddDataMessage
 #######
 loadModel<-function(data, type, name, linkData=list(), virtualData=NULL)
 {
@@ -96,6 +97,8 @@ loadModel<-function(data, type, name, linkData=list(), virtualData=NULL)
 
 ############
 # show a label in a Gtk window
+#
+# called by loadModel function
 ############
 showLabel<-function(lblText)
 {

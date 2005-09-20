@@ -9,6 +9,8 @@
 #
 # curplot is the plot information (one element from viewList)
 # xyloc is the x and y location that was clicked
+#
+# this is called by clickEvent and motionEvent for sPlotView
 ##################
 identifyPoint<-function(curplot, xyloc)
 {
@@ -72,297 +74,11 @@ identifyPoint<-function(curplot, xyloc)
     return(NULL)
 }
 
-#############
-# setViewDataView allows the user to view the data
-# this should be put in winControl.R in iSNetwork
-#############
-setViewDataView<-function()
-{
-  # get the controller environment for the active MVC
-  activeMVC<-get("activeMVC", mvcEnv)
-  curMVC<-getMVC(activeMVC)
-  controlEnv<-controller(curMVC)
-
-  # reset values before opening new view
-  if (length(get("frMVC", mvcEnv)) > 0)
-    setEmptyView()       
-
-  tab<-gtkTableNew(4, 4, TRUE)
-  vbox<-get("vBox", mvcEnv)
-  frMVC<-gtkFrameNew(label=activeMVC)
-  frMVC$Add(tab)  
-
-  gtkBoxPackStart(vbox, frMVC)
-  assign("frMVC", frMVC, mvcEnv)
-
-  # 7/21/05
-  # only allow users to make spreadsheet of the active MVC
-  loadedDF<-activeMVC
-
-  frAvail<-gtkFrame("Available Data")
-  boxForAvail<-gtkHBox(TRUE, 2)
-  sc<-gtkScrolledWindow()
-  sc$SetPolicy("automatic", "automatic")
-  availDfList<-gtkList()
-  if (length(loadedDF) > 0)
-    for (i in 1:length(loadedDF))
-    {
-      availDfListItem<-gtkListItemNewWithLabel(loadedDF[i])
-      availDfList$Add(availDfListItem)
-    }
-
-  gtkListSetSelectionMode(availDfList, 1)
-  sc$AddWithViewport(availDfList)
-  boxForAvail$PackStart(sc, expand=TRUE)
-  frAvail$Add(boxForAvail)
-  gtkTableAttach(tab, frAvail, 0, 2, 0, 4, ypadding=10, xpadding=5)
-
-  gtkAddCallback(availDfList, "select-child",
-    function(obj, objchild)
-    {
-      # need to get the active element in the list
-      selItem<-gtkChildren(objchild)[[1]][["label"]]
-      assign("showDF", selItem, controlEnv)
-      return(TRUE)
-    }
-  )
-
-  showButton<-gtkButton("Show")
-  gtkTableAttach(tab, showButton, 2, 4, 1, 3, ypadding=50, xpadding=70)
-
-  gtkAddCallback(showButton, "clicked",
-    function(obj)
-    {
-      showDF<-get("showDF", controlEnv)
-
-      # need to also check that this data is not currently being shown in
-      # a spreadsheet
-      if (showDF != "")
-      {
-        curMVC<-getMVC(showDF)
-        curviewList<-viewList(curMVC)
-        booSpreadView<-unlist(lapply(curviewList, function(x) {is(x, 
-                                 "spreadView")}))
-        # if there are any spread views then this data set is already shown
-        # in a spreadsheet
-        if (any(booSpreadView))
-          booCreate<-FALSE
-        else
-          booCreate<-TRUE
-
-        if (booCreate)
-        {
-          # create and handle a message to create a view
-          vMessage<-new("gAddViewMessage", dataName=showDF, type="spreadView")
-          handleMessage(vMessage)
-        }
-      }
-      return(TRUE)
-    }
-  )
-}
-
-##########
-# different from the iSPlot version
-# check all of the loaded models and return only those that are of type dfModel
-##########
-getLoadedDF<-function()
-{
-  mNames<-NULL
-  MVCList<-get("MVCList", mvcEnv)
-  if (length(MVCList) > 0)
-  {
-    modelList<-lapply(MVCList, model)
-    # need to check the class of model
-    booDF<-unlist(lapply(modelList, testDfClass))
-    if (any(booDF))
-    {
-      dfModels<-modelList[booDF]
-      mNames<-sort(unlist(lapply(dfModels, modelName)))
-    }
-  }
-  return(mNames)
-}
-
-########
-# check if x is of class dfModel
-########
-testDfClass<-function(x)
-{
-  is(x, "dfModel")
-}
-
-##############
-# setPlotDView sets the control window so it
-# shows the view of loaded dataframes to
-# choose which one to plot
-# should be put in winControl.R in iSNetwork
-##############
-setPlotDView<-function()
-{
-  # get the controller environment for the active MVC
-  activeMVC<-get("activeMVC", mvcEnv)
-  curMVC<-getMVC(activeMVC)
-  controlEnv<-controller(curMVC)
-
-  # reset values before opening new view
-  if (length(get("frMVC", mvcEnv)) > 0)
-    setEmptyView()
-
-  tab<-gtkTableNew(8, 8, TRUE)
-  vbox<-get("vBox", mvcEnv)
-  frMVC<-gtkFrameNew(label=activeMVC)
-  frMVC$Add(tab)  
-
-  gtkBoxPackStart(vbox, frMVC)
-  assign("frMVC", frMVC, mvcEnv)
-
-  # changed 7/21/05
-  # only allow users to plot the active MVC
-  loadedDF<-activeMVC
-
-  frLoaded<-gtkFrame("Loaded Data")
-  boxForLoaded<-gtkVBox(TRUE, 2)
-  sc<-gtkScrolledWindow()
-  sc$SetPolicy("automatic", "automatic")
-  loadedDfList<-gtkList()
-  if (length(loadedDF)>0)
-    for (i in 1:length(loadedDF))
-    {
-      loadedDfListItem<-gtkListItemNewWithLabel(loadedDF[i])
-      loadedDfList$Add(loadedDfListItem)
-    }
-
-  gtkListSetSelectionMode(loadedDfList, 1)
-  sc$AddWithViewport(loadedDfList)
-  boxForLoaded$PackStart(sc, expand=TRUE)
-  frLoaded$Add(boxForLoaded)
-  gtkTableAttach(tab, frLoaded, 0, 4, 0, 6, xpadding=10)
-
-  frVar<-gtkFrame("Data Variables")
-  gtkTableAttach(tab, frVar, 4, 8, 0, 6, xpadding=10)
-
-  gtkAddCallback(loadedDfList, "select-child",
-    function(obj, objchild)
-    {
-      # reset chosen X and Y because now looking at new dataframe
-      assign("chosenX", "", controlEnv)
-      assign("chosenY", "", controlEnv)
-
-      # need to the active element in the list
-      selItem<-gtkChildren(objchild)[[1]][["label"]]
-      assign("dataF", selItem, controlEnv)
-
-      setVariables(selItem, frVar)
-      return(TRUE)
-    }
-  )
-
-  plotBut<-gtkButton("Plot")
-  gtkTableAttach(tab, plotBut, 3, 5, 6, 8, xpadding=20, ypadding=20)
-
-  gtkAddCallback(plotBut, "clicked",
-    function(obj, ev)
-    {
-      # need to get the two plot variables and call plotting function
-      chosenX<-get("chosenX", controlEnv)
-      chosenY<-get("chosenY", controlEnv)
-      if (chosenX != "" && chosenY != "")
-      {
-        # then need to call plotting function
-        dataF<-get("dataF", controlEnv)
-        curDF<-getData(modelName=dataF)
-
-        DFrows<-rownames(curDF)
-
-        # 5/24/05 new message method
-        vMessage<-new("gAddViewMessage", dataName=dataF, type="sPlotView",
-                      dfRows=DFrows, colx=chosenX, coly=chosenY)
-#        print(vMessage)
-        handleMessage(vMessage)
-      }
-      return(TRUE)
-    }
-  )
-}
-
-##########
-# setVariables sets the dataframe variables in a list box
-#
-# dataF is the dataframe name, frVar is the frame that
-# will hold the dataframe variables
-##########
-setVariables<-function(modelName, frVar)
-{
-  # get the controller environment for the current model
-  curMVC<-getMVC(modelName)
-  controlEnv<-controller(curMVC)
-
-  # need to reset the button boxes before adding anything
-  resetVarButtonBoxes(frVar)
-
-  # need to add the button boxes along with the variable labels
-  varNames<-names(getData(modelName))
-
-  boxForVar<-gtkVBox(TRUE, 2)
-  sc<-gtkScrolledWindow()
-  sc$SetPolicy("automatic", "automatic")
-
-  XbuttonList<-list()
-  YbuttonList<-list()
-
-  if (length(varNames) > 0)
-  {
-    # length(varNames)=# of rows, 3 columns, homogenous=FALSE??
-    tab<-gtkTable(length(varNames), 3, FALSE)
-
-    for (i in 1:length(varNames))
-    {
-      XbuttonList[[i]]<-gtkToggleButton("X")
-#      XbuttonList[[i]]$SetUsize(10, 10)
-      YbuttonList[[i]]<-gtkToggleButton("Y")
-#      YbuttonList[[i]]$SetUsize(10, 10)
-      lab<-gtkLabel(varNames[i])
-#      lab$SetUsize(10, 10)
-      gtkTableAttach(tab, XbuttonList[[i]], 0, 1, i-1, i, xpadding=5)
-      gtkTableAttach(tab, YbuttonList[[i]], 1, 2, i-1, i, xpadding=5)
-      gtkTableAttach(tab, lab, 2, 3, i-1, i, xpadding=5)
-
-      XbuttonList[[i]]$AddCallback("clicked",
-        substitute(setToggleX(j, dataFr), list(j=i, dataFr=modelName)))
-      YbuttonList[[i]]$AddCallback("clicked",
-        substitute(setToggleY(j, dataFr),list(j=i, dataFr=modelName)))
-    }
-    sc$AddWithViewport(tab)
-  }
-  assign("toggleButtonXList", XbuttonList, controlEnv)
-  assign("toggleButtonYList", YbuttonList, controlEnv)
-
-  boxForVar$PackStart(sc, expand=FALSE)
-
-  frVar$Add(boxForVar)
-}
-
-###########
-# resetVarButtonBoxes removes all children from the frVar
-#
-# frVar is the frame containing the button boxes for the
-# dataframe variables
-###########
-resetVarButtonBoxes<-function(frVar)
-{
-  # remove all items from the frame
-  kids<-gtkContainerGetChildren(frVar)
-  if (length(kids) > 0)
-    for (i in 1:length(kids))
-    {
-      gtkWidgetDestroy(kids[[i]])
-    }
-}
-
 ######
 # make an interface for getting data, in case new
 # data types are added besides dataframe or matrix
+#
+# used by identifyPoint
 ######
 getData<-function(modelName)
 {
@@ -373,101 +89,10 @@ getData<-function(modelName)
   return(curData)
 }
 
-############
-# setToggleX sets the chosen X value
-#
-# j is the index of the button that just changed state
-# dataFr is the current dataframe
-############
-setToggleX<-function(j, dataFr)
-{
-  setToggleInactive(j, "X", dataFr)
-}
-
-##############
-# setToggleY sets the chosen Y value
-#
-# j is the index of the button that just changed state
-# dataFr is the current dataframe
-##############
-setToggleY<-function(j, dataFr)
-{
-  setToggleInactive(j, "Y", dataFr)
-}
-
-##############
-# setToggleInactive sets the toggle buttons so
-# only one button can be active at a time and it
-# also sets the chosenX/chosenY values for plotting
-#
-# j is the index of the button that just changed state
-# type is X or Y
-# dataFr is the current dataframe
-##############
-setToggleInactive<-function(j, type, dataFr)
-{
-  # get the controller environment for the current model
-  curMVC<-getMVC(dataFr)
-  controlEnv<-controller(curMVC)  
-
-  # need to check if there are two buttons active
-  XbuttonList<-get("toggleButtonXList", controlEnv)
-  YbuttonList<-get("toggleButtonYList", controlEnv)
-
-  indexActive<-0
-  numActive<-0
-  for (i in 1:length(XbuttonList))
-  {
-    if (type=="X")
-    {
-      if (gtkToggleButtonGetActive(XbuttonList[[i]])==TRUE)
-      {
-        numActive<-numActive+1
-        indexActive<-i
-      }
-    }
-    else
-    {
-      if (gtkToggleButtonGetActive(YbuttonList[[i]])==TRUE)
-      {
-        numActive<-numActive+1
-        indexActive<-i
-      }
-    }
-  }
-
-  if (numActive > 1)
-    for (i in 1:length(XbuttonList))
-    {
-      if (i != j)
-      {
-        if (type=="X")
-        {
-          gtkToggleButtonSetActive(XbuttonList[[i]], FALSE)
-        }
-        else
-        {
-          gtkToggleButtonSetActive(YbuttonList[[i]], FALSE)
-        }
-      }
-    }
-
-  # if there is only one active toggle button - set that to be chosen
-  else
-  {
-    # get the variable names
-    varNames<-names(getData(dataFr))
-
-    if (type=="X")
-      assign("chosenX", varNames[indexActive], controlEnv)
-    else
-      assign("chosenY", varNames[indexActive], controlEnv)
-  }
-}
-
-
 #########
 # 5/24/05 create a graph view through initialize method
+#
+# called by initialize method for a graphView object
 #########
 initGraphView<-function(dataName, glayout, nShape)
 {
@@ -519,6 +144,8 @@ initGraphView<-function(dataName, glayout, nShape)
 #########
 # 5/24/05 create a scatterplot view through initialize method
 # here just setting up the device
+#
+# called by initialize method for heatmapView and sPlotView
 #########
 initSPlotView<-function()
 {
@@ -537,6 +164,8 @@ initSPlotView<-function()
 
 #########
 # 5/24/05 create a spreadsheet view through initialize method
+#
+# called by initialize method for spreadView
 #########
 initSpreadView<-function(dfName)
 {
@@ -587,6 +216,8 @@ initSpreadView<-function(dfName)
 
 #########
 # 5/24/05 add events specifically for spreadsheets
+#
+# called by initialize method for spreadView
 #########
 addEventsforSpread<-function(curView)
 {
@@ -618,6 +249,8 @@ addEventsforSpread<-function(curView)
 
 ##########
 # 5/24/05 add events specifically for scatterplots
+#
+# called by initialize method for sPlotView
 ##########
 addEventsforSPlots<-function(curView)
 {
@@ -640,6 +273,8 @@ addEventsforSPlots<-function(curView)
 
 ############
 # 5/24/05 add events specifically for graphs
+#
+# called by initialize method for graphView
 ############
 addEventsforGraphs<-function(curView)
 {
@@ -664,6 +299,8 @@ addEventsforGraphs<-function(curView)
 # 5/24/05 add events for any type of view
 # this also adds the view to the viewlist and updates
 # the mvclist
+#
+# called by initialize method for all views
 ############
 addEventsforViews<-function(newView)
 {
@@ -738,9 +375,10 @@ addEventsforViews<-function(newView)
   return(newView)
 }
 
-
 #########
 # 5/24/05 create plot of graph
+#
+# called by initialize method for graphView
 #########
 graphPlot<-function(curView)
 {
@@ -768,6 +406,8 @@ graphPlot<-function(curView)
 # DFcolumns are the columns to use, dev is the device number
 # 
 # viewItem is a sPlotView object
+#
+# called by initialize method for sPlotView
 #################
 scatterplot<-function(viewItem)
 {
@@ -854,6 +494,8 @@ scatterplot<-function(viewItem)
 
 ###########
 # 9/1/05 create a heatmap view for an exprSet model
+#
+# called by initialize method for heatmapView
 ###########
 heatmapPlot<-function(viewItem)
 {
@@ -892,6 +534,8 @@ heatmapPlot<-function(viewItem)
 # setParamList is a function to set the parameter list for making a 
 # scatterplot
 # dataF is the dataframe and dfRows are the dataframe rows
+#
+# called by scatterplot function
 #################
 setParamList<-function(dataF,dfRows,plotObject)
 {
@@ -915,6 +559,8 @@ setParamList<-function(dataF,dfRows,plotObject)
 ################
 # createGtkDev is a function to create a Gtk device for plotting
 # -also adds a callback for the focus event
+#
+# called by initGraphView and initSPlotView functions
 ################
 createGtkDev<-function(w)
 {
@@ -950,12 +596,3 @@ createGtkDev<-function(w)
   return(list(win=w, drArea=drArea))
 }
 
-################
-# getPlotDev makes a vector of the device element in the plotList
-################
-getPlotDev<-function(plotList)
-{
-  dev.ele<-lapply(plotList,function(x){plotDevice(x)})
-  dev.ele<-unlist(dev.ele)
-  return(dev.ele)
-}
