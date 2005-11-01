@@ -1,4 +1,358 @@
 
+setOldClass("GtkWindow")
+setOldClass("GtkDrawingArea")
+setOldClass("GtkCList")
+
+
+##############
+# create a class for model objects
+##############
+# a virtual model class that all model classes will be derived from
+# modelData will be the actual model data, linkData will be any data
+# that links the model to its parent model (a list of 2 functions:
+# linkToParent and linkToChild), virtualData is any data that
+# is needed for views of the model, and modelName is the name of the model
+# (a way for the user to refer to the data)
+setClass("gModel", representation(modelData="ANY", linkData="list", 
+         virtualData="ANY", modelName="character"), contains=("VIRTUAL"))
+
+# couldn't get RagraphNULL to pass the installation - didn't recognize
+# Ragraph class
+#setClassUnion("RagraphNULL", members=c("Ragraph", "NULL"))
+
+# for a model that has graph data
+# initially the virtualData slot for graphModel will be NULL (until a 
+# view is created)
+#setClass("graphModel", representation(modelData="graph", 
+#                       virtualData="RagraphNULL"), contains="gModel")
+setClass("graphModel", representation(modelData="graph"), contains="gModel")
+
+# for a model that has expression data - 
+# the data list should include an exprSet object and maybe a vector of LL ids
+setClass("exprModel", representation(modelData="exprSet"), contains="gModel")
+# for a model that has data frame data
+setClass("dfModel", representation(modelData="data.frame", 
+                    virtualData="data.frame"), contains="gModel")
+
+########
+# methods
+########
+if (is.null(getGeneric("modelData")))
+  setGeneric("modelData", function(object)
+            standardGeneric("modelData"))
+setMethod("modelData", "gModel", function(object)
+         object@modelData)
+
+if (is.null(getGeneric("modelData<-")))
+  setGeneric("modelData<-", function(object,value)
+            standardGeneric("modelData<-"))
+setReplaceMethod("modelData", "gModel", function(object,value)
+         {
+           object@modelData<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("modelName")))
+  setGeneric("modelName", function(object)
+            standardGeneric("modelName"))
+setMethod("modelName", "gModel", function(object)
+         object@modelName)
+
+if (is.null(getGeneric("modelName<-")))
+  setGeneric("modelName<-", function(object,value)
+            standardGeneric("modelName<-"))
+setReplaceMethod("modelName", "gModel", function(object,value)
+         {
+           object@modelName<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("linkData")))
+  setGeneric("linkData", function(object)
+            standardGeneric("linkData"))
+setMethod("linkData", "gModel", function(object)
+         object@linkData)
+
+if (is.null(getGeneric("linkData<-")))
+  setGeneric("linkData<-", function(object,value)
+            standardGeneric("linkData<-"))
+setReplaceMethod("linkData", "gModel", function(object,value)
+         {
+           object@linkData<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("virtualData")))
+  setGeneric("virtualData", function(object)
+            standardGeneric("virtualData"))
+setMethod("virtualData", "gModel", function(object)
+         object@virtualData)
+
+if (is.null(getGeneric("virtualData<-")))
+  setGeneric("virtualData<-", function(object,value)
+            standardGeneric("virtualData<-"))
+setReplaceMethod("virtualData", "gModel", function(object,value)
+         {
+           object@virtualData<-value
+           object
+         }
+)
+
+##########
+# create a method to update a model
+##########
+if (is.null(getGeneric("updateModel")))
+  setGeneric("updateModel", function(object, type, data)
+            standardGeneric("updateModel"))
+
+
+
+
+###########
+# create a class for views
+###########
+# dataName will be the modelName
+setClass("genView", representation(dataName="character", win="GtkWindow",
+         winNum="numeric"), contains=("VIRTUAL"))
+
+setClass("plotView", representation(plotDevice="numeric", plotPar="list",
+         drArea="GtkDrawingArea"), contains="genView")
+
+# store the row names and column names rather than their indices
+setClass("sPlotView", representation(dfRows="character", colx="character",
+         coly="character"), contains="plotView")
+
+setClass("spreadView", representation(clist="GtkCList"), 
+         contains="genView")
+
+# 7/28/05 put the graphLayout info in the graphModel object
+setClass("graphView", contains="plotView")
+
+# 9/1/05 not sure if I need to store anything else about a heatmap
+# decided to store the list of row and column reorderings returned from the
+# heatmap function (just in case I need it later)
+setClass("heatmapView", representation(ordering="list"), contains="plotView")
+
+#####
+# accessor functions
+#####
+if (is.null(getGeneric("dataName")))
+  setGeneric("dataName", function(object)
+            standardGeneric("dataName"))
+setMethod("dataName", "genView", function(object)
+         object@dataName)
+
+if (is.null(getGeneric("win")))
+  setGeneric("win", function(object)
+            standardGeneric("win"))
+setMethod("win", "genView", function(object)
+         object@win)
+
+if (is.null(getGeneric("winNum")))
+  setGeneric("winNum", function(object)
+            standardGeneric("winNum"))
+setMethod("winNum", "genView", function(object)
+         object@winNum)
+
+if (is.null(getGeneric("plotDevice")))
+  setGeneric("plotDevice", function(object)
+            standardGeneric("plotDevice"))
+setMethod("plotDevice", "plotView", function(object)
+         object@plotDevice)
+
+if (is.null(getGeneric("plotPar")))
+  setGeneric("plotPar", function(object)
+            standardGeneric("plotPar"))
+setMethod("plotPar", "plotView", function(object)
+         object@plotPar)
+
+if (is.null(getGeneric("drArea")))
+  setGeneric("drArea", function(object)
+            standardGeneric("drArea"))
+setMethod("drArea", "plotView", function(object)
+         object@drArea)
+
+if (is.null(getGeneric("dfRows")))
+  setGeneric("dfRows", function(object)
+            standardGeneric("dfRows"))
+setMethod("dfRows", "sPlotView", function(object)
+         object@dfRows)
+
+if (is.null(getGeneric("colx")))
+  setGeneric("colx", function(object)
+            standardGeneric("colx"))
+setMethod("colx", "sPlotView", function(object)
+         object@colx)
+
+if (is.null(getGeneric("coly")))
+  setGeneric("coly", function(object)
+            standardGeneric("coly"))
+setMethod("coly", "sPlotView", function(object)
+         object@coly)
+
+if (is.null(getGeneric("clist")))
+  setGeneric("clist", function(object)
+            standardGeneric("clist"))
+setMethod("clist", "spreadView", function(object)
+         object@clist)
+
+if (is.null(getGeneric("ordering")))
+  setGeneric("ordering", function(object)
+            standardGeneric("ordering"))
+setMethod("ordering", "heatmapView", function(object)
+         object@ordering)
+
+#####
+# setting the slots
+#####
+if (is.null(getGeneric("dataName<-")))
+  setGeneric("dataName<-",function(object, value)
+            standardGeneric("dataName<-"))
+setReplaceMethod("dataName","genView",function(object, value)
+         {
+           object@dataName<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("win<-")))
+  setGeneric("win<-",function(object, value)
+            standardGeneric("win<-"))
+setReplaceMethod("win","genView",function(object, value)
+         {
+           object@win<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("winNum<-")))
+  setGeneric("winNum<-",function(object, value)
+            standardGeneric("winNum<-"))
+setReplaceMethod("winNum","genView",function(object, value)
+         {
+           object@winNum<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("plotDevice<-")))
+  setGeneric("plotDevice<-",function(object, value)
+            standardGeneric("plotDevice<-"))
+setReplaceMethod("plotDevice","plotView",function(object, value)
+         {
+           object@plotDevice<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("plotPar<-")))
+  setGeneric("plotPar<-",function(object, value)
+            standardGeneric("plotPar<-"))
+setReplaceMethod("plotPar","plotView",function(object, value)
+         {
+           object@plotPar<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("drArea<-")))
+  setGeneric("drArea<-",function(object, value)
+            standardGeneric("drArea<-"))
+setReplaceMethod("drArea","plotView",function(object, value)
+         {
+           object@drArea<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("dfRows<-")))
+  setGeneric("dfRows<-",function(object, value)
+            standardGeneric("dfRows<-"))
+setReplaceMethod("dfRows","sPlotView",function(object, value)
+         {
+           object@dfRows<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("colx<-")))
+  setGeneric("colx<-",function(object,value)
+            standardGeneric("colx<-"))
+setReplaceMethod("colx","sPlotView",function(object,value)
+         {
+           object@colx<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("coly<-")))
+  setGeneric("coly<-",function(object, value)
+            standardGeneric("coly<-"))
+setReplaceMethod("coly","sPlotView",function(object, value)
+         {
+           object@coly<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("clist<-")))
+  setGeneric("clist<-",function(object, value)
+            standardGeneric("clist<-"))
+setReplaceMethod("clist","spreadView",function(object, value)
+         {
+           object@clist<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("ordering<-")))
+  setGeneric("ordering<-", function(object, value)
+            standardGeneric("ordering<-"))
+setReplaceMethod("ordering", "heatmapView", function(object, value)
+         {
+           object@ordering<-value
+           object
+         }
+)
+
+#####
+# generic functions for gtk events on view objects
+#####
+if (is.null(getGeneric("motionEvent")))
+  setGeneric("motionEvent", function(object, event,...)
+            standardGeneric("motionEvent"))
+
+if (is.null(getGeneric("clickEvent")))
+  setGeneric("clickEvent", function(object, where, ...)
+            standardGeneric("clickEvent"))
+
+#########
+# added 6/5/05
+# make method to update a view depending on the view object
+# vData is the view data needed to update the view
+#########
+if (is.null(getGeneric("updateView")))
+  setGeneric("updateView", function(object, vData)
+            standardGeneric("updateView"))
+
+
+
+########
+# added 6/5/05
+# make a method to redraw a view depending on the view object
+########
+if (is.null(getGeneric("redrawView")))
+  setGeneric("redrawView", function(object)
+            standardGeneric("redrawView"))
+
+
+
+
+
+
 #############
 # create a class for MVC objects
 #############

@@ -1,0 +1,34 @@
+# really just need to import exprSet class from Biobase!!
+importClassesFrom(Biobase, exprSet)
+
+# export all classes
+exportClasses(gEventFun, 
+              gAddDataMessage, gAddViewMessage, gUpdateDataMessage,
+              gUpdateViewMessage, gAddChildMessage, gUpdateParentMessage,
+              gUpdateChildMessage, gMessage, gAddMessage, gUpdateMessage,
+              graphModel, exprModel, dfModel, gModel,
+              MVC, 
+              plotView, sPlotView, spreadView, graphView, heatmapView,
+              genView)
+
+# export all generic functions and methods
+# not sure if I need to export all assignment methods (those with '<-')???
+exportMethods(callFun, shortName, preprocessFun, 
+              from, childUpdateDataMessage, parentUpdateDataMessage,
+              childName, type, mData, dataName, handleMessage,
+              modelData, modelName, linkData, virtualData,
+              updateModel,
+              model, viewList, controller, parentMVC, childMVCList, 
+              win, winNum, plotDevice, plotPar, drArea, dfRows,
+              colx, coly, clist, ordering, motionEvent, clickEvent,
+              updateView, redrawView, 
+              "callFun<-", "shortName<-", "preprocessFun<-",
+              "from<-", "childUpdateDataMessage<-", 
+              "parentUpdateDataMessage<-", "childName<-", "type<-", "mData<-",
+              "dataName<-",
+              "modelData<-", "modelName<-", "linkData<-", "virtualData<-",
+              "model<-", "viewList<-", "controller<-", "parentMVC<-",
+              "childMVCList<-",  
+              "win<-", "winNum<-", "plotDevice<-", "plotPar<-",
+              "drArea<-", "dfRows<-", "colx<-", "coly<-", "clist<-",
+              "ordering<-")
