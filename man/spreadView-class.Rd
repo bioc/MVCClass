@@ -35,8 +35,8 @@ Class \code{"genView"}, directly.
 }
 \section{Methods}{
   \describe{
-    \item{clist<-}{Returns the \code{clist} slot }
-    \item{clist}{Sets the \code{clist} slot }
+    \item{clist<-}{Sets the \code{clist} slot }
+    \item{clist}{Returns the \code{clist} slot }
 	 }
 }
 \author{ Elizabeth Whalen }

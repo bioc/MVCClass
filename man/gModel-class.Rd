@@ -38,14 +38,14 @@
 }
 \section{Methods}{
   \describe{
-    \item{linkData<-}{Returns the \code{linkData} slot }
-    \item{linkData}{Sets the \code{linkData} slot }
-    \item{modelData<-}{Returns the \code{modelData} slot }
-    \item{modelData}{Sets the \code{modelData} slot }
-    \item{modelName<-}{Returns the \code{modelName} slot }
-    \item{modelName}{Sets the \code{modelName} slot }
-    \item{virtualData<-}{Returns the \code{virtualData} slot }
-    \item{virtualData}{Sets the \code{virtualData} slot }
+    \item{linkData<-}{Sets the \code{linkData} slot }
+    \item{linkData}{Returns the \code{linkData} slot }
+    \item{modelData<-}{Sets the \code{modelData} slot }
+    \item{modelData}{Returns the \code{modelData} slot }
+    \item{modelName<-}{Sets the \code{modelName} slot }
+    \item{modelName}{Returns the \code{modelName} slot }
+    \item{virtualData<-}{Sets the \code{virtualData} slot }
+    \item{virtualData}{Returns the \code{virtualData} slot }
 	 }
 Also, all models will have an updateModel method that will be defined in the
 packages that use this package (for example, iSPlot and iSNetwork).  The

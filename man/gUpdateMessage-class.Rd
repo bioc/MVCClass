@@ -33,12 +33,12 @@ Class \code{"gMessage"}, directly.
 }
 \section{Methods}{
   \describe{
-    \item{dataName<-}{Returns the \code{dataName} slot }
-    \item{dataName}{Sets the \code{dataName} slot }
-    \item{mData<-}{Returns the \code{mData} slot }
-    \item{mData}{Sets the \code{mData} slot }
-    \item{type<-}{Returns the \code{type} slot }
-    \item{type}{Sets the \code{type} slot }
+    \item{dataName<-}{Sets the \code{dataName} slot }
+    \item{dataName}{Returns the \code{dataName} slot }
+    \item{mData<-}{Sets the \code{mData} slot }
+    \item{mData}{Returns the \code{mData} slot }
+    \item{type<-}{Sets the \code{type} slot }
+    \item{type}{Returns the \code{type} slot }
 	 }
 }
 \author{ Elizabeth Whalen }

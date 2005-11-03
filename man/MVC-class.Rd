@@ -48,16 +48,16 @@ Objects can be created by calls of the form \code{new("MVC", ...)}.
 }
 \section{Methods}{
   \describe{
-    \item{childMVCList<-}{Returns the \code{childMVCList} slot }
-    \item{childMVCList}{Sets the \code{childMVCList} slot }
-    \item{controller<-}{Returns the \code{controller} slot }
-    \item{controller}{Sets the \code{controller} slot }
-    \item{model<-}{Returns the \code{model} slot }
-    \item{model}{Sets the \code{model} slot }
-    \item{parentMVC<-}{Returns the \code{parentMVC} slot }
-    \item{parentMVC}{Sets the \code{parentMVC} slot }
-    \item{viewList<-}{Returns the \code{viewList} slot }
-    \item{viewList}{Sets the \code{viewList} slot }
+    \item{childMVCList<-}{Sets the \code{childMVCList} slot }
+    \item{childMVCList}{Returns the \code{childMVCList} slot }
+    \item{controller<-}{Sets the \code{controller} slot }
+    \item{controller}{Returns the \code{controller} slot }
+    \item{model<-}{Sets the \code{model} slot }
+    \item{model}{Returns the \code{model} slot }
+    \item{parentMVC<-}{Sets the \code{parentMVC} slot }
+    \item{parentMVC}{Returns the \code{parentMVC} slot }
+    \item{viewList<-}{Sets the \code{viewList} slot }
+    \item{viewList}{Returns the \code{viewList} slot }
 	 }
 }
 \author{ Elizabeth Whalen }

@@ -37,8 +37,8 @@ Class \code{"gMessage"}, by class \code{"gUpdateMessage"}.
 }
 \section{Methods}{
   \describe{
-    \item{from<-}{Returns the \code{from} slot }
-    \item{from}{Sets the \code{from} slot }
+    \item{from<-}{Sets the \code{from} slot }
+    \item{from}{Returns the \code{from} slot }
 	 }
 }
 \author{ Elizabeth Whalen }

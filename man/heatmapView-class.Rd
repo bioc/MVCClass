@@ -40,8 +40,8 @@ Class \code{"genView"}, by class \code{"plotView"}.
 }
 \section{Methods}{
   \describe{
-    \item{ordering<-}{Returns the \code{ordering} slot }
-    \item{ordering}{Sets the \code{ordering} slot }
+    \item{ordering<-}{Sets the \code{ordering} slot }
+    \item{ordering}{Returns the \code{ordering} slot }
 	 }
 }
 \author{ Elizabeth Whalen }

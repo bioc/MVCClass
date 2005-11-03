@@ -34,9 +34,9 @@ Class \code{"gMessage"}, directly.
 }
 \section{Methods}{
   \describe{
-    \item{childUpdateDataMessage<-}{Returns the \code{childUpdateDataMessage}
+    \item{childUpdateDataMessage<-}{Sets the \code{childUpdateDataMessage}
     slot }
-    \item{childUpdateDataMessage}{Sets the \code{childUpdateDataMessage} slot }
+    \item{childUpdateDataMessage}{Returns the \code{childUpdateDataMessage} slot }
 	 }
 }
 \author{ Elizabeth Whalen }

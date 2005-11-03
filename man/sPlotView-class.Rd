@@ -52,12 +52,12 @@ Class \code{"genView"}, by class \code{"plotView"}.
 }
 \section{Methods}{
   \describe{
-    \item{colx<-}{Returns the \code{colx} slot }
-    \item{colx}{Sets the \code{colx} slot }
-    \item{coly<-}{Returns the \code{coly} slot }
-    \item{coly}{Sets the \code{coly} slot }
-    \item{dfRows<-}{Returns the \code{dfRows} slot }
-    \item{dfRows}{Sets the \code{dfRows} slot }
+    \item{colx<-}{Sets the \code{colx} slot }
+    \item{colx}{Returns the \code{colx} slot }
+    \item{coly<-}{Sets the \code{coly} slot }
+    \item{coly}{Returns the \code{coly} slot }
+    \item{dfRows<-}{Sets the \code{dfRows} slot }
+    \item{dfRows}{Returns the \code{dfRows} slot }
 	 }
 }
 \author{ Elizabeth Whalen }

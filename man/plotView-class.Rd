@@ -47,12 +47,12 @@ Class \code{"genView"}, directly.
 }
 \section{Methods}{
   \describe{
-    \item{drArea<-}{Returns the \code{drArea} slot }
-    \item{drArea}{Sets the \code{drArea} slot }
-    \item{plotDevice<-}{Returns the \code{plotDevice} slot }
-    \item{plotDevice}{Sets the \code{plotDevice} slot }
-    \item{plotPar<-}{Returns the \code{plotPar} slot }
-    \item{plotPar}{Sets the \code{plotPar} slot }
+    \item{drArea<-}{Sets the \code{drArea} slot }
+    \item{drArea}{Returns the \code{drArea} slot }
+    \item{plotDevice<-}{Sets the \code{plotDevice} slot }
+    \item{plotDevice}{Returns the \code{plotDevice} slot }
+    \item{plotPar<-}{Sets the \code{plotPar} slot }
+    \item{plotPar}{Returns the \code{plotPar} slot }
 	 }
 Also, all classes that inherit from plotView will have clickEvent and
 motionEvent methods.  The clickEvent method will be called whenever a user

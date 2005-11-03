@@ -35,12 +35,12 @@
 }
 \section{Methods}{
   \describe{
-    \item{dataName<-}{Returns the \code{dataName} slot }
-    \item{dataName}{Sets the \code{dataName} slot }
-    \item{win<-}{Returns the \code{win} slot }
-    \item{win}{Sets the \code{win} slot }
-    \item{winNum<-}{Returns the \code{winNum} slot }
-    \item{winNum}{Sets the \code{winNum} slot }
+    \item{dataName<-}{Sets the \code{dataName} slot }
+    \item{dataName}{Returns the \code{dataName} slot }
+    \item{win<-}{Sets the \code{win} slot }
+    \item{win}{Returns the \code{win} slot }
+    \item{winNum<-}{Sets the \code{winNum} slot }
+    \item{winNum}{Returns the \code{winNum} slot }
 	 }
 Also, all view objects will have two methods, redrawView and updateView, that
 will define how a view should be redrawn when the underlying data has
