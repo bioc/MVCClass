@@ -99,7 +99,7 @@ structure for the model classes.  Here the virtual class,
 \Robject{gModel}, has the slots modelData, linkData, virtualData, and
 modelName.  These four slots are common information that all models will
 need.  The modelData slot is the data set for this model, the linkData slot is
-a list of two functions, \Rfunction{linkToParent} and \Rfunction{linkToChild},
+a list of two functions, \Rfunction{toParent} and \Rfunction{fromParent},
 which link this model to its parent and child models, respectively (see Section
 \ref{Sec:MVC}), the virtualData slot is data pertaining to the views
 that needs to be stored with the model so that it can be shown in all views of
@@ -278,7 +278,7 @@ shown in the figure below.
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.7}{\includegraphics{VigMessageClass2.jpg}}
+    \scalebox{0.7}{\includegraphics{newVigMessageClass2.jpg}}
     \caption{ Inheritance for Message Classes that are Passed Between MVCs. }
     \label{Fig:BetwMess}
   \end{center}
@@ -299,14 +299,13 @@ are ``exprSet'', ``graph'', or ``data.frame'').
 
 The next two message classes pertain to updating MVC objects when a parent MVC
 or child MVC object has changed.  These classes are
-\Robject{gUpdateParentMessage} and \Robject{gUpdateChildMessage} and they both
+\Robject{gSendParentMessage} and \Robject{gSendChildMessage} and they both
 inherit from the \Robject{gMessage} class, as shown in Figure
-\ref{Fig:BetwMess}.  Even though they are both update messages, they do not
-inherit from the \Robject{gUpdateMessage} class because the information they
+\ref{Fig:BetwMess}.  The information these two classes
 need to contain is a \Robject{gUpdateDataMessage} object.  Thus, the
-\Robject{gUpdateParentMessage} class has one slot, childUpdateDataMessage, and
+\Robject{gSendParentMessage} class has one slot, childUpdateDataMessage, and
 this slot contains the \Robject{gUpdateDataMessage} object that was used to
-update the child model.  Similarly, the \Robject{gUpdateChildMessage} class
+update the child model.  Similarly, the \Robject{gSendChildMessage} class
 has two slots, parentUpdateDataMessage and childName, where the
 parentUpdateDataMessage slot contains the \Robject{gUpdateDataMessage} object
 that was used to update the parent model and the childName slot contains the
