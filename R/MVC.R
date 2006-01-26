@@ -10,7 +10,7 @@ setOldClass("GtkCList")
 # a virtual model class that all model classes will be derived from
 # modelData will be the actual model data, linkData will be any data
 # that links the model to its parent model (a list of 2 functions:
-# linkToParent and linkToChild), virtualData is any data that
+# toParent and fromParent), virtualData is any data that
 # is needed for views of the model, and modelName is the name of the model
 # (a way for the user to refer to the data)
 setClass("gModel", representation(modelData="ANY", linkData="list", 
@@ -119,7 +119,7 @@ setClass("genView", representation(dataName="character", win="GtkWindow",
          winNum="numeric"), contains=("VIRTUAL"))
 
 setClass("plotView", representation(plotDevice="numeric", plotPar="list",
-         drArea="GtkDrawingArea"), contains="genView")
+         drArea="GtkDrawingArea"), contains=c("genView", "VIRTUAL"))
 
 # store the row names and column names rather than their indices
 setClass("sPlotView", representation(dfRows="character", colx="character",

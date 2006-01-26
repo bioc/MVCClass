@@ -158,8 +158,9 @@ Gtk spreadsheet object.
 When creating a plot of a data set, there is a general class, called
 \Robject{plotView}, that has the slots, plotDevice, plotPar, and drArea, which
 store the device number of the plot, the plotting parameters, and the Gtk
-drawing area object, respectively.  This class is not intended to have any
-objects as it just represents a general plot.  The plot classes that can have
+drawing area object, respectively.  This class is a virtual class because it
+is not intended to have any objects as it just represents a general plot.  The
+plot classes that can have
 objects are the specific plot classes, \Robject{sPlotView},
 \Robject{graphView}, and \Robject{heatmapView}, which inherit from the
 \Robject{plotView} class.  
@@ -230,9 +231,8 @@ controller object: an add and an update message.  Both the add message,
 contain three slots, dataName, mData, and type.  dataName is the character
 string that gives the name of the model, mData is a list of data needed to
 perform the addition or alteration operation, and type is a character string
-that gives the type of addition or alteration to perform.  Although
-\Robject{gAddMessage} and \Robject{gUpdateMessage} are not virtual classes, it
-is not intended to create objects of these classes.
+that gives the type of addition or alteration to perform.  Both
+\Robject{gAddMessage} and \Robject{gUpdateMessage} are virtual classes.
 
 Since adding a view requires different information and methods from adding a
 model (and similarly with updating views versus models), it makes sense to

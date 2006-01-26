@@ -4,8 +4,8 @@ importClassesFrom(Biobase, exprSet)
 # export all classes
 exportClasses(gEventFun, 
               gAddDataMessage, gAddViewMessage, gUpdateDataMessage,
-              gUpdateViewMessage, gAddChildMessage, gUpdateParentMessage,
-              gUpdateChildMessage, gMessage, gAddMessage, gUpdateMessage,
+              gUpdateViewMessage, gAddChildMessage, gSendParentMessage,
+              gSendChildMessage, gMessage, gAddMessage, gUpdateMessage,
               graphModel, exprModel, dfModel, gModel,
               MVC, 
               plotView, sPlotView, spreadView, graphView, heatmapView,

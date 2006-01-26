@@ -12,10 +12,11 @@
 \usepackage{graphics}
 \usepackage{graphicx}
 
-\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Rfunction}[1]{{\textbf{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
 \newcommand{\Rslot}[1]{\textsl{#1}}
+\newcommand{\Rclass}[1]{\textsf{#1}}
 
 \begin{document}
 
@@ -29,7 +30,7 @@
 \textbf{Creating Linked, Interactive Views to \linebreak Explore Linked Data} \\
 \vspace{1in}
 \textbf{Dana-Farber Cancer Institute}\\ 
-\textbf{December 19, 2005} \\
+\textbf{January 25, 2006} \\
 \vspace{1in} 
 \textbf{Elizabeth Whalen} \\
 \end{center}
@@ -44,48 +45,47 @@
 
 There are many ways to visualize multivariate data where more than
 two or three dimensions are needed to view the data.  Several of these ideas
-were discussed in a previous paper, titled ``Creating Linked, Interactive
-Views to Explore Multivariate Data'' \cite{EW05}, so the focus in this paper
+were discussed in previous work \cite{EW05}, so the focus in this paper
 is on one specific method of visualizing multivariate data that is
 particularly useful for exploratory data analysis; creating linked,
 interactive views of linked data sets.  
 
-First brief definitions of linked views, interactive views and linked data
-sets are given.  Linked views mean that if a component that represents
-data (such as a point on a plot or a row in a spreadsheet) changes its
-appearance on one view, then the corresponding component on a second view
-also changes its appearance.  For components on different views to be
-corresponding, the data displayed in those components must come from the same
-entity in a model.  As an example, suppose that the model consisted of four
-variables for the fifty states' murder rate, assault rate, rape rate, and
-percent of population living in urban areas.  Now the model could be
-represented as a matrix of four columns by fifty rows with four columns for
-the four variables and fifty rows for the fifty states.  In this model, the
-entities are the states.  If two scatterplots were created as views of
-this model, where the first plot displayed murder rate versus assault rate and
-the second plot displayed rape rate versus percent urban population, then the
-points on each plot that referred to the state of Montana are
-corresponding components.   Linked views, which have a long history in
-statistics, are now considered a standard feature of interactive data
-visualization software \cite{GGobi}.  Linked views have been implemented in
-several pieces of statistical software, such as XLisp-Stat and GGobi.
-Implementing linked views is based on the model-view-controller (MVC) design
-\cite{DesignPatterns}, which is a widely used and well understood paradigm.
-The MVC design is discussed in more detail in Section \ref{Ssec:Design}.
+First definitions of linked views, interactive views and linked data
+sets are given in the following paragraphs.  Linked views mean that if a
+component that represents data (such as a point on a plot or a row in a
+spreadsheet) changes its appearance on one view, then the corresponding
+component on a second view also changes its appearance.  For components on
+different views to be corresponding, the data displayed in those components
+must come from the same entity in a model.  As an example, suppose that the
+model consists of the gene expression levels from four samples.  If the same
+one hundred genes are studied in the four samples, then the model could be
+represented as a matrix of four columns by one hundred rows with four columns
+for the four samples and one hundred rows for the one hundred genes.  In this
+model, the entities are the genes.  If two scatterplots are created as views
+of this model, where the first plot displays sample one versus sample two and
+the second plot displays sample three versus sample four, then the points on
+each plot that referred to the same gene are corresponding components.  Linked
+views, which have a long history in statistics, are now considered a standard
+feature of interactive data visualization software \cite{GGobi}.  Linked views
+have been implemented in several pieces of statistical software, such as
+XLisp-Stat \cite{Lisp} and GGobi \cite{GGobiMan}.  Implementing linked views
+is based on the model-view-controller (MVC) design \cite{DesignPatterns},
+which is a widely used and well understood paradigm.  The MVC design is
+discussed in more detail in Section \ref{Ssec:Design}.
 
-Interactivity is an idea that is familiar from using the Internet.  For
-example, clicking on a hyperlink on a web page results in a new web page
+Interactivity is an idea that is familiar from using an Internet browser.
+Clicking on a hyperlink on a web page results in a new web page
 opening.  Another example is clicking on the login button after entering a
 user name and password to view one's email.  Interactivity means that there is
 a response to some user action.  It is a powerful paradigm and allows users to
 quickly navigate and explore complex documents or complex data sets.  As an
-example, suppose that a user has two views: one view is a graph of molecular
-functions for genes and the other view is a heatmap of gene expression data.
-If the user clicks on a node that represents a particular molecular function,
-then the response to this action could be to highlit all genes in the heatmap
-view that express this molecular function.  This interactivity allows the
-user to quickly see if genes with the same molecular function have similar
-expression levels. 
+example, suppose that a user has two views: one view is a graph representing
+the molecular function of genes and the other view is a heatmap of gene
+expression data.  If the user clicks on a node that represents a particular
+molecular function, then the response to this action could be to highlight all
+genes in the heatmap view that correspond to this molecular function.  This
+interactivity allows the user to quickly see if genes with the same molecular
+function have similar expression levels. 
 
 One particular model for creating interactive applications involves three
 components: some user action or input, which is referred to as an event;
@@ -97,15 +97,15 @@ graphical user interface (GUI), to pressing certain keys.  Events are
 interpreted based on which window has focus.  For example, in the XWindows
 system, if a user types C on the keyboard and the window that has focus is a
 text editor, then the letter C is printed on the text editor's screen.
-Any other open windows that do not have
-focus do not respond to this event.  The callback function is a unique
-function because its signature is determined by the event that the callback
-function is linked to.  The parameters of the callback function may include
-information about the event, such as the on screen location of the event, and
-information about the object that had focus when the event occurred, such as a
-button on the GUI.  The signal handler is the piece that must look to see if
-an event has occurred and then when the event has occurred, the signal handler
-calls the appropriate callback function.  
+Any other open windows that do not have focus do not respond to this event.
+The callback function is a unique function because its signature is determined
+by the event that the callback function is linked to.  The parameters passed
+to the callback function may include information about the event, such as the
+on screen location of the event, and information about the object that had
+focus when the event occurred, such as a button on the GUI.  The signal
+handler is the piece that must look to see if an event has occurred and then
+when the event has occurred, the signal handler calls the appropriate callback
+function. 
 
 The strengths of this model of interactivity are that programmers can decide
 which events to react to by deciding which signal handlers to implement,
@@ -134,7 +134,7 @@ emitted.
 
 \begin{figure}[!h]
   \begin{center}    
-    \scalebox{0.6}{\includegraphics{Event.jpg}}
+    \scalebox{0.55}{\includegraphics{Event.jpg}}
     \caption{ Flow Chart of the Response to an Event. }
     \label{Fig:Event}
   \end{center}
@@ -173,33 +173,41 @@ Figure \ref{Fig:firstMP}.  In this figure, there are two views, one view of
 data set 1 and one view of data set 2.  Data set 1 and data set 2 are linked.
 When a user initially interacts with the scatterplot view of data set 2, the
 response to this interaction is to tell data set 2 to update itself (this is
-indicated on the figure as a circled 1).  Then in step 2, data set 2 tells the
+indicated on the figure as a circled 1).  Then in Step 2, data set 2 tells the
 scatterplot view that is should update itself in response to the change in the
-data.  Next, in step 3, because data set 2 has changed and because it is
+data.  Next, in Step 3, because data set 2 has changed and because it is
 linked to data set 1, data set 2 sends information to data set 1 about the
-change.  In step 4, the information from data set 2 is converted into
-information that data set 1 can understand.  In step 5, this information is
-received by data set 1 and data set 1 updates its data.  Finally, in step 6,
+change.  In Step 4, the information from data set 2 is converted into
+information that data set 1 can understand.  In Step 5, this information is
+received by data set 1 and data set 1 updates its data.  Finally, in Step 6,
 data set 1 tells its view to update itself.  This example shows the components
 and the communication between the components that are necessary to create
 linked views of underlying linked data sets.  
 
-In the design presented in this paper, the components consist of MVC objects
-and communication within and between MVC objects is performed by message
-objects.  This solution uses the power and simplicity of the MVC design and
-expands it to the multiple data set problem.  Now we can build on the original
-MVC design, which has been well tested, instead of starting a new design from
-scratch.  The strength of this multiple linked MVC design is that it uses MVC
-components, which can be individually created and then linked.  Thus, these
-components are reusable.  These design decisions are discussed further in
-Sections \ref{Sec:OneMVC} and \ref{Sec:MultMVC}. 
+In the design presented in this paper, the components consist of \Robject{MVC}
+objects and communication within and between \Robject{MVC} objects is
+performed by message objects.  This solution uses the power and simplicity of
+the MVC design and expands it to the multiple data set problem.  Now we can
+build on the original MVC design, which has been well tested, instead of
+starting a new design from scratch.  The strength of this multiple linked MVC
+design is that it uses MVC components, which can be individually created and
+then linked.  Thus, these components are reusable.  These design decisions are
+discussed further in Sections \ref{Sec:OneMVC} and \ref{Sec:MultMVC}. 
 
 %\clearpage
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.6}{\includegraphics{firstMessagePassing.jpg}}
-    \caption{ Linked Views of Linked Data Sets. }
+    \scalebox{0.55}{\includegraphics{firstMessagePassing.jpg}}
+    \caption{ Linked views of linked Data Sets.  When a user interacts with
+      the y versus x scatterplot, the first step, indicated by a circled one,
+      is to tell data set 2 to update.  Then all views of data set 2 must be
+      updated.  Next any data that are linked to data set 2 must be notified
+      that data set 2 changed.  This information from data set 2 must be
+      altered so that it can be understood by linked data sets, which is shown
+      in the fourth step.  Finally, data set 1 is notified that it should
+      update in response to the change in data set 2 and then all views of
+      data set 1 are updated. }
     \label{Fig:firstMP}
   \end{center}
 \end{figure}
@@ -213,12 +221,13 @@ visualize data from multiple data sets is helpful to understand the
 relationships between variables.  Thus, after discussing the limitations of
 the MVC design in Section \ref{Ssec:Limit}, an extension of the MVC design is
 discussed in Section \ref{Sec:Extend}.  This extension supports the creation of
-linked MVC objects.  The design of individual MVC objects is discussed in
-Section \ref{Sec:OneMVC} while the implementation of linked MVC objects is
-discussed in Section \ref{Sec:MultMVC}.  The goals of the software discussed
-in this paper are to create linked views of linked data sets, to create
-interactive views where the response to an event can be changed, and to create
-an extensible design that allows future users to make additions.
+linked \Robject{MVC} objects.  The design of individual \Robject{MVC} objects
+is discussed in 
+Section \ref{Sec:OneMVC} while the implementation of linked \Robject{MVC}
+objects is discussed in Section \ref{Sec:MultMVC}.  The goals of the software
+discussed in this paper are to create linked views of linked data sets, to
+create interactive views where the response to an event can be changed, and to
+create an extensible design that allows future users to make additions.
 
 \subsection{Design and Implementation of Linked, Interactive
   Views}\label{Ssec:Design} 
@@ -246,7 +255,7 @@ affecting each other.
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.6}{\includegraphics{ExMVC.jpg}}
+    \scalebox{0.5}{\includegraphics{ExMVC.jpg}}
     \caption{ A Model with its Views. }
     \label{Fig:ExMVC}
   \end{center}
@@ -397,12 +406,13 @@ of linking views based on multiple data sets needs to be designed.
 
 \subsection{Multiple MVC Objects}\label{Ssec:MMVC}
 
-A more straightforward approach may be to link MVCs.  Each MVC is a coherent
-object and the interactions between MVCs are encapsulated in a set of
-messages.  We use one MVC object to handle each data set.  Thus, within a MVC
-object, one can create linked views of that particular data set, using the
-standard MVC design.  But between MVC objects we design a second messaging
-system so that a change in one data set is sent to the other linked data sets. 
+A more straightforward approach may be to link \Robject{MVCs}.  Each
+\Robject{MVC} is a coherent object and the interactions between \Robject{MVCs}
+are encapsulated in a set of messages.  We use one \Robject{MVC} object to
+handle each data set.  Thus, within a \Robject{MVC} object, one can create
+linked views of that particular data set, using the standard MVC design.  But
+between \Robject{MVC} objects we design a second messaging system so that a
+change in one data set is sent to the other linked data sets. 
 
 \small
 \begin{tabular}[t]{ | l | r | r | }
@@ -451,13 +461,17 @@ while the City data include Precipitation (in inches from 1975) and Average
 High Temperature in January (in Fahrenheit from 2005)
 data.  These two data sets are linked by the StateCity table that links cities
 with the states they reside in.  Now for these two data sets there are
-two MVC objects.  One MVC object for the State data and its views and one MVC
-object for the City data and its views. 
+two \Robject{MVC} objects.  One \Robject{MVC} object for the State data and
+its views and one \Robject{MVC} object for the City data and its views. 
 
 \begin{figure}[ht]
   \begin{center}
     \scalebox{0.7}{\includegraphics{MultipleMVC.jpg}}
-    \caption{ Example of Two MVC Objects. }
+    \caption{ Example of Two \Robject{MVC} Objects.  These two \Robject{MVC}
+      objects are linked by the StateCity table and the color of the points
+    indicates the linking between the data.  The points referring to the state
+    of Pennsylvania are red, the points referring to the state of California
+    are blue, and the points referring to Minnesota are green. }
     \label{Fig:MultMVC}
   \end{center}
 \end{figure}
@@ -466,20 +480,21 @@ Figure \ref{Fig:MultMVC} shows one view for the State data and one view
 for the City data.  You can see how the State and City data are linked based
 on the coloring of the points in the plots.  The points referring to the state
 of Pennsylvania are red, the points referring to California are blue, and the
-points referring to Minnesota are green.  Even though there are two MVC
-objects here, with one MVC object for each data set, it is still clear that
-the views are linked through the data sets and that is shown in this example
-through the coloring.
+points referring to Minnesota are green.  Even though there are two
+\Robject{MVC} objects here, with one \Robject{MVC} object for each data set,
+it is still clear that the views are linked through the data sets and that is
+shown in this example through the coloring.
 
 Not only does this solution use the power and simplicity of the MVC design, but
 this multiple MVC design is structured to fit the linking seen in the multiple
 data sets.  Clearly, the design should be built around the problem and
-multiple MVC objects with messaging between the MVC objects fits the problem
-of creating linked views of multiple linked data sets.  In designing an
-appropriate messaging system between MVC objects, consideration is given to
-what information should pass between MVC objects and to how messages propagate
-between MVC objects.  As for the relationship between the MVC objects, it
-should reflect the relationship between the data sets.  
+multiple \Robject{MVC} objects with messaging between the \Robject{MVC}
+objects fits the problem of creating linked views of multiple linked data
+sets.  In designing an appropriate messaging system between \Robject{MVC}
+objects, consideration is given to what information should pass between
+\Robject{MVC} objects and to how messages propagate between \Robject{MVC}
+objects.  As for the relationship between the \Robject{MVC} objects, it should
+reflect the relationship between the data sets. 
 
 Although two examples of linked data sets have been discussed thus far,
 this paper focuses on experimental data that are linked to meta-data, as
@@ -488,11 +503,12 @@ experimental data can be thought of as determining what meta-data are studied.
 In the example of microarray experiment data linked to Gene Ontology
 meta-data, only Gene Ontology data that refer to genes in the microarray
 experiment are included in the meta-data.  Thus, there is a hierarchical
-relationship between these data sets and the MVC objects that contain them,
-where one MVC object creates another MVC object.  The original MVC
-object is the parent MVC and the new MVC object that is created from the
-parent MVC is the child MVC.  These decisions are discussed in the following
-sections as the design for multiple MVC objects is explained. 
+relationship between these data sets and the \Robject{MVC} objects that
+contain them, where one \Robject{MVC} object creates another \Robject{MVC}
+object.  The original \Robject{MVC} object is the parent \Robject{MVC} and the
+new \Robject{MVC} object that is created from the parent \Robject{MVC} is the
+child \Robject{MVC}.  These decisions are discussed in the following sections
+as the design for multiple \Robject{MVC} objects is explained. 
 
 \section{Design Details of One MVC Object}\label{Sec:OneMVC}
 
@@ -501,15 +517,16 @@ sections as the design for multiple MVC objects is explained.
 Implementing linked, interactive views of linked data sets is done using an
 object-oriented programming design for extensibility.  The \Rpackage{MVCClass}
 package implements the design of the MVC classes and generic functions.  The
-\Rpackage{MVCClass} package defines the individual model, view, and
-controller classes as well as the \Robject{MVC} class that binds the
-individual model, view, and controller classes together into one unit.  The
-package also defines the message classes that allow the components to
-communicate with each other.  Thus, the \Rpackage{MVCClass} package
-contains the classes necessary for creating linked views.   The goal of
-placing these class and generic function definitions into one package is
-that they are available for other R packages that implement linked views
-of data, such as the \Rpackage{iSPlot} and the \Rpackage{iSNetwork} packages.  
+\Rpackage{MVCClass} package defines the individual model,
+view, and controller classes as well as the \Rclass{MVC}
+class that binds the individual model, view, and
+controller classes together into one unit.  The package also defines
+the message classes that allow the components to communicate with
+each other.  Thus, the \Rpackage{MVCClass} package contains the classes
+necessary for creating linked views.   The goal of placing these class and
+generic function definitions into one package is that they are available for
+other R packages that implement linked views of data, such as the
+\Rpackage{iSPlot} and the \Rpackage{iSNetwork} packages. 
 
 With the class definitions created in the \Rpackage{MVCClass} package, the
 \Rpackage{iSNetwork} package can decide which classes from \Rpackage{MVCClass}
@@ -533,14 +550,15 @@ that the view can be interactive.  For more information about these packages,
 see \cite{EW05}.  
 
 The next subsections explain the class definitions and the methods that
-pertain to a single MVC object.  Thus, the model classes,
-the view classes, the controller, the \Robject{MVC} class (which binds the
-model, view and controller classes together), and the message classes that
-pass information between the three components in one MVC object are
-discussed in the following subsections.  All of the class definitions are
-implemented in the \Rpackage{MVCClass} package and all of the methods are
-defined in the \Rpackage{iSNetwork} package.  Message class definitions that
-pertain to communication between the MVC objects are discussed in Section
+pertain to a single \Robject{MVC} object.  Thus, the model classes,
+the view classes, the controller, the \Rclass{MVC} class
+(which binds the model, view and controller classes
+together), and the message classes that pass information between the
+three components in one \Robject{MVC} object are discussed in the following
+subsections.  All of the class definitions are implemented in the
+\Rpackage{MVCClass} package and all of the methods are defined in the
+\Rpackage{iSNetwork} package.  Message class definitions that pertain
+to communication between the \Robject{MVC} objects are discussed in Section
 \ref{Sec:MultMVC}. 
 
 \subsection{Model}\label{Ssec:OneModel}
@@ -549,16 +567,16 @@ In the MVC design, the model component is the place where data are stored and
 updated.  Thus, the model is a storage location that can perform certain
 operations.  Information can be sent to the model to add, update, and remove
 data and the model can send out messages that changes have occurred to the
-data that the model stores.  Thus, the object model for the model classes
-represents both the slots that are needed to store data and the methods that
-are needed to perform the operations of the model. 
+data that the model stores.  Thus, the object model for the model
+classes represents both the slots that are needed to store data and the
+methods that are needed to perform the operations of the model. 
 
-Figure \ref{Fig:Model} shows the inheritance structure for the model classes.
-Here the virtual class, \Robject{gModel}, has the slots \Rslot{modelData},
-\Rslot{linkData}, \Rslot{virtualData}, and \Rslot{modelName}.  These four
-slots are common information that all models need to store.  The
-\Rslot{modelData} slot is the data set for this model, the \Rslot{linkData}
-slot is a list of two functions, \Rfunction{toParent} and
+Figure \ref{Fig:Model} shows the inheritance structure for the model
+classes. Here the virtual class, \Rclass{gModel}, has the slots
+\Rslot{modelData}, \Rslot{linkData}, \Rslot{virtualData}, and
+\Rslot{modelName}.  These four slots are common information that all models
+need to store.  The \Rslot{modelData} slot is the data set for this model, the
+\Rslot{linkData} slot is a list of two functions, \Rfunction{toParent} and
 \Rfunction{fromParent}, which let this model send information to its parent
 model and receive information from its parent model, respectively (see
 Sections \ref{Ssec:OneMVC} and \ref{Ssec:MultLink} for more information on how
@@ -580,11 +598,11 @@ name of the model.
 We encapsulate the particular data model in the class definition, which allows
 for efficient dispatch, and accessor functions that are appropriate for the
 underlying implementation.  The specific model classes used in the
-\Rpackage{iSNetwork} package to represent data are \Robject{dfModel},
-\Robject{graphModel}, and \Robject{exprModel}.  The \Robject{dfModel} class
+\Rpackage{iSNetwork} package to represent data are \Rclass{dfModel},
+\Rclass{graphModel}, and \Rclass{exprModel}.  The \Rclass{dfModel} class
 represents a model where the \Rslot{modelData} slot has class data frame (or
-matrix), the \Robject{graphModel} class represents a model where the
-\Rslot{modelData} slot has class graph, and the \Robject{exprModel} class
+matrix), the \Rclass{graphModel} class represents a model where the
+\Rslot{modelData} slot has class graph, and the \Rclass{exprModel} class
 represents a model where the \Rslot{modelData} slot has class exprSet, a class
 used to represent gene expression data \cite{BioC}.
 
@@ -594,15 +612,15 @@ for the classes.  All three model classes have an \Rfunction{updateModel}
 method that is defined in the \Rpackage{iSNetwork} package.  This method is
 called whenever the data need to be updated in response to a user interacting
 with a view.  Thus, the \Rfunction{updateModel} method is actually updating the
-\Rslot{virtualData} slot because it is this slot in the model classes that
-ensures that all views are appropriately visually linked.  
+\Rslot{virtualData} slot because it is this slot in the model classes
+that ensures that all views are appropriately visually linked.  
 
-Although only three model classes are currently implemented, future users are
-welcome to make additions to the model classes for new data structures they
-want to represent.  For example, a user may want to add a new model
-class called \Robject{tsModel} to represent time series data.  To make this
-addition, the user extends the \Robject{gModel} class in his or her own
-package. 
+Although only three model classes are currently implemented, future
+users are welcome to make additions to the model classes for new data
+structures they want to represent.  For example, a user may want to add a new
+model class called \Rclass{tsModel} to represent time series data.
+To make this addition, the user extends the \Rclass{gModel} class in his or
+her own package. 
 
 The model classes must also notify views when the data have changed
 so that the views can be updated.  The communication between a model and its
@@ -610,11 +628,12 @@ views are discussed in Section \ref{Ssec:OneMess}.
 
 \subsection{Views}\label{Ssec:OneViews}
 
-The view classes represent the visual depictions of the model.  All views
-need to store some common information and respond to certain events through
-methods.  This consideration leads to an object model where the different view
-classes inherit from a view virtual class, called \Robject{genView}.  The
-object model for the view classes is shown in Figure \ref{Fig:View}.
+The view classes represent the visual depictions of the model.  All
+views need to store some common information and respond to certain events
+through methods.  This consideration leads to an object model where the
+different view classes inherit from a view virtual class,
+called \Rclass{genView}.  The object model for the view classes is
+shown in Figure \ref{Fig:View}.
 
 \begin{figure}[ht]
   \begin{center}
@@ -624,42 +643,42 @@ object model for the view classes is shown in Figure \ref{Fig:View}.
   \end{center}
 \end{figure}
 
-The \Robject{genView} class has three slots, \Rslot{dataName}, \Rslot{win},
+The \Rclass{genView} class has three slots, \Rslot{dataName}, \Rslot{win},
 and \Rslot{winNum}.  \Rslot{dataName} is the name of the model that the view
 displays, \Rslot{win} is the Gtk window object that holds the view, and
 \Rslot{winNum} is the number of the window so that the window can be
 identified in the Window menu on the GUI (see Section \ref{Ssec:OneCont}).
 All views need to know these three pieces of information so
-\Robject{genView} binds the view classes together. 
+\Rclass{genView} binds the view classes together. 
 
-As for specific view classes, the \Robject{spreadView} class represents a
-spreadsheet view of the data.  This view only makes sense for models that
-are a two dimensional data structure, such as a matrix or a data frame.  The
-information needed for this view is stored in the slot, \Rslot{clist}, which
-is the Gtk spreadsheet object.
+As for specific view classes, the \Rclass{spreadView} class
+represents a spreadsheet view of the data.  This view only makes sense for
+models that are a two dimensional data structure, such as a matrix or a data
+frame.  The information needed for this view is stored in the slot,
+\Rslot{clist}, which is the Gtk spreadsheet object.
 
 When creating a plot of a data set, there is a general class, called
-\Robject{plotView}, that has the slots, \Rslot{plotDevice}, \Rslot{plotPar},
+\Rclass{plotView}, that has the slots, \Rslot{plotDevice}, \Rslot{plotPar},
 and \Rslot{drArea}, which store the device number of the plot, the plotting
 parameters, and the Gtk drawing area object, respectively.  This class is a
 virtual class as it represents a general plot.  The instantiable plot classes
-are the specific plot classes, \Robject{sPlotView}, \Robject{graphView}, and
-\Robject{heatmapView}, which inherit from the \Robject{plotView} class.  
+are the specific plot classes, \Rclass{sPlotView}, \Rclass{graphView}, and
+\Rclass{heatmapView}, which inherit from the \Rclass{plotView} class.  
 
-The \Robject{sPlotView} class represents a scatterplot view and it has the
+The \Rclass{sPlotView} class represents a scatterplot view and it has the
 extra slots, \Rslot{dfRows}, \Rslot{xvar}, and \Rslot{yvar}, where
 \Rslot{dfRows} are the row names from the model that are shown in the plot,
 \Rslot{xvar} is the variable name from the model that is shown as the x
 variable in the plot, and \Rslot{yvar} is the variable name from the model
-that is shown as the y variable in the plot.  The \Robject{graphView} class
+that is shown as the y variable in the plot.  The \Rclass{graphView} class
 represents a graph plot view and it contains no extra slots besides those in
-the \Robject{plotView} class.  The \Robject{heatmapView} represents a heatmap
+the \Rclass{plotView} class.  The \Rclass{heatmapView} represents a heatmap
 view of the data and it contains the slot, \Rslot{ordering}, which is a list
 that is returned from the \Rfunction{heatmap} function to give information
 about the ordering in the row and column dendrograms.  Note that some of these
 views are only applicable for certain model types.  For example, the
-\Robject{graphView} class only makes sense for a view of a graph object,
-which is stored in the \Robject{graphModel} class. 
+\Rclass{graphView} class only makes sense for a view of a graph object,
+which is stored in the \Rclass{graphModel} class. 
 
 Since all views are expected to be interactive, all view classes have methods
 that correspond to user interaction.  Interactive views mean a response
@@ -678,35 +697,35 @@ the \Rslot{where} parameter, the method converts the Gtk pixel coordinates
 that indicate where the event occurred into user coordinates and then into an
 object from the plot, such as a point on the plot. 
 
-For \Robject{sPlotView}, the \Rfunction{clickEvent} method is called when Gtk
+For \Rclass{sPlotView}, the \Rfunction{clickEvent} method is called when Gtk
 emits a signal that a mouse button has been pressed and the
 \Rfunction{motionEvent} method is called when Gtk emits a signal that
 the cursor has been moved over the view.  Both the \Rfunction{clickEvent} and
 \Rfunction{motionEvent} methods for a \Robject{sPlotView} object
 determine which point on the plot was clicked or under the cursor,
 respectively, using the data in the \Rslot{where} parameter.  For
-\Robject{spreadView}, the \Rfunction{clickEvent} method is called when Gtk
+\Rclass{spreadView}, the \Rfunction{clickEvent} method is called when Gtk
 emits a signal that a row in the spreadsheet has been selected or unselected
 and the \Rfunction{clickEvent} method determines which row was changed.
-For \Robject{graphView}, the \Rfunction{clickEvent} method is called when Gtk
+For \Rclass{graphView}, the \Rfunction{clickEvent} method is called when Gtk
 emits a signal that a mouse button has been pressed and the
 \Rfunction{motionEvent} is called when Gtk emits a signal that the cursor has
 been moved over the view.  Here, though, the \Rfunction{clickEvent} and
 \Rfunction{motionEvent} methods determine which node was clicked or under
 the cursor, respectively, using the data in the \Rslot{where} parameter.  
 
-The \Robject{heatmapView} class is different from the other views in that it
+The \Rclass{heatmapView} class is different from the other views in that it
 has neither a \Rfunction{clickEvent} or a \Rfunction{motionEvent} method.  The
 current implementation of the \Rfunction{heatmap} function does not return
 information about where plot objects are placed on the device.  As a result,
 it is not possible to convert the user coordinates of where the event occurred
 into an object (such as the row and column coordinates of the heatmap) on
-the view.  Thus, the \Robject{heatmapView} class is the only view that is not
+the view.  Thus, the \Rclass{heatmapView} class is the only view that is not
 currently interactive.  
 
-As with the model classes, the view classes need an update method and thus, all
-views have an \Rfunction{updateView} method that is defined in the
-\Rpackage{iSNetwork} package.  This method must take the
+As with the model classes, the view classes need an update
+method and thus, all views have an \Rfunction{updateView} method that is
+defined in the \Rpackage{iSNetwork} package.  This method must take the
 information that a model has just been updated and appropriately update the
 view to reflect that change.  Each method depends on how the view
 represents the data so for a \Robject{spreadView} object the
@@ -721,12 +740,13 @@ Instead in R we must currently draw over a portion of the view to update the
 view.  However, if the method of creating R plots changed, the
 \Rfunction{updateView} methods could be modified. 
 
-The inheritance structure of the view classes is intended to be extensible.
-For instance, if users wanted to add a new plot view, say a density plot, they
-could create a new view class that inherits from \Robject{plotView}, called
-\Robject{dPlotView}.  This new class, \Robject{dPlotView}, has slots
-named \Rslot{dfRows} and \Rslot{col} to store which rows and which column,
-respectively, were used to calculate the density shown in the view.
+The inheritance structure of the view classes is intended to be
+extensible.  For instance, if users wanted to add a new plot view, say a
+density plot, they could create a new view class that inherits from
+\Rclass{plotView}, called \Rclass{dPlotView}.  This new class,
+\Rclass{dPlotView}, has slots named \Rslot{dfRows} and \Rslot{col} to store
+which rows and which column, respectively, were used to calculate the density
+shown in the view.
 
 \subsection{Controller}\label{Ssec:OneCont}
 
@@ -755,7 +775,7 @@ control window.
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.5}{\includegraphics{ControlWindow.jpg}}
+    \scalebox{0.35}{\includegraphics{ControlWindow.jpg}}
     \caption{ The Control Window. }
     \label{Fig:ContWin}
   \end{center}
@@ -765,23 +785,25 @@ As shown in Figure \ref{Fig:ContWin}, the menus on the control window are
 File, Edit, Display, Event, and Window.  These menus always appear on the
 control window, but the menu items under each menu change depending on
 the type of model that is active.  Because the goal is to have multiple
-linked MVC objects, more than one MVC object is loaded and thus,
-more than one model. However, the control window menus and the command line
-functions only perform operations on one MVC object at a time.  Thus, in
-the \Rpackage{iSNetwork} package there is the concept of the ``active''
-MVC object, where the ``active'' MVC object (and thus, the ``active'' model)
-means that operations performed through the control window menus or through
-the command line functions affect that MVC object.  For
-example, the Display menu allows users to create views of the active model,
-but only certain views are appropriate for a type of model, as mentioned in
+linked \Robject{MVC} objects, more than one \Robject{MVC} object is loaded and
+thus, more than one model. However, the control window menus and the command
+line functions only perform operations on one \Robject{MVC} object at a time.
+Thus, in the \Rpackage{iSNetwork} package there is the concept of the
+``active'' \Robject{MVC} object, where the ``active'' \Robject{MVC} object
+(and thus, the ``active'' model) means that operations performed through the
+control window menus or through the command line functions affect that
+\Robject{MVC} object.  For example, the Display menu allows users to create
+views of the active model, but only certain views are appropriate for a type
+of model, as mentioned in 
 Section \ref{Ssec:OneViews}.  If the active model was a data frame model
-(\Robject{dfModel}), then the views that the user could create are a
-scatterplot (\Robject{sPlotView}) and a spreadsheet (\Robject{spreadView}),
-but a graph plot (\Robject{graphView}) does not make sense.  Thus, when the
-model in the ``active'' MVC is of class \Robject{dfModel}, then the Display
+(\Rclass{dfModel}), then the views that the user could create are a
+scatterplot (\Rclass{sPlotView}) and a spreadsheet (\Rclass{spreadView}),
+but a graph plot (\Rclass{graphView}) does not make sense.  Thus, when the
+model in the ``active'' \Robject{MVC} is of class \Rclass{dfModel}, then the
+Display 
 menu has menu items to create a scatterplot and a spreadsheet.  Also, if
-the ``active'' MVC is of class \Robject{dfModel}, then the command line
-functions only let the user create a scatterplot and a spreadsheet view
+the ``active'' \Robject{MVC} is of class \Rclass{dfModel}, then the command
+line functions only let the user create a scatterplot and a spreadsheet view
 of the active model.
 
 Because one of the goals of creating linked views based on multiple linked
@@ -790,8 +812,8 @@ users are able to add menus and menu items to the control window through
 the command line to access new functionality that they have created.  As an
 example if a future programmer wants to add a new type of view, such as a
 histogram, then a new menu item for that view could be added to the Display
-menu, as long as that view makes sense for the active MVC's model.  By
-allowing users to change the controller, they can add new functionality that
+menu, as long as that view makes sense for the active \Robject{MVC's} model.
+By allowing users to change the controller, they can add new functionality that
 is specific to their problem.  Note that when users make additions to the API,
 they should add new command line functions in addition to adding menus and
 menu items to access that functionality.
@@ -808,7 +830,7 @@ occurs, a user may sometimes want a point to be colored and at other times she
 may want a point to be hidden.  
 
 To allow this flexibility in the response to an event, a class called
-\Robject{gEventFun} was created.  The \Robject{gEventFun} class stores all of
+\Rclass{gEventFun} was created.  The \Rclass{gEventFun} class stores all of
 the information needed to create a particular response to an event.
 Clearly, the response to an event can be performed by a single function,
 which is called the callback function, as discussed in Section
@@ -819,10 +841,10 @@ the new color to use and the point to color, while a callback function that
 hid a point needs just one parameter, the point to hide.  Since the
 intention is to be able to interchange the responses to an event, the
 signatures of different callback functions should be the same.  These design
-decisions determined the slots in the \Robject{gEventFun} class and are
+decisions determined the slots in the \Rclass{gEventFun} class and are
 discussed more fully in the following paragraphs. 
 
-As shown in Figure \ref{Fig:EventFun}, the slots in the \Robject{gEventFun}
+As shown in Figure \ref{Fig:EventFun}, the slots in the \Rclass{gEventFun}
 class are \Rslot{callFun}, \Rslot{shortName}, and \Rslot{preprocessFun}.  The
 \Rslot{callFun} slot is the name of the callback function, the
 \Rslot{shortName} slot is a short description of the function, and the
@@ -845,10 +867,10 @@ need to know what object they should act on so this is the one
 parameter that the callback functions take.  Any other information a callback
 function may need is set using the preprocessing functions.  The class of
 the one parameter for the callback function depends on the model class in
-the active MVC object.  For example, for a graph model, the parameter is
-of class \Robject{AgNode}, representing a node in the graph.  For a data frame
-model, the parameter is of class character, representing a row in the
-data frame. 
+the active \Robject{MVC} object.  For example, for a graph model, the
+parameter is of class \Rclass{AgNode}, representing a node in the graph.  For
+a data frame model, the parameter is of class \Rclass{character}, representing
+a row in the data frame. 
 
 The preprocessing functions that are stored in the preprocessFun slot
 take no parameters.  The purpose of the preprocessing functions is to set
@@ -862,8 +884,8 @@ color is.
 
 When a user wants to link a callback function stored in an \Robject{gEventFun}
 instance to an event, this can be performed either through the GUI or through
-the command line functions.  The controller environment in each MVC object,
-which is discussed in detail in Section \ref{Ssec:OneMVC},
+the command line functions.  The controller environment in each \Robject{MVC}
+object, which is discussed in detail in Section \ref{Ssec:OneMVC},
 stores which \Robject{gEventFun} object (representing the callback
 function) is linked with each event.  Note that not all callback functions
 make sense for each event so the controller environment also stores a list
@@ -872,28 +894,30 @@ to that event.
 
 \subsection{MVC}\label{Ssec:OneMVC}
  
-The \Robject{MVC} class is the class that binds the model, view, and
-controller objects that refer to the same data set into one object.  Thus, the
-creation of a MVC object occurs whenever a new data set is loaded.  A
-MVC object can have one model and each model must be in one
-MVC object so there is a one-to-one relationship between the
-MVC and model objects.  Because of this relationship, the
-MVC object and the model object are identified by the same name,
-which is stored in the \Rslot{modelName} slot of the model object.  When
-loading a new model through \Rpackage{iSNetwork's} API, the name of the model
-is checked to ensure that it is unique.
+The \Rclass{MVC} class binds the model, view, and
+controller objects into one object.  Thus, whenever a new data set
+is loaded, a \Robject{MVC} object is created.  A \Robject{MVC} object can have
+one model and each model must be in one \Robject{MVC}
+object so there is a one-to-one relationship between the \Robject{MVC} and
+model objects.  Because of this relationship, the \Robject{MVC}
+object and the model object are identified by the same name, which
+is stored in the \Rslot{modelName} slot of the model object.  When
+loading a new model, the name of the model is checked to
+ensure that it is unique.
 
-As shown in Figure \ref{Fig:MVCClass}, the \Robject{MVC} class has five slots
+As shown in Figure \ref{Fig:MVCClass}, the \Rclass{MVC} class has five slots
 which are, \Rslot{model}, \Rslot{viewList}, \Rslot{controller},
 \Rslot{parentMVC}, and \Rslot{childMVCList}.  The \Rslot{model} slot stores
-the model object, the \Rslot{viewList} slot is a list of the view objects for
-this model, the \Rslot{controller} slot is an environment that stores
-information for this MVC, the \Rslot{parentMVC} slot is the name of the parent
-model (MVC), and the \Rslot{childMVCList} slot is a list of the children models
-(MVCs).  Note that model and MVC objects use the same name so the
-\Rslot{parentMVC} slot refers to both the name of the model and the name of the
-MVC.  Similarly, for the \Rslot{childMVCList} slot, the names in the list
-refer to both the name of the model and the name of the MVC.
+the model object, the \Rslot{viewList} slot is a list of the
+view objects for this model, the \Rslot{controller} slot is an
+environment that stores information for this \Robject{MVC}, the
+\Rslot{parentMVC} slot is the name of the parent model
+(\Robject{MVC}), and the \Rslot{childMVCList} slot is a list of the children
+models (\Robject{MVCs}).  Note that model and
+\Robject{MVC} objects use the same name so the \Rslot{parentMVC} slot refers
+to both the name of the model and the name of the \Robject{MVC}.
+Similarly, for the \Rslot{childMVCList} slot, the names in the list refer to
+both the name of the model and the name of the \Robject{MVC}. 
 
 \begin{figure}[ht]
   \begin{center}
@@ -903,58 +927,67 @@ refer to both the name of the model and the name of the MVC.
   \end{center}
 \end{figure}
 
-Thus, the \Robject{MVC} class not only binds the model, view, and controller
-objects together, but it also shows that the MVC objects are related
-to each other through a parent-child (tree) hierarchy, as shown in Figure
-\ref{Fig:Hier}.  In this picture, `model1' is the name of the original MVC
-object (model) and from it, two MVC objects were created, `model2' and
-`model3'. Then from `model2', three MVC objects were created, `model4',
-`model5', and `model6'.  
+Thus, the \Rclass{MVC} class not only binds the model,
+view, and controller objects together, but it also shows
+that the \Robject{MVC} objects are related to each other through a
+parent-child (tree) hierarchy, as shown in Figure \ref{Fig:Hier}.  In this
+picture, `model1' is the name of the original \Robject{MVC} object (model) and
+from it, two \Robject{MVC} objects were created, `model2.1' and
+`model2.2'. Then from `model2.1', three \Robject{MVC} objects were created,
+`model3.1', `model3.2', and `model3.3'.  As an example, model1 could be gene
+expression data, model2.1 could be gene expression data that is a subset of
+model1 (based on filtering), model2.2 could be derived by performing
+multidimensional scaling (MDS) on model1, model 3.1 could be the gene ontology
+(GO) graph representing the molecular functions of the genes in model2.1,
+model 3.2 could be the KEGG pathways that the genes in model2.1 are involved
+in, and model 3.3 could be the chromosome locations of the genes in model2.1.
 
 %\clearpage
 
 \begin{figure}[ht]
   \begin{center}
     \scalebox{0.6}{\includegraphics{Hierarchy2.jpg}}
-    \caption{ The Parent-Child Relationship Between MVCs. }
+    \caption{ The Parent-Child Relationship Between \Robject{MVCs}. }
     \label{Fig:Hier}
   \end{center}
 \end{figure}
 
-A design decision was that a new model (and thus, a new MVC object) could
-either be loaded or could be created from an already loaded MVC object.  As
-mentioned in Section \ref{Ssec:MMVC}, the focus in this paper is on
-experimental data that are linked to meta-data, as the linked data sets that we
-are most interested in visualizing.  In this situation, the experimental data
-(and its MVC object) can be thought of as determining what meta-data are
-studied.  Thus, there is a hierarchical relationship between these data sets
-where one MVC object creates another MVC object.  This focus led to the
-decision that a MVC object can have at most one parent MVC, from which it was
-derived, but it can have many child MVCs.  An easy example of a child model
-derived from a parent model is to start with a data frame as the parent model
-and then take a subset of this data frame as the child model.  
+A design decision was that a new model (and thus, a new
+\Robject{MVC} object) could either be loaded or could be created from an
+already loaded \Robject{MVC} object.  As mentioned in Section \ref{Ssec:MMVC},
+the focus in this paper is on experimental data that are linked to meta-data,
+as the linked data sets that we are most interested in visualizing.  In this
+situation, the experimental data (and its \Robject{MVC} object) can be thought
+of as determining what meta-data are studied.  Thus, there is a hierarchical
+relationship between these data sets where one \Robject{MVC} object creates
+another \Robject{MVC} object.  This focus led to the decision that a
+\Robject{MVC} object can have at most one parent \Robject{MVC}, from which it
+was derived, but it can have many child \Robject{MVCs}.  An easy example of a
+child model derived from a parent model is to start with a
+data frame as the parent model and then take a subset of this data
+frame as the child model. 
 
 \subsection{Messages Within a MVC Object}\label{Ssec:OneMess}
 
-The message classes are intended to provide communication between different
-components of the MVC design, such as when the model changes a message needs to
-be sent to the views to let them know that they should be updated.  This
+The message classes provide communication between different
+components of the MVC design, such as when the model changes a message needs
+to be sent to the views to let them know that they should be updated.  This
 communication between the model, view and controller is crucial for the pieces
 to work together and yet, still be independent of each other.  For information
-about messages that are passed between MVC objects, please see Section
-\ref{Ssec:MultMess}.
+about messages that are passed between \Robject{MVC} objects, please see
+Section\ref{Ssec:MultMess}. 
 
-The object model for the message classes was derived from the idea that all
-messages must have certain methods in common, such as \Rfunction{initialize}
-and \Rfunction{handleMessage}, because all messages must be created and
-handled in some manner so that the message is read and acted upon.  The
-\Rfunction{handleMessage} method can be considered a central dispatch for
-messages because all messages are sent to the \Rfunction{handleMessage}
-method, which determines where the information should be sent.   Also,
-since messages are sent when something has changed, either through addition,
-alteration, or deletion, the message classes reflect only certain operations.
-These common purposes for the messages allow the message object model to be
-constructed, and this model is shown in Figure \ref{Fig:Mess}.
+The object model for the message classes was derived from the idea
+that all messages must have certain methods in common, such as
+\Rfunction{initialize} and \Rfunction{handleMessage}, because all
+messages must be created and handled in some manner so that the
+message is read and acted upon.  All messages are sent to
+the \Rfunction{handleMessage} method, which determines where the information
+should be sent and hence is the dispatcher.   Also, since messages
+are sent when something has changed, either through addition, alteration, or
+deletion, the message classes reflect only certain operations.  These
+common purposes for the messages allow the message object
+model to be constructed, and this model is shown in Figure \ref{Fig:Mess}.
 
 \begin{figure}[ht]
   \begin{center}
@@ -964,80 +997,88 @@ constructed, and this model is shown in Figure \ref{Fig:Mess}.
   \end{center}
 \end{figure}
 
-As with the view classes, the top message class, \Robject{gMessage}, is a
-virtual class.  It contains no slots and its purpose is to bind the other
-message classes together.
+As with the view classes, the top message class,
+\Rclass{gMessage}, is a virtual class.  It contains no slots and its purpose
+is to bind the other message classes together.
 
-Currently, there are two types of messages for messaging within a model, view,
-controller object: an add and an update message.  Both the add message,
-\Robject{gAddMessage}, and the update message, \Robject{gUpdateMessage},
+Currently, there are two types of messages for messaging within a
+model, view, controller object: an add and an update message.  Both the add
+message, \Rclass{gAddMessage}, and the update message, \Rclass{gUpdateMessage},
 contain three slots, \Rslot{dataName}, \Rslot{mData}, and \Rslot{type}.
 \Rslot{dataName} is the character string that gives the name of the model,
 \Rslot{mData} is a list of data needed to perform the addition or alteration
 operation, and \Rslot{type} is a character string that gives the type of
-addition or alteration to perform.  Both \Robject{gAddMessage} and
-\Robject{gUpdateMessage} are virtual classes. 
+addition or alteration to perform.  Both \Rclass{gAddMessage} and
+\Rclass{gUpdateMessage} are virtual classes. 
 
 Since adding a view requires different information and methods from adding a
 model (and similarly with updating views versus models), it makes sense to
-have two separate message classes for these operations.  Thus, when messages
-are sent between components, they are from one of the following classes:
-\Robject{gAddDataMessage}, \Robject{gAddViewMessage},
-\Robject{gUpdateDataMessage}, and \Robject{gUpdateViewMessage}.
+have two separate message classes for these operations.  Messages
+sent between components are from one of the following classes:
+\Rclass{gAddDataMessage}, \Rclass{gAddViewMessage},
+\Rclass{gUpdateDataMessage}, and \Rclass{gUpdateViewMessage}.  The
+\Rclass{gAddDataMessage} class represents a message to add a model
+and a \Robject{MVC} object because whenever a model is added, a
+\Robject{MVC} object is created that contains this model.  The
+\Rclass{gAddViewMessage} class represents a message to create a view.  This
+message can only be used after a model has been added. 
 
-The \Robject{gAddDataMessage} class represents a message to add a model and a
-MVC object because whenever a model is added, a MVC object is also added that
-contains this model.  The \Robject{gAddViewMessage} class represents a message
-to create a view.  This message can only be used after a model has been
-added.  
+The \Rclass{gUpdateDataMessage} class represents a message to update
+a model.  This message is crucial for linking because it is
+responsible for ensuring that once a model has been updated this
+information propagates to all views of the model.  This
+same information must also be passed along to any other \Robject{MVC} object
+that is related to this model.  Because this
+information gets passed to other \Robject{MVC} objects (see Section
+\ref{Sec:MultMVC}), this message also has one new slot, \Rslot{from}, in
+addition to the slots it inherits from \Rclass{gUpdateMessage}.  The
+\Rslot{from} slot is the name of the model that the update data
+message came from.  This slot is necessary because the update data message can
+come from one of two sources: the message can occur because of user
+interaction with a view of this model or the message may
+occur because a different model that is
+linked to this model has been updated.  Thus, the update data
+message may come from within this \Robject{MVC} object or it may come from
+either the parent \Robject{MVC} or a child \Robject{MVC}.  Finally, the
+\Rclass{gUpdateViewMessage} class represents a message to update a
+view.  This message is created and handled whenever the
+model is updated so that the views accurately reflect the model. 
 
-The \Robject{gUpdateDataMessage} class represents a message to update
-a model.  This message is crucial for linking because it is responsible for
-ensuring that once a model has been updated this information propagates to
-any views of the model.  This same information must also be passed along to any
-other MVC object that is related to this model.  Because this information gets
-passed to other MVC objects, which is discussed further in Section
-\ref{Sec:MultMVC}, this message also has one new slot, \Rslot{from}, in
-addition to the slots it inherits from \Robject{gUpdateMessage}.  The
-\Rslot{from} slot is the name of the model that the update data message came
-from.  This slot is necessary because the update data message can come from
-one of two sources: the message can occur because of user interaction with a
-view of this model or the message may occur because a different model that is
-linked to this model has been updated.  So the update data message may come
-from within this MVC object or it may come from a MVC object that
-has changed its model and is related to this MVC object, either as this MVC
-object's parent MVC or one of this MVC object's child MVCs.  Information on
-passing messages between MVC objects is given in Section \ref{Sec:MultMVC}.
-Finally, the \Robject{gUpdateViewMessage} class represents a message to update
-a view.  This message is created and handled whenever the model is updated so
-that the views accurately reflect the model. 
+%\subsubsection*{Example of Message Passing}
 
-An example of message passing within a MVC object is shown in Figure
+An example of message passing within a \Robject{MVC} object is shown in Figure
 \ref{Fig:MPwithin}.  In this example, the response to a user performing a
 button click event over a point in the scatterplot is to color the point red.
 Setting the response to an event was discussed in Section
 \ref{Ssec:OneEvent}.  Here the user first clicks on a point in the
-scatterplot, which is shown as step 1 (the circled 1 on the figure).  In the
+scatterplot, which is shown as Step 1 (the circled 1 on the figure).  In the
 figure, the point that has been clicked has an arrow next to it.  Then, in
-step 2, an update data message is sent to the model, which updates the
-\Rslot{virtualData} slot of the model object.  After the model has been
-updated, the views must be notified that a change has occurred so in step 3,
-an update view message is created and sent to all views of this model.  In
-response to this message, the view updates itself in step 4 and now the point
-is colored red on the view to reflect the change in the model.  In this
-example, the \Rslot{from} slot in the \Robject{gUpdateDataMessage} object is
-the name of this MVC object since the message came from within the MVC.
+Step 2, an update data message is sent to the model, which updates
+the \Rslot{virtualData} slot of the model object.  After the
+model has been updated, the views must be notified that a
+change has occurred so in Step 3, an update view message is created and sent
+to all views of this model.  In response to this
+message, the view updates itself in Step 4 and now the
+point is colored red on the view to reflect the change in the
+model.  In this example, the \Rslot{from} slot in the
+\Robject{gUpdateDataMessage} object is the name of this \Robject{MVC} object
+since the message came from within the \Robject{MVC}. 
 
 \begin{figure}[ht]
   \begin{center}
     \scalebox{0.6}{\includegraphics{newMPwithin.jpg}}
-    \caption{ Message Passing within a MVC object. }
+    \caption{ Message Passing within a \Robject{MVC} object.  The first step,
+      indicated by a circled one, occurs when a user interacts with the y
+      versus x scatterplot.  Then an update data message is sent to the model
+      in the second step, which alters the model.  Next in the third step all
+      views of this model are sent an update view message, which causes the
+      view to be updated in the fourth step. }
     \label{Fig:MPwithin}
   \end{center}
 \end{figure}
 
-All four classes, \Robject{gAddDataMessage}, \Robject{gAddViewMessage},
-\Robject{gUpdateDataMessage}, and \Robject{gUpdateViewMessage}, have
+All four classes, \Rclass{gAddDataMessage}, \Rclass{gAddViewMessage},
+\Rclass{gUpdateDataMessage}, and \Rclass{gUpdateViewMessage}, have
 \Rfunction{initialize} and \Rfunction{handleMessage} methods, which perform
 the following tasks.  The \Rfunction{initialize} method is used to properly
 fill the slots of the object when it is created.  The
@@ -1049,9 +1090,9 @@ method.
 
 As with the inheritance structures seen in previous sections, the message
 inheritance structure is designed to allow for extensibility.  For example, a
-user could create a \Robject{gUpdateControlMessage} class that inherited from
-the \Robject{gUpdateMessage} class.  This new class,
-\Robject{gUpdateControlMessage}, could convey information that told the
+user could create a \Rclass{gUpdateControlMessage} class that inherited from
+the \Rclass{gUpdateMessage} class.  This new class,
+\Rclass{gUpdateControlMessage}, could convey information that told the
 control window to be updated in response to a change in the active view (the
 active view is the view that has the focus).  Currently, the control window
 does not reflect what the active view is, but if a view was created that could
@@ -1062,15 +1103,16 @@ additions or changes.
 
 \section{Details of Multiple MVCs}\label{Sec:MultMVC}
 
-We now describe the implementation of multiple MVC objects for linking views
-of multiple linked data sets.  Each MVC object represents one model and
-its views.  Now for the views of different data sets to be linked, they must
-link through the data sets so this linking information must be stored
-somewhere.  Also, there must be message classes to pass information between
-MVC objects. 
+We now describe the implementation of multiple \Robject{MVC} objects for
+linking views of multiple linked data sets.  Each \Robject{MVC} object
+represents one model and its views.  Now for the
+views of different data sets to be linked, they must link through
+the data sets so this linking information must be stored somewhere.  Also,
+there must be message classes to pass information between
+\Robject{MVC} objects. 
 
 Thinking of experimental data that are linked to meta-data as an example, there
-are two MVC objects, one for the experimental data and one for the
+are two \Robject{MVC} objects, one for the experimental data and one for the
 meta-data.  In the example of experimental microarray data that are linked to
 the Gene Ontology molecular function graph that was first mentioned in Section
 \ref{Ssec:Limit}, these two data sets are linked in the following manner: the
@@ -1083,171 +1125,194 @@ Affymetrix identifiers to Gene Ontology molecular function terms and vice
 versa.  Once it is possible to link these data sets, then information must be
 passed between them through messages to keep the views synchronized.
 
-As mentioned in Section \ref{Ssec:OneMVC}, the \Robject{MVC} class has slots
-for how the current MVC relates to other MVC objects and these slots are
-\Rslot{parentMVC} and \Rslot{childMVCList}.  These slots show that MVC objects
-are related through a tree hierarchy where a child model is derived from its
-parent model.  Consider Figure \ref{Fig:Hier}, which was shown previously.  
-If model1's model changes, then this information first gets passed to model2
-and model3 and these two MVC's may make changes to their models based on this
-information.  Then model2 passes this information to model4, model5, and
-model6 based on the changes that model2 made to its model.  Thus, information
-passing between model1 and model4, for instance, only occurs through model2.
-So messages can only be sent from parent MVC to child MVC or from child MVC to
-parent MVC. 
+As mentioned in Section \ref{Ssec:OneMVC}, the \Rclass{MVC} class has slots
+for how the current \Robject{MVC} relates to other \Robject{MVC} objects and
+these slots are \Rslot{parentMVC} and \Rslot{childMVCList}.  These slots show
+that \Robject{MVC} objects are related through a tree hierarchy where a child
+model is derived from its parent model.  Consider Figure
+\ref{Fig:Hier}, which was shown previously.  If model1's model changes, then
+this information first gets passed to model2.1 and model2.2 and these two
+\Robject{MVCs} may make changes to their models based on this
+information.  Then model2.1 passes this information to model3.1, model3.2, and
+model3.3 based on the changes that model2.1 made to its model.  Thus,
+information passing between model1 and model3.1, for instance, only occurs
+through model2.1.  So messages can only be sent from parent \Robject{MVC} to
+child \Robject{MVC} or from child \Robject{MVC} to parent \Robject{MVC}. 
 
-Next we consider how the data sets are linked (and thus, how MVC
+Next we consider how the data sets are linked (and thus, how \Robject{MVC}
 objects are linked) followed by how messages are passed between these
-linked MVC objects. 
+linked \Robject{MVC} objects. 
 
 \subsection{Linking Data Sets}\label{Ssec:MultLink}
 
-For messages to pass between MVC objects, the information from one MVC must be
-converted into useful information for a different MVC object.  Thus, there
-needs to be some way to determine how data from one MVC object relates to data
-in a different MVC object.  This conversion is done by two functions that are
-stored in the \Rslot{linkData} slot of the model objects.  The
-\Rslot{linkData} slot is a list with two elements: a \Rfunction{toParent}
-function and a \Rfunction{fromParent} function.  
+For messages to pass between \Robject{MVC} objects, the information from one
+\Robject{MVC} must be converted into useful information for a different
+\Robject{MVC} object.  Thus, there needs to be some way to determine how data
+from one \Robject{MVC} object relates to data in a different \Robject{MVC}
+object.  This conversion is done by two functions that are stored in the
+\Rslot{linkData} slot of the model objects.  The \Rslot{linkData}
+slot is a list with two elements: a \Rfunction{toParent} function and a
+\Rfunction{fromParent} function. 
 
-When a child MVC is created from an existing MVC, the child model's
-\Rslot{linkData} slot is filled with the two functions,
-\Rfunction{toParent} and \Rfunction{fromParent}.  When the model in the child
-MVC is updated, the \Rfunction{toParent} function in the \Rslot{linkData} slot
-is used to convert the child model's data change into useful information
-for the parent model.  
+When a child \Robject{MVC} is created from an existing \Robject{MVC}, the
+child model's \Rslot{linkData} slot is filled with the two functions,
+\Rfunction{toParent} and \Rfunction{fromParent}.  When the model in
+the child \Robject{MVC} is updated, the \Rfunction{toParent} function in the
+\Rslot{linkData} slot is used to convert the child model's data
+change into useful information for the parent model.  
 
 Now suppose that the parent model changed instead.  This information
-needs to be passed to the child model.  However, a parent can have multiple
-child MVC objects so the parent sends a message to each child MVC to notify
-the child of the change and then each child MVC handles the message by using
-its \Rfunction{fromParent} function.  The \Rfunction{fromParent} function
-converts the parent model's data change into useful information for this
-particular child model.  Thus, the parent model's data change may be converted
-into different information for different child models and this can happen
-because each child model has its own \Rfunction{fromParent} function.  When a
-child MVC object is created and its model's \Rslot{linkData} slot is filled,
-the \Rfunction{toParent} function converts information from this child model
-into useful information for its parent MVC and the \Rfunction{fromParent}
-function converts a message from its parent MVC into useful information for
-this child MVC.
+needs to be passed to the child model.  However, a parent can have
+multiple child \Robject{MVC} objects so the parent sends a message to each
+child \Robject{MVC} to notify the child of the change and then each child
+\Robject{MVC} handles the message by using its \Rfunction{fromParent}
+function.  The \Rfunction{fromParent} function converts the parent
+model's data change into useful information for this
+particular child model.  Thus, the parent model's data
+change may be converted into different information for different child models
+and this can happen because each child model has
+its own \Rfunction{fromParent} function.  When a child \Robject{MVC} object is
+created and its model's \Rslot{linkData} slot is filled, the
+\Rfunction{toParent} function converts information from this child
+model into useful information for its parent \Robject{MVC} and the
+\Rfunction{fromParent} function converts a message from its parent
+\Robject{MVC} into useful information for this child \Robject{MVC}.
 
 An example of how these functions, \Rfunction{toParent} and
-\Rfunction{fromParent}, are used when messages are passed between MVCs is
-given in Section \ref{Ssec:MultMess} where Figure \ref{Fig:MessPass} shows the
-\Rfunction{toParent} function being used to convert information from a child
-MVC object into useful information for the parent MVC object.
+\Rfunction{fromParent}, are used when messages are passed between
+\Robject{MVCs} is given in Section \ref{Ssec:MultMess} where Figure
+\ref{Fig:MessPass} shows the \Rfunction{toParent} function being used to
+convert information from a child \Robject{MVC} object into useful information
+for the parent \Robject{MVC} object.
 
 \subsection{Messages Between MVC Objects}\label{Ssec:MultMess}
 
-In Section \ref{Ssec:OneMess}, where the message classes to pass information
-within one MVC object were discussed, it was noted that there are two main
-types of messages: an add message and an update message.  These message types
-also are seen in passing messages between different MVC objects, as shown
-in Figure \ref{Fig:BetwMess}.  
+In Section \ref{Ssec:OneMess}, where the message classes to pass
+information within one \Robject{MVC} object were discussed, it was noted that
+there are two main types of messages: an add message and an update message.
+These message types also are seen in passing messages between different
+\Robject{MVC} objects, as shown in Figure \ref{Fig:BetwMess}.  
 
 \begin{figure}[ht]
   \begin{center}
     \scalebox{0.6}{\includegraphics{newMessageClass2.jpg}}
-    \caption{ Inheritance for Message Classes that are Passed Between MVCs. }
+    \caption{ Inheritance for Message Classes that are Passed Between
+      \Robject{MVCs}. }
     \label{Fig:BetwMess}
   \end{center}
 \end{figure}
 
-The first message class that is discussed is \Robject{gAddChildMessage}.
-A \Robject{gAddChildMessage} object is very similar to a
-\Robject{gAddDataMessage} object because they are both adding a new
-model and a new MVC object.  The difference with a \Robject{gAddChildMessage}
-object is that it must fill in some extra information to tie this new MVC
-object to its parent MVC object.  The \Robject{gAddChildMessage} class
-inherits from the \Robject{gAddMessage} class, with the same slots of
-\Rslot{dataName}, \Rslot{mData}, and \Rslot{type}.  The \Rslot{dataName} slot
-is the name of the new model (and new MVC), the \Rslot{mData} slot is a list
-that contains the model data and virtual data to fill the \Rslot{modelData}
-and \Rslot{virtualData} slots, respectively, of the new model, and the
+The first message class that is discussed is
+\Rclass{gAddChildMessage}.  A \Robject{gAddChildMessage} object is very
+similar to a \Robject{gAddDataMessage} object because they are both adding a
+new model and a new \Robject{MVC} object.  The difference with a
+\Robject{gAddChildMessage} object is that it must fill in some extra
+information to tie this new \Robject{MVC} object to its parent \Robject{MVC}
+object.  The \Rclass{gAddChildMessage} class inherits from the
+\Rclass{gAddMessage} class, with the same slots of \Rslot{dataName},
+\Rslot{mData}, and \Rslot{type}.  The \Rslot{dataName} slot is the name of the
+new model (and new \Robject{MVC}), the \Rslot{mData} slot is a list that
+contains the
+model data and virtual data to fill the \Rslot{modelData} and
+\Rslot{virtualData} slots, respectively, of the new model, and the
 \Rslot{type} slot gives the type of the model (currently, the options are
-``exprSet'', ``graph'', or ``data.frame'').  As with the previous message
-classes, the \Robject{gAddChildMessage} class has two methods:
+``exprSet'', ``graph'', or ``data.frame'').  As with the previous
+message classes, the \Rclass{gAddChildMessage} class has two methods:
 \Rfunction{initialize} and \Rfunction{handleMessage}.  The
 \Rfunction{initialize} method properly fills the slots of the object when it
-is created and the \Rfunction{handleMessage} method ensures that the new model
-and MVC objects are created (which is what the \Rfunction{handleMessage}
-method for the \Robject{gAddDataMessage} class does) and then it fills the
-\Rslot{linkData} slot of the new child model so that the \Rfunction{toParent}
-and \Rfunction{fromParent} functions are available for messaging between MVC
-objects and finally it stores information in the child MVC object's controller
-that determines if the child model was created from a subset of the parent
+is created and the \Rfunction{handleMessage} method ensures that the new
+model and \Robject{MVC} objects are created (which is what the
+\Rfunction{handleMessage} method for the \Rclass{gAddDataMessage} class does)
+and then it fills the \Rslot{linkData} slot of the new child model
+so that the \Rfunction{toParent} and \Rfunction{fromParent} functions are
+available for messaging between \Robject{MVC} objects and finally it stores
+information in the child \Robject{MVC} object's controller that determines if
+the child model was created from a subset of the parent
 model.  Thus, the \Rfunction{handleMessage} method for the
-\Robject{gAddChildMessage} class both creates the child MVC object and relates
-it to the parent MVC object. 
+\Rclass{gAddChildMessage} class both creates the child \Robject{MVC} object
+and relates it to the parent \Robject{MVC} object. 
 
-The next two message classes pertain to sending information to linked MVC
-objects when a parent MVC or child MVC object has changed.  These classes are
-\Robject{gSendParentMessage} and \Robject{gSendChildMessage} and they both
-inherit from the \Robject{gMessage} class, as shown in Figure
-\ref{Fig:BetwMess}.  Because the messages are sending information to a linked
-MVC object, they both contain a slot for a \Robject{gUpdateDataMessage} object
-that was just used to update a MVC object.  The \Robject{gSendParentMessage}
-class has one slot, \Rslot{childUpdateDataMessage}, and this slot contains the
-\Robject{gUpdateDataMessage} object that was used to update the child model.
-Similarly, the \Robject{gSendChildMessage} class has two slots,
-\Rslot{parentUpdateDataMessage} and \Rslot{childName}, where the
+The next two message classes pertain to sending information to linked
+\Robject{MVC} objects when a parent \Robject{MVC} or child \Robject{MVC}
+object has changed.  These classes are \Rclass{gSendParentMessage} and
+\Rclass{gSendChildMessage} and they both inherit from the \Rclass{gMessage}
+class, as shown in Figure \ref{Fig:BetwMess}.  Because the messages are
+sending information to a linked \Robject{MVC} object, they both contain a slot
+for a \Robject{gUpdateDataMessage} object that was just used to update a
+\Robject{MVC} object.  The \Rclass{gSendParentMessage} class has one slot,
+\Rslot{childUpdateDataMessage}, and this slot contains the
+\Robject{gUpdateDataMessage} object that was used to update the child
+model.  Similarly, the \Rclass{gSendChildMessage} class has two
+slots, \Rslot{parentUpdateDataMessage} and \Rslot{childName}, where the
 \Rslot{parentUpdateDataMessage} slot contains the \Robject{gUpdateDataMessage}
-object that was used to update the parent model and the \Rslot{childName} slot
-contains the name of the child model that is being updated because a parent
-MVC can have more than one child MVC.  
+object that was used to update the parent model and the
+\Rslot{childName} slot contains the name of the child model that is
+being updated because a parent \Robject{MVC} can have more than one child
+\Robject{MVC}.  
 
-As with all the other message classes, these two send messages have two
-methods: \Rfunction{initialize} and \Rfunction{handleMessage}.  The
+As with all the other message classes, these two send messages have
+two methods: \Rfunction{initialize} and \Rfunction{handleMessage}.  The
 \Rfunction{initialize} method properly sets the slots of the new object.  The
 \Rfunction{handleMessage} method for a \Robject{gSendParentMessage}
-takes the \Robject{gUpdateDataMessage} object from the child model and converts
-it to a \Robject{gUpdateDataMessage} object for the parent model using the
-\Rfunction{toParent} function.  Similarly, the \Rfunction{handleMessage}
-method for a \Robject{gSendChildMessage} takes the
-\Robject{gUpdateDataMessage} object from the parent model and converts it to a
-\Robject{gUpdateDataMessage} object for the child model using the
-\Rfunction{fromParent} function.  An example of how these messages are passed
-and converted is shown in Figure \ref{Fig:MessPass}.
+takes the \Robject{gUpdateDataMessage} object from the child model
+and converts it to a \Robject{gUpdateDataMessage} object for the parent
+model using the \Rfunction{toParent} function.  Similarly, the
+\Rfunction{handleMessage} method for a \Robject{gSendChildMessage} takes the
+\Robject{gUpdateDataMessage} object from the parent model and
+converts it to a \Robject{gUpdateDataMessage} object for the child
+model using the \Rfunction{fromParent} function.  An example of how
+these messages are passed and converted is shown in Figure \ref{Fig:MessPass}.
 
 These message classes ensure that when a model is updated, its parent and
 child models are notified of the change and most importantly are
 notified of the change in a way that each model can properly act upon that
-information.  Because each MVC object has a different model (and thus a
-different data set and potentially a different data structure), information
-that pertains to the model for one MVC must be converted to useful information
-for the linked model and this conversion is done by the \Rfunction{toParent}
-and \Rfunction{fromParent} functions.  
+information.  Because each \Robject{MVC} object has a different model (and
+thus a different data set and potentially a different data structure),
+information that pertains to the model for one \Robject{MVC} must be converted
+to useful information for the linked model and this conversion is done by the
+\Rfunction{toParent} and \Rfunction{fromParent} functions.  
 
 \begin{figure}[ht]
   \begin{center}
     \scalebox{0.55}{\includegraphics{newMP.jpg}}
-    \caption{ Message Passing Between and Within MVCs. }
+    \caption{ Message Passing Between and Within \Robject{MVCs}.  When a user
+      interacts with the y versus x scatterplot, the first step, indicated by
+      a circled one, is to send an update data message to model 2.  After
+      model 2 has been updated, all views of this model must be notified, which
+      is shown in the second step when an update view message is sent.  Next
+      any data that are linked to model 2 must be notified that model 2
+      changed, which is shown in the third step as a send parent message.
+      This message is converted into useful information for model 1 in
+      the fourth step by the \Rfunction{toParent} function, and this
+      information is sent to model 1 in the fifth step when an update data
+      message is sent.  Finally, after model 1 is updated, an update view
+      message is sent in the sixth step to update all views of model 1. }
     \label{Fig:MessPass}
   \end{center}
 \end{figure}
 
 Figure \ref{Fig:MessPass} is very similar to Figure \ref{Fig:firstMP} shown in
 Section \ref{Ssec:Backg}.  Now, however, Figure \ref{Fig:MessPass} shows how
-MVC objects are defined and how messages are passed within one MVC as well
-as how this information gets passed on to its parent MVC using messages.
-Suppose for this example that when the user clicks a mouse button over the
-scatterplot, the response to this event is to color the point under the cursor
+\Robject{MVC} objects are defined and how messages are passed within one
+\Robject{MVC} as well as how this information gets passed on to its parent
+\Robject{MVC} using messages.  Suppose for this example that when the user
+clicks a mouse button over the scatterplot, the response to this event is to
+color the point under the cursor 
 red.  In this picture, the message passing starts when a user clicks a point,
 that is indicated by the arrow, on the scatterplot.  An update data message is
 sent to Model 2 in response to this user interaction.  As soon as Model 2 is
 updated, it sends an update view message to all its views so that the views
 are updated to reflect the changed data.  Now the scatterplot point that was
 initially clicked is red.  Then a send parent message is sent because MVC
-2, which is the MVC object for Model 2, has a parent MVC, which is MVC 1.  Next
-the \Rfunction{toParent} function converts the child's update data message
-into an update data message that the parent MVC understands.  Then the
-update data message that was created by the \Rfunction{toParent} function is
-sent to Model 1.  Finally, after Model 1 has been updated, an update view
-message is sent to all of Model 1's views.  It is in this last step that the
-view of Model 1 has a point colored red to indicate which data from Model 1 is
-linked to data from Model 2.  All of the data and the views are
-synchronized. 
+2, which is the \Robject{MVC} object for Model 2, has a parent \Robject{MVC},
+which is MVC 1.  Next the \Rfunction{toParent} function converts the child's
+update data message into an update data message that the parent \Robject{MVC}
+understands.  Then the update data message that was created by the
+\Rfunction{toParent} function is sent to Model 1.  Finally, after Model 1 has
+been updated, an update view message is sent to all of Model 1's views.  It is
+in this last step that the view of Model 1 has a point colored red to indicate
+which data from Model 1 is linked to data from Model 2.  All of the data and
+the views are synchronized. 
 
 \section{Conclusions}\label{Sec:Conc}
 
@@ -1258,45 +1323,48 @@ discussed as a useful design for creating linked views of a data set.
 Starting with the MVC paradigm, this paper provided a design for implementing
 linked, interactive views of linked data sets based on expanding the MVC
 paradigm.  For visualizing linked data sets, the MVC design, which is a well
-known and thus, well tested software paradigm, was extended to multiple MVC
-objects where each MVC object contains one data set and its views.  This
-solution broke down the problem of linked, interactive views of linked data
-sets into components (MVC objects) that can be reused, extended and linked.
+known and thus, well tested software paradigm, was extended to multiple
+\Robject{MVC} objects where each \Robject{MVC} object contains one data set
+and its views.  This solution broke down the problem of linked, interactive
+views of linked data sets into components (\Robject{MVC} objects) that can be
+reused, extended and linked. 
 
-Once the design focused on MVC objects as the component of interest for
-creating linked views of linked data sets, the next step was to determine how
-these MVC objects were related.  Because the focus in this paper was on
-experimental data that are linked to meta-data, a hierarchical relationship
-between MVC objects was built into the MVC class definition.  The experimental
-data can be thought of as determining what meta-data are studied and thus, the
-meta-data are derived from the experimental data, which shows a parent-child
-relationship.  
+Once the design settled on \Robject{MVC} objects as the component of interest
+for creating linked views of linked data sets, the next step was to determine
+how these \Robject{MVC} objects were related.  Because the focus in this paper
+was on experimental data that are linked to meta-data, a hierarchical
+relationship between \Robject{MVC} objects was built into the \Rclass{MVC}
+class definition.  The experimental data can be thought of as determining what
+meta-data are studied and thus, the meta-data are derived from the
+experimental data, which shows a parent-child relationship.  
  
 Another consideration in the design was creating a method for communicating
-between MVC objects.  Already communication within a MVC object was sent using
-instances of the message classes.  Thus, it seemed a natural extension to have
-message classes that pertained to passing information between MVC objects.
-The goal of the message classes was to allow communication between independent
-components in the design. 
-
-For message passing between MVC objects, when a MVC's model is updated, it
-notifies its parent and child MVCs that a change has occurred.  Then when a
-MVC gets a message from a parent or child MVC, the MVC can either decide to
-ignore the message or read the message, which results in this MVC's model
-being updated.  However, the MVC object can not decide to only see certain
+within and between \Robject{MVC} objects.  This method must pass information
+between the components while keeping the components independent.
+Communication within a \Robject{MVC} object was handled using instances of the
+message classes, which performed one of four functions: adding a model, adding
+a view, updating a model, or updating a view.  Starting with this design, it
+seemed a natural extension to have message classes that passed information
+between \Robject{MVC} objects.  When a \Robject{MVC's} model is updated, it
+notifies its parent and child \Robject{MVCs} that a change has occurred using
+message objects.  Then when a \Robject{MVC} gets a message from a parent or
+child \Robject{MVC}, the \Robject{MVC} can either decide to ignore the message
+or read the message, which results in this \Robject{MVC's} model being
+updated.  However, the \Robject{MVC} object can not decide to only see certain
 types of messages.  It must either accept all messages and update its model
 based on the messages, or ignore all messages.  A future goal for message
 passing is to allow more selectivity in which messages are accepted between
-MVC objects so that the linking between MVC objects is more sophisticated. 
+\Robject{MVC} objects so that the linking between \Robject{MVC} objects is
+more sophisticated. 
 
 The goals for this paper were to create linked views of linked data sets, to
 create interactive views where the response to an event can be changed, and to
 create an extensible design that allows future users to make additions.
-The first goal was accomplished by implementing MVC objects as components that
-communicate with each other through messages.  The second goal of creating
-interactive views was met by using the \Rpackage{RGtk} and
+The first goal was accomplished by implementing \Robject{MVC} objects as
+components that communicate with each other through messages.  The second goal
+of creating interactive views was met by using the \Rpackage{RGtk} and
 \Rpackage{gtkDevice} packages to create devices that could respond to events.
-In addition the \Robject{gEventFun} class was designed so that users could
+In addition the \Rclass{gEventFun} class was designed so that users could
 alter the response to an event.  Finally, the last goal of creating an
 extensible design was achieved through the inheritance structure for classes,
 which allows for extensions by the user, and through command line functions,
@@ -1306,12 +1374,12 @@ user create new callback functions that can be linked to events.
 Although extensibility was a goal, certain design decisions, such as expecting
 the data sets to be linked through a parent-child hierarchy, may not work with
 some data sets.  As an example, the linked tables from a relational database
-are not related through a tree structure and thus, having parent and child MVC
-objects may not make sense with these data sets.  However, the design allows
-users to add new types of models, new types of views, and new message classes
-so there is still flexibility for additions as long as the data sets are
-connected through parent-child relationships.  These new class definitions
-could be created by the user in a new package that extends the
+are not related through a tree structure and thus, having parent and child
+\Robject{MVC} objects may not make sense with these data sets.  However, the
+design allows users to add new types of models, new types of views, and new
+message classes so there is still flexibility for additions as long as the
+data sets are connected through parent-child relationships.  These new class
+definitions could be created by the user in a new package that extends the
 \Rpackage{MVCClass} package that was discussed in this paper.  Other additions
 that the user may want to perform, such as adding new menus to the GUI and
 adding new responses to an event can be performed through command line
@@ -1321,9 +1389,9 @@ The functionality that is defined in the \Rpackage{iSNetwork} package is
 discussed in detail in the Vignette for this R package.  Users can load data,
 create views of the data, interact with these views and change the response to
 the interaction (these interactions include mouse button click events and
-mouse movement events), and users can create child MVC objects through the GUI
-or through command line functions.  Using the functionality in the
-\Rpackage{iSNetwork} package, the user can create views of linked data sets
+mouse movement events), and users can create child \Robject{MVC} objects
+through the GUI or through command line functions.  Using the functionality in
+the \Rpackage{iSNetwork} package, the user can create views of linked data sets
 and can explore visually the relationships between variables in different data
 sets.  This functionality was implemented by extending the MVC paradigm in a
 very natural way to encompass a much richer class of models and user
