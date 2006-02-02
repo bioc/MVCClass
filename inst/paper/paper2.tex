@@ -12,11 +12,11 @@
 \usepackage{graphics}
 \usepackage{graphicx}
 
-\newcommand{\Rfunction}[1]{{\textbf{#1}}}
+\newcommand{\Rfunction}[1]{{\textsf{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
 \newcommand{\Rslot}[1]{\textsl{#1}}
-\newcommand{\Rclass}[1]{\textsf{#1}}
+\newcommand{\Rclass}[1]{\texttt{#1}}
 
 \begin{document}
 
@@ -30,7 +30,7 @@
 \textbf{Creating Linked, Interactive Views to \linebreak Explore Linked Data} \\
 \vspace{1in}
 \textbf{Dana-Farber Cancer Institute}\\ 
-\textbf{January 25, 2006} \\
+\textbf{February 2, 2006} \\
 \vspace{1in} 
 \textbf{Elizabeth Whalen} \\
 \end{center}
@@ -61,7 +61,7 @@ model consists of the gene expression levels from four samples.  If the same
 one hundred genes are studied in the four samples, then the model could be
 represented as a matrix of four columns by one hundred rows with four columns
 for the four samples and one hundred rows for the one hundred genes.  In this
-model, the entities are the genes.  If two scatterplots are created as views
+model, the entities are the genes.  If two scatter plots are created as views
 of this model, where the first plot displays sample one versus sample two and
 the second plot displays sample three versus sample four, then the points on
 each plot that referred to the same gene are corresponding components.  Linked
@@ -156,7 +156,7 @@ experiment.
 
 Creating linked, interactive views of data is flexible for exploring
 multivariate data because many different views can be created, such as
-scatterplots, spreadsheets, and heatmaps, and these views are linked because
+scatter plots, spreadsheets, and heatmaps, and these views are linked because
 they are based on the same underlying data.  Thus, users can decide which
 views best visually represent their data.  Also, since the views are
 interactive, users can change the views while looking at them to make the
@@ -171,10 +171,10 @@ represented by linked views.
 As a motivating example of linked views based on linked data sets, consider
 Figure \ref{Fig:firstMP}.  In this figure, there are two views, one view of
 data set 1 and one view of data set 2.  Data set 1 and data set 2 are linked.
-When a user initially interacts with the scatterplot view of data set 2, the
+When a user initially interacts with the scatter plot view of data set 2, the
 response to this interaction is to tell data set 2 to update itself (this is
 indicated on the figure as a circled 1).  Then in Step 2, data set 2 tells the
-scatterplot view that is should update itself in response to the change in the
+scatter plot view that is should update itself in response to the change in the
 data.  Next, in Step 3, because data set 2 has changed and because it is
 linked to data set 1, data set 2 sends information to data set 1 about the
 change.  In Step 4, the information from data set 2 is converted into
@@ -200,7 +200,7 @@ discussed further in Sections \ref{Sec:OneMVC} and \ref{Sec:MultMVC}.
   \begin{center}
     \scalebox{0.55}{\includegraphics{firstMessagePassing.jpg}}
     \caption{ Linked views of linked Data Sets.  When a user interacts with
-      the y versus x scatterplot, the first step, indicated by a circled one,
+      the y versus x scatter plot, the first step, indicated by a circled one,
       is to tell data set 2 to update.  Then all views of data set 2 must be
       updated.  Next any data that are linked to data set 2 must be notified
       that data set 2 changed.  This information from data set 2 must be
@@ -665,7 +665,7 @@ virtual class as it represents a general plot.  The instantiable plot classes
 are the specific plot classes, \Rclass{sPlotView}, \Rclass{graphView}, and
 \Rclass{heatmapView}, which inherit from the \Rclass{plotView} class.  
 
-The \Rclass{sPlotView} class represents a scatterplot view and it has the
+The \Rclass{sPlotView} class represents a scatter plot view and it has the
 extra slots, \Rslot{dfRows}, \Rslot{xvar}, and \Rslot{yvar}, where
 \Rslot{dfRows} are the row names from the model that are shown in the plot,
 \Rslot{xvar} is the variable name from the model that is shown as the x
@@ -690,8 +690,8 @@ movement events, where the cursor moves over the view.  Recall from Section
 \ref{Ssec:Backg} that when an event occurs Gtk emits a signal that is caught
 by the signal handler.  The signal handler then calls the callback function
 and it is in the callback function that the corresponding method is called.
-For example, when the button click event occurs on a scatterplot view, the
-callback function calls the scatterplot's \Rfunction{clickEvent} method.
+For example, when the button click event occurs on a scatter plot view, the
+callback function calls the scatter plot's \Rfunction{clickEvent} method.
 Using the information that is passed to the \Rfunction{clickEvent} method in
 the \Rslot{where} parameter, the method converts the Gtk pixel coordinates
 that indicate where the event occurred into user coordinates and then into an
@@ -797,13 +797,13 @@ views of the active model, but only certain views are appropriate for a type
 of model, as mentioned in 
 Section \ref{Ssec:OneViews}.  If the active model was a data frame model
 (\Rclass{dfModel}), then the views that the user could create are a
-scatterplot (\Rclass{sPlotView}) and a spreadsheet (\Rclass{spreadView}),
+scatter plot (\Rclass{sPlotView}) and a spreadsheet (\Rclass{spreadView}),
 but a graph plot (\Rclass{graphView}) does not make sense.  Thus, when the
 model in the ``active'' \Robject{MVC} is of class \Rclass{dfModel}, then the
 Display 
-menu has menu items to create a scatterplot and a spreadsheet.  Also, if
+menu has menu items to create a scatter plot and a spreadsheet.  Also, if
 the ``active'' \Robject{MVC} is of class \Rclass{dfModel}, then the command
-line functions only let the user create a scatterplot and a spreadsheet view
+line functions only let the user create a scatter plot and a spreadsheet view
 of the active model.
 
 Because one of the goals of creating linked views based on multiple linked
@@ -1048,10 +1048,10 @@ model is updated so that the views accurately reflect the model.
 
 An example of message passing within a \Robject{MVC} object is shown in Figure
 \ref{Fig:MPwithin}.  In this example, the response to a user performing a
-button click event over a point in the scatterplot is to color the point red.
+button click event over a point in the scatter plot is to color the point red.
 Setting the response to an event was discussed in Section
 \ref{Ssec:OneEvent}.  Here the user first clicks on a point in the
-scatterplot, which is shown as Step 1 (the circled 1 on the figure).  In the
+scatter plot, which is shown as Step 1 (the circled 1 on the figure).  In the
 figure, the point that has been clicked has an arrow next to it.  Then, in
 Step 2, an update data message is sent to the model, which updates
 the \Rslot{virtualData} slot of the model object.  After the
@@ -1069,7 +1069,7 @@ since the message came from within the \Robject{MVC}.
     \scalebox{0.6}{\includegraphics{newMPwithin.jpg}}
     \caption{ Message Passing within a \Robject{MVC} object.  The first step,
       indicated by a circled one, occurs when a user interacts with the y
-      versus x scatterplot.  Then an update data message is sent to the model
+      versus x scatter plot.  Then an update data message is sent to the model
       in the second step, which alters the model.  Next in the third step all
       views of this model are sent an update view message, which causes the
       view to be updated in the fourth step. }
@@ -1276,7 +1276,7 @@ to useful information for the linked model and this conversion is done by the
   \begin{center}
     \scalebox{0.55}{\includegraphics{newMP.jpg}}
     \caption{ Message Passing Between and Within \Robject{MVCs}.  When a user
-      interacts with the y versus x scatterplot, the first step, indicated by
+      interacts with the y versus x scatter plot, the first step, indicated by
       a circled one, is to send an update data message to model 2.  After
       model 2 has been updated, all views of this model must be notified, which
       is shown in the second step when an update view message is sent.  Next
@@ -1296,13 +1296,13 @@ Section \ref{Ssec:Backg}.  Now, however, Figure \ref{Fig:MessPass} shows how
 \Robject{MVC} objects are defined and how messages are passed within one
 \Robject{MVC} as well as how this information gets passed on to its parent
 \Robject{MVC} using messages.  Suppose for this example that when the user
-clicks a mouse button over the scatterplot, the response to this event is to
+clicks a mouse button over the scatter plot, the response to this event is to
 color the point under the cursor 
 red.  In this picture, the message passing starts when a user clicks a point,
-that is indicated by the arrow, on the scatterplot.  An update data message is
+that is indicated by the arrow, on the scatter plot.  An update data message is
 sent to Model 2 in response to this user interaction.  As soon as Model 2 is
 updated, it sends an update view message to all its views so that the views
-are updated to reflect the changed data.  Now the scatterplot point that was
+are updated to reflect the changed data.  Now the scatter plot point that was
 initially clicked is red.  Then a send parent message is sent because MVC
 2, which is the \Robject{MVC} object for Model 2, has a parent \Robject{MVC},
 which is MVC 1.  Next the \Rfunction{toParent} function converts the child's
