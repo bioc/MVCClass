@@ -671,8 +671,9 @@ extra slots, \Rslot{dfRows}, \Rslot{xvar}, and \Rslot{yvar}, where
 \Rslot{xvar} is the variable name from the model that is shown as the x
 variable in the plot, and \Rslot{yvar} is the variable name from the model
 that is shown as the y variable in the plot.  The \Rclass{graphView} class
-represents a graph plot view and it contains no extra slots besides those in
-the \Rclass{plotView} class.  The \Rclass{heatmapView} represents a heatmap
+represents a graph plot view and it contains the slot, \Rslot{grLayout}, which
+holds a \Robject{Ragraph} object that represents the layout of the graph plot.
+The \Rclass{heatmapView} represents a heatmap
 view of the data and it contains the slot, \Rslot{ordering}, which is a list
 that is returned from the \Rfunction{heatmap} function to give information
 about the ordering in the row and column dendrograms.  Note that some of these

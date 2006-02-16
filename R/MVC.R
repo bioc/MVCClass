@@ -129,7 +129,7 @@ setClass("spreadView", representation(clist="GtkCList"),
          contains="genView")
 
 # 7/28/05 put the graphLayout info in the graphModel object
-setClass("graphView", contains="plotView")
+setClass("graphView", representation(grLayout="Ragraph"), contains="plotView")
 
 # 9/1/05 not sure if I need to store anything else about a heatmap
 # decided to store the list of row and column reorderings returned from the
@@ -204,6 +204,12 @@ if (is.null(getGeneric("ordering")))
             standardGeneric("ordering"))
 setMethod("ordering", "heatmapView", function(object)
          object@ordering)
+
+if (is.null(getGeneric("grLayout")))
+  setGeneric("grLayout", function(object)
+            standardGeneric("grLayout"))
+setMethod("grLayout", "graphView", function(object)
+         object@grLayout)
 
 #####
 # setting the slots
@@ -314,6 +320,16 @@ if (is.null(getGeneric("ordering<-")))
 setReplaceMethod("ordering", "heatmapView", function(object, value)
          {
            object@ordering<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("grLayout<-")))
+  setGeneric("grLayout<-", function(object, value)
+            standardGeneric("grLayout<-"))
+setReplaceMethod("grLayout", "graphView", function(object, value)
+         {
+           object@grLayout<-value
            object
          }
 )

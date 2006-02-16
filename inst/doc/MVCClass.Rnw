@@ -170,14 +170,15 @@ extra slots, dfRows, colx, and coly, where dfRows are the row names from the
 model that are shown in the plot, colx is the column name from the model that
 is shown as the x variable in the plot, and coly is the column name from the
 model that is shown as the y variable in the plot.  The \Robject{graphView}
-class represents a graph plot view and it contains no extra slots besides
-those in the \Robject{plotView} class.  The \Robject{heatmapView} represents a
-heatmap view of the data and it contains the slot, ordering, which is a list
-that is returned from the \Rfunction{heatmap} function to give information
-about the dendrogram ordering.  Note that some of these views are only
-applicable for certain model types. For example, the \Robject{graphView} class
-will only make sense for a view of a graph object, which would be stored in the
-\Robject{graphModel} class. 
+class represents a graph plot view and it has the extra slot, grLayout, which
+holds a \Robject{Ragraph} object that represents the layout of the graph plot.
+The \Robject{heatmapView} represents a heatmap view of the data and it contains
+the slot, ordering, which is a list that is returned from the
+\Rfunction{heatmap} function to give information about the dendrogram
+ordering.  Note that some of these views are only applicable for certain model
+types.  For example, the \Robject{graphView} class will only make sense for a
+view of a graph object, which would be stored in the \Robject{graphModel}
+class. 
 
 Several generic functions have been defined that refer to operations 
 performed on views.  These generic functions are \Rfunction{motionEvent}, 

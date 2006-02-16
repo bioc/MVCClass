@@ -25,6 +25,8 @@ iSNetwork package).
     view }
     \item{\code{winNum}:}{a number that tells what number view this is (for
     example, the first view created will have winNum=1) }
+    \item{\code{grLayout}:}{the Ragraph object, which represents the layout
+    for the graph plot} 
   }
 }
 \section{Extends}{
