@@ -2,6 +2,10 @@
 \docType{class}
 \alias{graphView-class}
 \alias{graphView}
+\alias{grLayout<-,graphView-method}
+\alias{grLayout,graphView-method}
+\alias{grLayout}
+\alias{grLayout<-}
 \title{Class "graphView": A class to represent a graph view }
 \description{	 
   graphView is a class to represent a view that is a graph.  graphView

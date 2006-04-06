@@ -1,27 +1,29 @@
-\name{gUpdateChildMessage-class}
+\name{gSendChildMessage-class}
 \docType{class}
-\alias{gUpdateChildMessage-class}
-\alias{gUpdateChildMessage}
-\alias{childName<-,gUpdateChildMessage-method}
-\alias{childName,gUpdateChildMessage-method}
+\alias{gSendChildMessage-class}
+\alias{gSendChildMessage}
+\alias{childName<-,gSendChildMessage-method}
+\alias{childName,gSendChildMessage-method}
 \alias{childName}
 \alias{childName<-}
-\alias{parentUpdateDataMessage<-,gUpdateChildMessage-method}
-\alias{parentUpdateDataMessage,gUpdateChildMessage-method}
+\alias{parentUpdateDataMessage<-,gSendChildMessage-method}
+\alias{parentUpdateDataMessage,gSendChildMessage-method}
 \alias{parentUpdateDataMessage}
 \alias{parentUpdateDataMessage<-}
 
-\title{Class "gUpdateChildMessage": A class to represent an update child MVC
+\title{Class "gSendChildMessage": A class to represent a send child MVC
 message }
 \description{	 
-  gUpdateChildMessage is a class to represent an update child MVC message.
-  Whenever a model is updated if that model has a child MVC, then an object
+  gSendChildMessage is a class to represent a send child MVC message.
+  Whenever a model is updated and that model has a child MVC, then an object
   of this class will be created to notify the child MVC that a parent model
-  was updated.  gUpdateChildMessage inherits from the virtual class,
-  gMessage. 
+  was updated.  gSendChildMessage inherits from the virtual class,
+  gMessage.  The initialize and handleMessage methods
+  will be defined in other packages that use this class (for example, the
+  iSNetwork package). 
 }
 \section{Objects from the Class}{
-Objects can be created by calls of the form \code{new("gUpdateChildMessage",
+Objects can be created by calls of the form \code{new("gSendChildMessage",
 ...)}. 
 The initialize method for this class will be created in other packages that
 use this package (for example, the initialize method will be created in the
@@ -50,7 +52,7 @@ Class \code{"gMessage"}, directly.
 }
 \author{ Elizabeth Whalen }
 \seealso{
-  \code{\link{gUpdateParentMessage-class}},
+  \code{\link{gSendParentMessage-class}},
   \code{\link{gMessage-class}}
 }
 \examples{

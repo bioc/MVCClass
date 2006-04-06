@@ -1,5 +1,5 @@
 # really just need to import exprSet class from Biobase!!
-importClassesFrom(Biobase, exprSet)
+#importClassesFrom(Biobase, exprSet)
 
 # export all classes
 exportClasses(gEventFun, 
