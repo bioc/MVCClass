@@ -26,8 +26,8 @@ use this package, such as iSPlot and iSNetwork.
   \code{\link{gAddViewMessage-class}},
   \code{\link{gAddDataMessage-class}}, 
   \code{\link{gAddChildMessage-class}},
-  \code{\link{gUpdateParentMessage-class}},
-  \code{\link{gUpdateChildMessage-class}}
+  \code{\link{gSendParentMessage-class}},
+  \code{\link{gSendChildMessage-class}}
 }
 \examples{
 }
