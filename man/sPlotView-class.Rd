@@ -2,14 +2,14 @@
 \docType{class}
 \alias{sPlotView-class}
 \alias{sPlotView}
-\alias{colx<-,sPlotView-method}
-\alias{colx,sPlotView-method}
-\alias{colx}
-\alias{colx<-}
-\alias{coly<-,sPlotView-method}
-\alias{coly,sPlotView-method}
-\alias{coly}
-\alias{coly<-}
+\alias{xvar<-,sPlotView-method}
+\alias{xvar,sPlotView-method}
+\alias{xvar}
+\alias{xvar<-}
+\alias{yvar<-,sPlotView-method}
+\alias{yvar,sPlotView-method}
+\alias{yvar}
+\alias{yvar<-}
 \alias{dfRows<-,sPlotView-method}
 \alias{dfRows,sPlotView-method}
 \alias{dfRows}
@@ -31,10 +31,10 @@ iSNetwork and iSPlot packages).
 	 \describe{
     \item{\code{dfRows}:}{the names of the data frame rows that will be
     plotted }
-    \item{\code{colx}:}{the name of data frame column that will be plotted on
-    the x axis }
-    \item{\code{coly}:}{the name of the data frame column that will be plotted
-    on the y axis}
+    \item{\code{xvar}:}{the name of the data frame variable (column) that will
+    be plotted on the x axis }
+    \item{\code{yvar}:}{the name of the data frame variable (column) that will
+    be plotted on the y axis}
     \item{\code{plotDevice}:}{the plot device number }
     \item{\code{plotPar}:}{the parameter list for the plot, see par() }
     \item{\code{drArea}:}{an object of class \code{"GtkDrawingArea"} }
@@ -52,10 +52,10 @@ Class \code{"genView"}, by class \code{"plotView"}.
 }
 \section{Methods}{
   \describe{
-    \item{colx<-}{Sets the \code{colx} slot }
-    \item{colx}{Returns the \code{colx} slot }
-    \item{coly<-}{Sets the \code{coly} slot }
-    \item{coly}{Returns the \code{coly} slot }
+    \item{xvar<-}{Sets the \code{xvar} slot }
+    \item{xvar}{Returns the \code{xvar} slot }
+    \item{yvar<-}{Sets the \code{yvar} slot }
+    \item{yvar}{Returns the \code{yvar} slot }
     \item{dfRows<-}{Sets the \code{dfRows} slot }
     \item{dfRows}{Returns the \code{dfRows} slot }
 	 }

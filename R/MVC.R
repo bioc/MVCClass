@@ -122,8 +122,8 @@ setClass("plotView", representation(plotDevice="numeric", plotPar="list",
          drArea="GtkDrawingArea"), contains=c("genView", "VIRTUAL"))
 
 # store the row names and column names rather than their indices
-setClass("sPlotView", representation(dfRows="character", colx="character",
-         coly="character"), contains="plotView")
+setClass("sPlotView", representation(dfRows="character", xvar="character",
+         yvar="character"), contains="plotView")
 
 setClass("spreadView", representation(clist="GtkCList"), 
          contains="genView")
@@ -181,17 +181,17 @@ if (is.null(getGeneric("dfRows")))
 setMethod("dfRows", "sPlotView", function(object)
          object@dfRows)
 
-if (is.null(getGeneric("colx")))
-  setGeneric("colx", function(object)
-            standardGeneric("colx"))
-setMethod("colx", "sPlotView", function(object)
-         object@colx)
+if (is.null(getGeneric("xvar")))
+  setGeneric("xvar", function(object)
+            standardGeneric("xvar"))
+setMethod("xvar", "sPlotView", function(object)
+         object@xvar)
 
-if (is.null(getGeneric("coly")))
-  setGeneric("coly", function(object)
-            standardGeneric("coly"))
-setMethod("coly", "sPlotView", function(object)
-         object@coly)
+if (is.null(getGeneric("yvar")))
+  setGeneric("yvar", function(object)
+            standardGeneric("yvar"))
+setMethod("yvar", "sPlotView", function(object)
+         object@yvar)
 
 if (is.null(getGeneric("clist")))
   setGeneric("clist", function(object)
@@ -284,22 +284,22 @@ setReplaceMethod("dfRows","sPlotView",function(object, value)
          }
 )
 
-if (is.null(getGeneric("colx<-")))
-  setGeneric("colx<-",function(object,value)
-            standardGeneric("colx<-"))
-setReplaceMethod("colx","sPlotView",function(object,value)
+if (is.null(getGeneric("xvar<-")))
+  setGeneric("xvar<-",function(object, value)
+            standardGeneric("xvar<-"))
+setReplaceMethod("xvar","sPlotView",function(object, value)
          {
-           object@colx<-value
+           object@xvar<-value
            object
          }
 )
 
-if (is.null(getGeneric("coly<-")))
-  setGeneric("coly<-",function(object, value)
-            standardGeneric("coly<-"))
-setReplaceMethod("coly","sPlotView",function(object, value)
+if (is.null(getGeneric("yvar<-")))
+  setGeneric("yvar<-",function(object, value)
+            standardGeneric("yvar<-"))
+setReplaceMethod("yvar","sPlotView",function(object, value)
          {
-           object@coly<-value
+           object@yvar<-value
            object
          }
 )

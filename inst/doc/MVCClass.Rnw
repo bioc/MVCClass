@@ -39,7 +39,7 @@
 
 \title{Model-View-Controller Package}
 \author{Elizabeth Whalen}
-\date{November 11, 2005}
+\date{April 20, 2006}
 
 \begin{document}
 \maketitle
@@ -166,9 +166,11 @@ objects are the specific plot classes, \Robject{sPlotView},
 \Robject{plotView} class.  
 
 The \Robject{sPlotView} class represents a scatterplot view and it has the
-extra slots, dfRows, colx, and coly, where dfRows are the row names from the
-model that are shown in the plot, colx is the column name from the model that
-is shown as the x variable in the plot, and coly is the column name from the
+extra slots, dfRows, xvar, and yvar, where dfRows are the row names from the
+model that are shown in the plot, xvar is the variable name (the column name
+if the model is a data frame) from the model that
+is shown as the x variable in the plot, and yvar is the variable name (the
+column name if the model is a data frame) from the
 model that is shown as the y variable in the plot.  The \Robject{graphView}
 class represents a graph plot view and it has the extra slot, grLayout, which
 holds a \Robject{Ragraph} object that represents the layout of the graph plot.

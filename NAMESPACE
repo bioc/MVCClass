@@ -1,6 +1,7 @@
 # really just need to import exprSet class from Biobase!!
 #importClassesFrom(Biobase, exprSet)
 
+
 # export all classes
 exportClasses(gEventFun, 
               gAddDataMessage, gAddViewMessage, gUpdateDataMessage,
@@ -20,7 +21,7 @@ exportMethods(callFun, shortName, preprocessFun,
               updateModel,
               model, viewList, controller, parentMVC, childMVCList, 
               win, winNum, plotDevice, plotPar, drArea, dfRows,
-              colx, coly, clist, ordering, motionEvent, clickEvent,
+              xvar, yvar, clist, ordering, motionEvent, clickEvent,
               updateView, redrawView, grLayout,
               "callFun<-", "shortName<-", "preprocessFun<-",
               "from<-", "childUpdateDataMessage<-", 
@@ -30,5 +31,5 @@ exportMethods(callFun, shortName, preprocessFun,
               "model<-", "viewList<-", "controller<-", "parentMVC<-",
               "childMVCList<-",  
               "win<-", "winNum<-", "plotDevice<-", "plotPar<-",
-              "drArea<-", "dfRows<-", "colx<-", "coly<-", "clist<-",
+              "drArea<-", "dfRows<-", "xvar<-", "yvar<-", "clist<-",
               "ordering<-", "grLayout<-")
