@@ -184,15 +184,16 @@ class.
 
 Several generic functions have been defined that refer to operations 
 performed on views.  These generic functions are \Rfunction{motionEvent}, 
-\Rfunction{clickEvent}, \Rfunction{updateView}, and \Rfunction{redrawView}.  
-Methods for these generic 
+\Rfunction{clickEvent}, \Rfunction{updateView}, \Rfunction{redrawView} and
+\Rfunction{identifyView}.  Methods for these generic 
 functions will be defined in packages that use this package (in 
 \Rpackage{iSPlot} and \Rpackage{iSNetwork}).  When these methods are defined, 
 the \Rfunction{motionEvent} method will be used to respond to a mouse over 
 event on a view, the \Rfunction{clickEvent} method will be used to respond to 
 a click event over a view, the \Rfunction{updateView} method will be used to 
-update only a portion of the view, and the \Rfunction{redrawView} method will 
-be used to completely redraw the view.
+update only a portion of the view, the \Rfunction{redrawView} method will 
+be used to completely redraw the view, and the \Rfunction{identifyView} method
+will be used to identify an object (such as a point, a node, etc.) on a view.
 
 \section{Message Classes}\label{Sec:Message}
 

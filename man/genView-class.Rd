@@ -14,6 +14,7 @@
 \alias{winNum<-}
 \alias{updateView}
 \alias{redrawView}
+\alias{identifyView}
 
 \title{Class "genView": A virtual class to describe a view  }
 \description{	 
@@ -47,7 +48,10 @@ will define how a view should be redrawn when the underlying data has
 changed.  The redrawView method will completely redraw the view, while the
 updateView method will only redraw the parts of the view that have changed.
 Both of these methods, redrawView and updateView, will be defined in packages
-that use this package, such as iSPlot and iSNetwork.
+that use this package, such as iSPlot and iSNetwork.  Also, all views will
+have an identifyView method that will identify an object (such as a point, a
+node, a row, etc.) on the view given some location on the view (such as the
+user coordinates).   
 }
 \author{ Elizabeth Whalen }
 \seealso{

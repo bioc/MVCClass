@@ -38,6 +38,9 @@ Class \code{"genView"}, directly.
     \item{clist<-}{Sets the \code{clist} slot }
     \item{clist}{Returns the \code{clist} slot }
 	 }
+This class will also have a clickEvent method, which will be called whenever a
+user selects a row on the spreadsheet.  This method will be defined in
+packages that use this package, such as iSPlot and iSNetwork.
 }
 \author{ Elizabeth Whalen }
 \seealso{

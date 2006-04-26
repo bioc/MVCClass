@@ -346,6 +346,14 @@ if (is.null(getGeneric("clickEvent")))
             standardGeneric("clickEvent"))
 
 #########
+# added 4/23/06
+# to identify an object on a view (starting from user coordinates)
+#########
+if (is.null(getGeneric("identifyView")))
+  setGeneric("identifyView", function(object, location, ...)
+            standardGeneric("identifyView"))
+
+#########
 # added 6/5/05
 # make method to update a view depending on the view object
 # vData is the view data needed to update the view
@@ -353,8 +361,6 @@ if (is.null(getGeneric("clickEvent")))
 if (is.null(getGeneric("updateView")))
   setGeneric("updateView", function(object, vData)
             standardGeneric("updateView"))
-
-
 
 ########
 # added 6/5/05
