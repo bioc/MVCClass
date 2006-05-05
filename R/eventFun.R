@@ -14,11 +14,11 @@
 #  preprocessing functions must not take any parameters
 ##############
 # there may be no preprocessing functions
-setClassUnion("characterNULL", members=c("character", "NULL"))
+setClassUnion("listNULL", members=c("list", "NULL"))
 
-setClass("gEventFun", representation(callFun="character", 
+setClass("gEventFun", representation(callFun="function", 
                                   shortName="character", 
-                                  preprocessFun="characterNULL"))
+                                  preprocessFun="listNULL"))
 
 if (is.null(getGeneric("callFun")))
   setGeneric("callFun", function(object)

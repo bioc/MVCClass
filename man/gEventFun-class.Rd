@@ -20,18 +20,18 @@
   The gEventFun class creates an object which contains all the needed
   information to link a callback function to an event.  The gEventFun object
   will hold all of the callback function information, including the callback
-  function name, a short description of what the callback function does, and a
-  vector of all preprocessing functions that must be called.
+  function, a short description of what the callback function does, and a
+  list of all preprocessing functions that must be called.
 }
 \section{Objects from the Class}{
 Objects can be created by calls of the form \code{new("gEventFun", ...)}.
 }
 \section{Slots}{
 	 \describe{
-    \item{\code{callFun}:}{the name of the callback function}
+    \item{\code{callFun}:}{the callback function}
     \item{\code{shortName}:}{a short description of what the callback function
     does}
-    \item{\code{preprocessFun}:}{a vector of preprocessing functions that must
+    \item{\code{preprocessFun}:}{a list of preprocessing functions that must
     be called before the callback function (this can be NULL)}
   }
 }

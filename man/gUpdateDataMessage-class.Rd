@@ -10,8 +10,8 @@
 \title{Class "gUpdateDataMessage": A class to represent an update data message }
 \description{
   gUpdateDataMessage is a class to represent an update data message.
-  gUpdateDataMessage is inherited from the class, gUpdateMessage, which
-  inherits from the virtual class, gMessage.  Whenever a gUpdateDataMessage
+  gUpdateDataMessage is inherited from the virtual class, gUpdateMessage.
+  Whenever a gUpdateDataMessage
   is created (initialized), the next step is to call the handleMessage method
   to act upon that message and update the data.
 }
@@ -33,6 +33,7 @@ iSNetwork and iSPlot packages).
 }
 \section{Extends}{
 Class \code{"gUpdateMessage"}, directly.
+Class \code{"gModifyMessage"}, by class \code{"gUpdateMessage"}.
 Class \code{"gMessage"}, by class \code{"gUpdateMessage"}.
 }
 \section{Methods}{

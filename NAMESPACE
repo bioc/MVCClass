@@ -6,9 +6,10 @@
 exportClasses(gEventFun, 
               gAddDataMessage, gAddViewMessage, gUpdateDataMessage,
               gUpdateViewMessage, gAddChildMessage, gSendParentMessage,
-              gSendChildMessage, gMessage, gAddMessage, gUpdateMessage,
+              gSendChildMessage, gMessage, gModifyMessage, gAddMessage, 
+              gUpdateMessage,
               graphModel, exprModel, dfModel, gModel,
-              MVC, 
+              MVC, singleModelMVC, linkedModelMVC,
               plotView, sPlotView, spreadView, graphView, heatmapView,
               genView)
 

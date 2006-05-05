@@ -39,7 +39,7 @@
 
 \title{Model-View-Controller Package}
 \author{Elizabeth Whalen}
-\date{April 20, 2006}
+\date{May 5, 2006}
 
 \begin{document}
 \maketitle
@@ -62,34 +62,41 @@ an object of this class can be created each time there is a new data set
 a model object.  Because of this relationship, the
 MVC object and the model object are identified by the same name,
 which is stored in the modelName slot of the model object (see Section 
-\ref{Sec:Model}).  The figure below 
-shows the class definition for \Robject{MVC}. 
+\ref{Sec:Model}).  Figure \ref{Fig:MVCClass} 
+shows the inheritance structure for the \Robject{MVC} classes.  
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.3}{\includegraphics{MVCClass.jpg}}
-    \caption{ The MVC Class. }
+    \scalebox{0.2}{\includegraphics{fullMVCClass.jpg}}
+    \caption{ Inheritance for MVC Objects. }
     \label{Fig:MVCClass}
   \end{center}
 \end{figure}
 
-The \Robject{MVC} class has five slots which are model, viewList, controller, 
-parentMVC, and childMVCList.  The
-model slot stores the model object, the viewList slot is a list of the view
-objects for this model, the controller slot is an environment that stores
-information for this MVC, the parentMVC slot is the name of the parent model
-(MVC), and the childMVCList slot is a list of the children models
-(MVCs).  Note that model and MVC objects use the same name so the
-parentMVC slot refers to both the name of the model and the name of the
-MVC.  Similarly, for the childMVCList slot, the names in the list
-refer to both the name of the model and the name of the MVC.
+The \Robject{MVC} class is a virtual class that binds the other \Robject{MVC}
+classes together.  Every \Robject{MVC} object will need the three slots:
+model, viewList and controller.  The model slot stores the model object, the
+viewList slot is a list of the view objects for this model, and the controller
+slot is an environment that stores information for this MVC.  Inheriting from
+the \Robject{MVC} class is the \Robject{singleModelMVC} class that has no new
+slots.  The \Robject{singleModelMVC} class represents a \Robject{MVC} object
+that is not linked to any other \Robject{MVC} objects.
 
-Thus, the \Robject{MVC} class not only binds the model, view, and controller
-objects together, but MVC objects can be related to each through a 
-parent-child (tree) hierarchy because of the slots, parentMVC and 
-childMVCList. 
-These two slots also show that a MVC object can have at most one parent MVC and
-can have as many children MVCs as it wants. 
+Inheriting from the \Robject{singleModelMVC} class is the
+\Robject{linkedModelMVC} that contains the new slots: parentMVC and
+childMVCList.  The parentMVC slot is the name of the parent model (MVC) and
+the childMVCList slot is a list of the children models (MVCs).  Note that
+model and MVC objects use the same name so the parentMVC slot refers to both
+the name of the model and the name of the MVC.  Similarly, for the
+childMVCList slot, the names in the list refer to both the name of the model
+and the name of the MVC. 
+
+Thus, the \Robject{singleModelMVC} class binds the model, view, and controller
+objects together and the \Robject{linkedModelMVC} class allows the MVC objects
+to be related to each through a parent-child (tree) hierarchy because of the
+slots, parentMVC and childMVCList.  These two slots also show that a MVC
+object can have at most one parent MVC and can have as many children MVCs as
+it wants.  
 
 \section{Model Classes}\label{Sec:Model}
 
@@ -220,7 +227,7 @@ constructed, and this model is shown in Figure \ref{Fig:Mess}.
   \end{center}
 \end{figure}
 
-The above figure shows the inheritance structure for message objects that can 
+The figure shows the inheritance structure for message objects that can 
 be passed within one MVC object and a later figure in this section will show 
 the inheritance structure for messages objects that can be passed between MVC 
 objects.
@@ -230,9 +237,11 @@ virtual class.  It contains no slots and its purpose is to bind the other
 message classes together.
 
 Currently, there are two types of messages for messaging within a model, view,
-controller object: an add and an update message.  Both the add message,
+controller object: an add and an update message, and both of these messages
+are performing some type of modification.  Thus, both the add message,
 \Robject{gAddMessage}, and the update message, \Robject{gUpdateMessage},
-contain three slots, dataName, mData, and type.  dataName is the character
+inherit from the virtual class, \Robject{gModifyMessage}, which has 
+three slots, dataName, mData, and type.  dataName is the character
 string that gives the name of the model, mData is a list of data needed to
 perform the addition or alteration operation, and type is a character string
 that gives the type of addition or alteration to perform.  Both
@@ -240,7 +249,7 @@ that gives the type of addition or alteration to perform.  Both
 
 Since adding a view requires different information and methods from adding a
 model (and similarly with updating views versus models), it makes sense to
-have two separate message classes for these operations.  Thus, when messages
+have two separate message classes for these elements.  Thus, when messages
 are sent between components, they are from one of the following classes:
 \Robject{gAddDataMessage}, \Robject{gAddViewMessage},
 \Robject{gUpdateDataMessage}, and \Robject{gUpdateViewMessage}.  As shown in
@@ -260,11 +269,10 @@ ensuring that once a model has been updated this information must propagate to
 any views of the model and this information must also be passed along to any
 other MVC object that is related to this model.  Because this information gets
 passed to other MVC objects, this message also has one new slot, from, in 
-addition to
-the slots it inherits from \Robject{gUpdateMessage}.  The from slot is the
-name of the model that the update data message came from.  This slot is
-necessary because the update data message can come from one of two sources:
-the message can occur because of user interaction with a view
+addition to the slots it inherits from \Robject{gUpdateMessage}.  The from
+slot is the name of the model that the update data message came from.  This
+slot is necessary because the update data message can come from one of two
+sources: the message can occur because of user interaction with a view
 of this model or the message may occur because a different model that is
 linked to this model has been updated.  So the update data message may come
 from within this MVC object or it may come from a different MVC object that
@@ -278,7 +286,7 @@ The two main types of messages, the add and update messages, will also be used
 here.  The inheritance structure for messages passed between MVC objects is 
 shown in the figure below.
  
-\clearpage
+%\clearpage
 
 \begin{figure}[ht]
   \begin{center}
@@ -340,16 +348,16 @@ definition for \Robject{gEventFun} is shown in the figure below.
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.3}{\includegraphics{EventClass.jpg}}
+    \scalebox{0.2}{\includegraphics{EventClass.jpg}}
     \caption{ The gEventFun Class. }
     \label{Fig:EventFun}
   \end{center}
 \end{figure}
 
 As shown in Fig \ref{Fig:EventFun}, the slots in the \Robject{gEventFun} class
-are callFun, shortName, and preprocessFun.  The callFun slot is the name of
-the callback function, the shortName slot is a short description of the
-function, and the preprocessFun slot is a character vector of all
+are callFun, shortName, and preprocessFun.  The callFun slot is the callback
+function, the shortName slot is a short description of the 
+function, and the preprocessFun slot is a list of all
 preprocessing functions that must be called before the callback function.
 
 The callback function that is stored in the callFun slot must take only one
@@ -362,12 +370,12 @@ a row in the data frame.
 The preprocessing functions that are stored in the preprocessFun slot will
 take no parameters.  The purpose of the preprocessing functions is to set some
 variables that the callback function will need.  Thus, not all callback
-functions will need preprocessing functions and if no preprocessing functions
-are needed, then this slot will be NULL.  If the callback function sets the
+functions need preprocessing functions and if no preprocessing functions
+are needed, then this slot is set to NULL.  If the callback function sets the
 color of a node in a graph, then a preprocessing function is needed to
 determine what color this will be.  So in this example, the preprocessing
-function will open a color browser to allow the user to choose what the new
-color will be.
+function opens a color browser to allow the user to choose what the new
+color is.
 
 \section{Conclusions}\label{Sec:Conc}
 

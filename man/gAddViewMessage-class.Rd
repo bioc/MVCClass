@@ -7,8 +7,7 @@
   gAddViewMessage is a class to represent an add view message.  Whenever
   a view needs to be added, a gAddViewMessage object is created and the
   handleMessage method is called to act on the message.  gAddViewMessage
-  inherits from the class, gAddMessage, which inherits from the virtual class,
-  gMessage. 
+  inherits from the virtual class, gAddMessage. 
 }
 \section{Objects from the Class}{
 Objects can be created by calls of the form \code{new("gAddViewMessage",
@@ -28,6 +27,7 @@ iSNetwork and iSPlot packages).
 }
 \section{Extends}{
 Class \code{"gAddMessage"}, directly.
+Class \code{"gModifyMessage"}, by class \code{"gAddMessage"}.
 Class \code{"gMessage"}, by class \code{"gAddMessage"}.
 }
 \section{Methods}{

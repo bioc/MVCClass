@@ -380,8 +380,12 @@ if (is.null(getGeneric("redrawView")))
 #############
 
 setClass("MVC", representation(model="gModel", viewList="list", 
-                  controller="environment", parentMVC="character", 
-                  childMVCList="list"))
+                  controller="environment"), contains=("VIRTUAL"))
+
+setClass("singleModelMVC", contains="MVC")
+
+setClass("linkedModelMVC", representation(parentMVC="character",
+                           childMVCList="list"), contains="singleModelMVC")
 
 ########
 # get the slots
@@ -408,13 +412,13 @@ setMethod("controller", "MVC", function(object)
 if (is.null(getGeneric("parentMVC")))
   setGeneric("parentMVC", function(object)
             standardGeneric("parentMVC"))
-setMethod("parentMVC", "MVC", function(object)
+setMethod("parentMVC", "linkedModelMVC", function(object)
          object@parentMVC)
 
 if (is.null(getGeneric("childMVCList")))
   setGeneric("childMVCList", function(object)
             standardGeneric("childMVCList"))
-setMethod("childMVCList", "MVC", function(object)
+setMethod("childMVCList", "linkedModelMVC", function(object)
          object@childMVCList)
 
 ########
@@ -454,7 +458,7 @@ setReplaceMethod("controller", "MVC", function(object,value)
 if (is.null(getGeneric("parentMVC<-")))
   setGeneric("parentMVC<-", function(object,value)
             standardGeneric("parentMVC<-"))
-setReplaceMethod("parentMVC", "MVC", function(object,value)
+setReplaceMethod("parentMVC", "linkedModelMVC", function(object,value)
          {
            object@parentMVC<-value
            object
@@ -464,7 +468,7 @@ setReplaceMethod("parentMVC", "MVC", function(object,value)
 if (is.null(getGeneric("childMVCList<-")))
   setGeneric("childMVCList<-", function(object,value)
             standardGeneric("childMVCList<-"))
-setReplaceMethod("childMVCList", "MVC", function(object,value)
+setReplaceMethod("childMVCList", "linkedModelMVC", function(object,value)
          {
            object@childMVCList<-value
            object

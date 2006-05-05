@@ -4,8 +4,10 @@
 # a virtual class for message
 setClass("gMessage")
 
-setClass("gUpdateMessage", representation(type="character", mData="list",
+setClass("gModifyMessage", representation(type="character", mData="list",
           dataName="character"), contains=c("gMessage", "VIRTUAL"))
+
+setClass("gUpdateMessage", contains=c("gModifyMessage", "VIRTUAL"))
 
 setClass("gUpdateViewMessage", contains="gUpdateMessage")
 
@@ -15,8 +17,7 @@ setClass("gUpdateViewMessage", contains="gUpdateMessage")
 setClass("gUpdateDataMessage", representation(from="character"), 
           contains="gUpdateMessage")
 
-setClass("gAddMessage", representation(dataName="character", mData="list",
-         type="character"), contains=c("gMessage", "VIRTUAL"))
+setClass("gAddMessage", contains=c("gModifyMessage", "VIRTUAL"))
 setClass("gAddViewMessage", contains="gAddMessage")
 setClass("gAddDataMessage", contains="gAddMessage")
 
@@ -67,25 +68,19 @@ setMethod("childName", "gSendChildMessage", function(object)
 if (is.null(getGeneric("type")))
   setGeneric("type", function(object)
             standardGeneric("type"))
-setMethod("type", "gUpdateMessage", function(object)
-         object@type)
-setMethod("type", "gAddMessage", function(object)
+setMethod("type", "gModifyMessage", function(object)
          object@type)
 
 if (is.null(getGeneric("mData")))
   setGeneric("mData", function(object)
             standardGeneric("mData"))
-setMethod("mData", "gUpdateMessage", function(object)
-         object@mData)
-setMethod("mData", "gAddMessage", function(object)
+setMethod("mData", "gModifyMessage", function(object)
          object@mData)
 
 if (is.null(getGeneric("dataName")))
   setGeneric("dataName", function(object)
             standardGeneric("dataName"))
-setMethod("dataName", "gAddMessage", function(object)
-         object@dataName)
-setMethod("dataName", "gUpdateMessage", function(object)
+setMethod("dataName", "gModifyMessage", function(object)
          object@dataName)
 
 #####
@@ -134,13 +129,7 @@ setReplaceMethod("childName", "gSendChildMessage", function(object, value)
 if (is.null(getGeneric("type<-")))
   setGeneric("type<-", function(object, value)
             standardGeneric("type<-"))
-setReplaceMethod("type", "gUpdateMessage", function(object, value)
-         {
-           object@type<-value
-           object
-         }
-)
-setReplaceMethod("type", "gAddMessage", function(object, value)
+setReplaceMethod("type", "gModifyMessage", function(object, value)
          {
            object@type<-value
            object
@@ -150,13 +139,7 @@ setReplaceMethod("type", "gAddMessage", function(object, value)
 if (is.null(getGeneric("mData<-")))
   setGeneric("mData<-",function(object, value)
             standardGeneric("mData<-"))
-setReplaceMethod("mData", "gUpdateMessage", function(object, value)
-         {
-           object@mData<-value
-           object
-         }
-)
-setReplaceMethod("mData", "gAddMessage", function(object, value)
+setReplaceMethod("mData", "gModifyMessage", function(object, value)
          {
            object@mData<-value
            object
@@ -166,13 +149,7 @@ setReplaceMethod("mData", "gAddMessage", function(object, value)
 if (is.null(getGeneric("dataName<-")))
   setGeneric("dataName<-", function(object, value)
             standardGeneric("dataName<-"))
-setReplaceMethod("dataName", "gAddMessage", function(object, value)
-         {
-           object@dataName<-value
-           object
-         }
-)
-setReplaceMethod("dataName", "gUpdateMessage", function(object, value)
+setReplaceMethod("dataName", "gModifyMessage", function(object, value)
          {
            object@dataName<-value
            object

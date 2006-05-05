@@ -6,8 +6,8 @@
 \title{Class "gUpdateViewMessage": A class to represent an update view message }
 \description{	 
   gUpdateViewMessage is a class to represent an update view message.
-  gUpdateViewMessage is inherited from the class, gUpdateMessage, which
-  inherits from the virtual class, gMessage.  Whenever a gUpdateViewMessage
+  gUpdateViewMessage is inherited from the virtual class, gUpdateMessage.
+  Whenever a gUpdateViewMessage
   is created (initialized), the next step is to call the handleMessage method 
   to act upon that message and update the views.
 }
@@ -28,6 +28,7 @@ iSNetwork and iSPlot packages).
 }
 \section{Extends}{
 Class \code{"gUpdateMessage"}, directly.
+Class \code{"gModifyMessage"}, by class \code{"gUpdateMessage"}.
 Class \code{"gMessage"}, by class \code{"gUpdateMessage"}.
 }
 \section{Methods}{
