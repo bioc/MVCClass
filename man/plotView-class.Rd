@@ -17,18 +17,15 @@
 \alias{clickEvent}
 \alias{motionEvent}
 
-\title{Class "plotView": A class to represent a plot view }
+\title{Class "plotView": A virtual class to represent a plot view }
 \description{	 
-  plotView is a class to represent a view that is a plot.  Any particular
-  types of plots can inherit from this class.  For instance, sPlotView, is
-  a class that inherits from plotView and represents a scatterplot view.
-  Although plotView is not a virtual class, it is not intended to create
-  objects of class, plotType.
+  plotView is a virtual class to represent a view that is a plot.  Any
+  particular types of plots can inherit from this class.  For instance,
+  sPlotView, is a class that inherits from plotView and represents a
+  scatterplot view. 
 }
-\section{Objects from the Class}{
-Objects can be created by calls of the form \code{new("plotView", ...)}.
-Objects of this class should not be created.
-}
+\section{Objects from the Class}{A virtual Class: No objects may be created
+from it. }
 \section{Slots}{
 	 \describe{
     \item{\code{plotDevice}:}{the plot device number }

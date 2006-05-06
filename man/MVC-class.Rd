@@ -22,9 +22,8 @@ object }
   class will combine these three components (model, view and controller) so
   that the MVC objects can be reused and linked.
 }
-\section{Objects from the Class}{
-Objects can be created by calls of the form \code{new("MVC", ...)}.
-}
+\section{Objects from the Class}{A virtual Class: No objects may be created
+from it. }
 \section{Slots}{
 	 \describe{
     \item{\code{model}:}{the model object (will inherit from the gModel

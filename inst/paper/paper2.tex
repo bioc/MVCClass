@@ -21,7 +21,6 @@
 \begin{document}
 
 \bibliographystyle{amsplain}
-\bibliography{paper2}
 
 \begin{titlepage}
 \begin{center}
@@ -30,7 +29,7 @@
 \textbf{Creating Linked, Interactive Views to \linebreak Explore Linked Data} \\
 \vspace{1in}
 \textbf{Dana-Farber Cancer Institute}\\ 
-\textbf{February 2, 2006} \\
+\textbf{May 6, 2006} \\
 \vspace{1in} 
 \textbf{Elizabeth Whalen} \\
 \end{center}
@@ -847,9 +846,10 @@ discussed more fully in the following paragraphs.
 
 As shown in Figure \ref{Fig:EventFun}, the slots in the \Rclass{gEventFun}
 class are \Rslot{callFun}, \Rslot{shortName}, and \Rslot{preprocessFun}.  The
-\Rslot{callFun} slot is the name of the callback function, the
-\Rslot{shortName} slot is a short description of the function, and the
-\Rslot{preprocessFun} slot is a character vector of all preprocessing
+\Rslot{callFun} slot is the callback function, the
+\Rslot{shortName} slot is a short description of the function that
+identifies the callback function, and the
+\Rslot{preprocessFun} slot is a list of all preprocessing
 functions that must be called before the callback function.
 
 \begin{figure}[ht]
@@ -906,36 +906,47 @@ is stored in the \Rslot{modelName} slot of the model object.  When
 loading a new model, the name of the model is checked to
 ensure that it is unique.
 
-As shown in Figure \ref{Fig:MVCClass}, the \Rclass{MVC} class has five slots
-which are, \Rslot{model}, \Rslot{viewList}, \Rslot{controller},
-\Rslot{parentMVC}, and \Rslot{childMVCList}.  The \Rslot{model} slot stores
-the model object, the \Rslot{viewList} slot is a list of the
-view objects for this model, the \Rslot{controller} slot is an
-environment that stores information for this \Robject{MVC}, the
-\Rslot{parentMVC} slot is the name of the parent model
-(\Robject{MVC}), and the \Rslot{childMVCList} slot is a list of the children
-models (\Robject{MVCs}).  Note that model and
+As shown in Figure \ref{Fig:MVCClass}, there is a virtual class, \Rclass{MVC},
+that binds the MVC inheritance structure together.  The virtual class,
+\Rclass{MVC}, has three slots, which are \Rslot{model}, \Rslot{viewList}, and
+\Rslot{controller}.  The \Rslot{model} slot stores the model object, the
+\Rslot{viewList} slot is a list of the view objects for this model, and the
+\Rslot{controller} slot is an environment that stores information for this
+\Robject{MVC}.  These three pieces of information are needed to bind the
+model, view, and controller into one object.  To create instances of a single
+MVC, the \Rclass{singleModelMVC} class, which inherits from the virtual
+\Rclass{MVC} class, can be used.  
+
+Inheriting from the \Rclass{singleModelMVC} class is the
+\Rclass{linkedModelMVC} class, which represents a \Robject{MVC} object that
+can be linked to other \Robject{MVC} objects.  The \Rclass{linkedModelMVC}
+class has two additional slots: \Rslot{parentMVC}, which is the name of the
+parent model (\Robject{MVC}), and \Rslot{childMVCList}, which is a list of the
+child models (\Robject{MVCs}).  Note that model and
 \Robject{MVC} objects use the same name so the \Rslot{parentMVC} slot refers
 to both the name of the model and the name of the \Robject{MVC}.
 Similarly, for the \Rslot{childMVCList} slot, the names in the list refer to
-both the name of the model and the name of the \Robject{MVC}. 
+both the name of the model and the name of the \Robject{MVC}.  In this paper,
+we are assuming that models are linked so all \Robject{MVC} objects are of
+class \Rclass{linkedModelMVC}.
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.6}{\includegraphics{MVCClass.jpg}}
+    \scalebox{0.6}{\includegraphics{fullMVCClass.jpg}}
     \caption{ The MVC Class. }
     \label{Fig:MVCClass}
   \end{center}
 \end{figure}
 
-Thus, the \Rclass{MVC} class not only binds the model,
+Thus, the \Rclass{linkedModelMVC} class not only binds the model,
 view, and controller objects together, but it also shows
-that the \Robject{MVC} objects are related to each other through a
+that the \Robject{linkedModelMVC} objects are related to each other through a
 parent-child (tree) hierarchy, as shown in Figure \ref{Fig:Hier}.  In this
-picture, `model1' is the name of the original \Robject{MVC} object (model) and
-from it, two \Robject{MVC} objects were created, `model2.1' and
-`model2.2'. Then from `model2.1', three \Robject{MVC} objects were created,
-`model3.1', `model3.2', and `model3.3'.  As an example, model1 could be gene
+picture, `model1' is the name of the original \Robject{MVC} object
+(model) and from it, two \Robject{MVC} objects were created,
+`model2.1' and `model2.2'. Then from `model2.1', three
+\Robject{MVC} objects were created, `model3.1', `model3.2', and
+`model3.3'.  As an example, model1 could be gene 
 expression data, model2.1 could be gene expression data that is a subset of
 model1 (based on filtering), model2.2 could be derived by performing
 multidimensional scaling (MDS) on model1, model 3.1 could be the gene ontology
@@ -955,18 +966,19 @@ in, and model 3.3 could be the chromosome locations of the genes in model2.1.
 
 A design decision was that a new model (and thus, a new
 \Robject{MVC} object) could either be loaded or could be created from an
-already loaded \Robject{MVC} object.  As mentioned in Section \ref{Ssec:MMVC},
-the focus in this paper is on experimental data that are linked to meta-data,
-as the linked data sets that we are most interested in visualizing.  In this
-situation, the experimental data (and its \Robject{MVC} object) can be thought
-of as determining what meta-data are studied.  Thus, there is a hierarchical
-relationship between these data sets where one \Robject{MVC} object creates
-another \Robject{MVC} object.  This focus led to the decision that a
-\Robject{MVC} object can have at most one parent \Robject{MVC}, from which it
-was derived, but it can have many child \Robject{MVCs}.  An easy example of a
-child model derived from a parent model is to start with a
-data frame as the parent model and then take a subset of this data
-frame as the child model. 
+already loaded \Robject{MVC} object.  As mentioned in Section
+\ref{Ssec:MMVC}, the focus in this paper is on experimental data that are
+linked to meta-data, as the linked data sets that we are most interested in
+visualizing.  In this situation, the experimental data (and its
+\Robject{MVC} object) can be thought of as determining what
+meta-data are studied.  Thus, there is a hierarchical relationship between
+these data sets where one \Robject{MVC} object creates another
+\Robject{MVC} object.  This focus led to the decision that a
+\Robject{MVC} object can have at most one parent
+\Robject{MVC}, from which it was derived, but it can have many
+child \Robject{MVCs}.  An easy example of a child model derived
+from a parent model is to start with a data frame as the parent model and then
+take a subset of this data frame as the child model. 
 
 \subsection{Messages Within a MVC Object}\label{Ssec:OneMess}
 
@@ -992,7 +1004,7 @@ model to be constructed, and this model is shown in Figure \ref{Fig:Mess}.
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.6}{\includegraphics{MessageClass.jpg}}
+    \scalebox{0.6}{\includegraphics{newMessageClass.jpg}}
     \caption{ Inheritance for Message Objects. }
     \label{Fig:Mess}
   \end{center}
@@ -1003,10 +1015,13 @@ As with the view classes, the top message class,
 is to bind the other message classes together.
 
 Currently, there are two types of messages for messaging within a
-model, view, controller object: an add and an update message.  Both the add
-message, \Rclass{gAddMessage}, and the update message, \Rclass{gUpdateMessage},
-contain three slots, \Rslot{dataName}, \Rslot{mData}, and \Rslot{type}.
-\Rslot{dataName} is the character string that gives the name of the model,
+model, view, controller object: an add and an update message.  These two types
+of messages are both performing some type of modification and thus, both the
+add message, \Rclass{gAddMessage}, and the update message,
+\Rclass{gUpdateMessage}, inherit from the virtual class,
+\Rclass{gModifyMessage}, which contains three slots, \Rslot{dataName},
+\Rslot{mData}, and \Rslot{type}.  \Rslot{dataName} is the character string
+that gives the name of the model, 
 \Rslot{mData} is a list of data needed to perform the addition or alteration
 operation, and \Rslot{type} is a character string that gives the type of
 addition or alteration to perform.  Both \Rclass{gAddMessage} and
@@ -1014,7 +1029,7 @@ addition or alteration to perform.  Both \Rclass{gAddMessage} and
 
 Since adding a view requires different information and methods from adding a
 model (and similarly with updating views versus models), it makes sense to
-have two separate message classes for these operations.  Messages
+have two separate message classes for these elements.  Messages
 sent between components are from one of the following classes:
 \Rclass{gAddDataMessage}, \Rclass{gAddViewMessage},
 \Rclass{gUpdateDataMessage}, and \Rclass{gUpdateViewMessage}.  The
@@ -1397,5 +1412,7 @@ and can explore visually the relationships between variables in different data
 sets.  This functionality was implemented by extending the MVC paradigm in a
 very natural way to encompass a much richer class of models and user
 interactions. 
+
+\bibliography{paper2}
 
 \end{document}
