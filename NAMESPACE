@@ -1,6 +1,7 @@
 # really just need to import exprSet class from Biobase!!
-#importClassesFrom(Biobase, exprSet)
-
+importClassesFrom(Biobase, exprSet)
+importClassesFrom(graph, graph)
+importClassesFrom(Rgraphviz, Ragraph)
 
 # export all classes
 exportClasses(gEventFun, 
