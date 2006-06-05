@@ -62,9 +62,7 @@ to a user selecting a row on the spreadsheet.
 \author{ Elizabeth Whalen }
 \seealso{
   \code{\link{genView-class}},
-  \code{\link{sPlotView-class}},
-  \code{\link{graphView-class}},
-  \code{\link{heatmapView-class}}
+  \code{\link{sPlotView-class}}
 }
 \examples{
 }

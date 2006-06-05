@@ -57,9 +57,7 @@ user coordinates).
 \seealso{
   \code{\link{plotView-class}},
   \code{\link{sPlotView-class}},
-  \code{\link{spreadView-class}},
-  \code{\link{graphView-class}},
-  \code{\link{heatmapView-class}}
+  \code{\link{spreadView-class}}
 }
 \examples{
 }

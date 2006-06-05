@@ -39,7 +39,7 @@
 
 \title{Model-View-Controller Package}
 \author{Elizabeth Whalen}
-\date{May 5, 2006}
+\date{June 5, 2006}
 
 \begin{document}
 \maketitle
@@ -52,6 +52,12 @@ model-view-controller applications.  Currently, the packages that use the
 \Rpackage{MVCClass} package are \Rpackage{iSPlot} and \Rpackage{iSNetwork}.  
 Both packages use the definitions from \Rpackage{MVCClass} to create linked, 
 interactive views of data.
+
+Note: this vignette covers classes in both the \Rpackage{MVCClass} and the
+\Rpackage{BioMVCClass} packages.  The following classes are defined in
+\Rpackage{BioMVCClass}: \Robject{graphModel}, \Robject{exprModel},
+\Robject{graphView}, and \Robject{heatmapView}.  All other classes are defined
+in \Rpackage{MVCClass}.
 
 \section{MVC Class}\label{Sec:MVC}
 

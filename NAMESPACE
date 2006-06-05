@@ -1,19 +1,14 @@
-# really just need to import exprSet class from Biobase!!
-importClassesFrom(Biobase, exprSet)
-importClassesFrom(graph, graph)
-importClassesFrom(Rgraphviz, Ragraph)
-
 # export all classes
 exportClasses(gEventFun, 
               gAddDataMessage, gAddViewMessage, gUpdateDataMessage,
               gUpdateViewMessage, gAddChildMessage, gSendParentMessage,
               gSendChildMessage, gMessage, gModifyMessage, gAddMessage, 
               gUpdateMessage,
-              graphModel, exprModel, dfModel, gModel,
+              dfModel, gModel,
               MVC, singleModelMVC, linkedModelMVC,
-              plotView, sPlotView, spreadView, graphView, heatmapView,
+              plotView, sPlotView, spreadView,
               genView)
-
+ 
 # export all generic functions and methods
 # not sure if I need to export all assignment methods (those with '<-')???
 exportMethods(callFun, shortName, preprocessFun, 
@@ -23,9 +18,9 @@ exportMethods(callFun, shortName, preprocessFun,
               updateModel,
               model, viewList, controller, parentMVC, childMVCList, 
               win, winNum, plotDevice, plotPar, drArea, dfRows,
-              xvar, yvar, clist, ordering, motionEvent, clickEvent, 
+              xvar, yvar, clist, motionEvent, clickEvent, 
               identifyView,
-              updateView, redrawView, grLayout,
+              updateView, redrawView, 
               "callFun<-", "shortName<-", "preprocessFun<-",
               "from<-", "childUpdateDataMessage<-", 
               "parentUpdateDataMessage<-", "childName<-", "type<-", "mData<-",
@@ -34,5 +29,4 @@ exportMethods(callFun, shortName, preprocessFun,
               "model<-", "viewList<-", "controller<-", "parentMVC<-",
               "childMVCList<-",  
               "win<-", "winNum<-", "plotDevice<-", "plotPar<-",
-              "drArea<-", "dfRows<-", "xvar<-", "yvar<-", "clist<-",
-              "ordering<-", "grLayout<-")
+              "drArea<-", "dfRows<-", "xvar<-", "yvar<-", "clist<-")

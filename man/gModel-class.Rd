@@ -54,9 +54,7 @@ needs to be updated.
 }
 \author{ Elizabeth Whalen }
 \seealso{
-  \code{\link{dfModel-class}},
-  \code{\link{exprModel-class}},
-  \code{\link{graphModel-class}}
+  \code{\link{dfModel-class}}
 }
 \examples{
 }

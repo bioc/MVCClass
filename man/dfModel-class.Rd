@@ -34,9 +34,7 @@ iSNetwork and iSPlot.
 }
 \author{ Elizabeth Whalen }
 \seealso{
-  \code{\link{gModel-class}},
-  \code{\link{exprModel-class}},
-  \code{\link{graphModel-class}}
+  \code{\link{gModel-class}}
 }
 \examples{
 }

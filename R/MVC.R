@@ -16,20 +16,13 @@ setOldClass("GtkCList")
 setClass("gModel", representation(modelData="ANY", linkData="list", 
          virtualData="ANY", modelName="character"), contains=("VIRTUAL"))
 
-# couldn't get RagraphNULL to pass the installation - didn't recognize
-# Ragraph class
-#setClassUnion("RagraphNULL", members=c("Ragraph", "NULL"))
+## for a model that has graph data
+#setClass("graphModel", representation(modelData="graph"), contains="gModel")
 
-# for a model that has graph data
-# initially the virtualData slot for graphModel will be NULL (until a 
-# view is created)
-#setClass("graphModel", representation(modelData="graph", 
-#                       virtualData="RagraphNULL"), contains="gModel")
-setClass("graphModel", representation(modelData="graph"), contains="gModel")
+## for a model that has expression data - 
+## the data list should include an exprSet object and maybe a vector of LL ids
+#setClass("exprModel", representation(modelData="exprSet"), contains="gModel")
 
-# for a model that has expression data - 
-# the data list should include an exprSet object and maybe a vector of LL ids
-setClass("exprModel", representation(modelData="exprSet"), contains="gModel")
 # for a model that has data frame data
 setClass("dfModel", representation(modelData="data.frame", 
                     virtualData="data.frame"), contains="gModel")
@@ -128,13 +121,13 @@ setClass("sPlotView", representation(dfRows="character", xvar="character",
 setClass("spreadView", representation(clist="GtkCList"), 
          contains="genView")
 
-# 7/28/05 put the graphLayout info in the graphModel object
-setClass("graphView", representation(grLayout="Ragraph"), contains="plotView")
-
-# 9/1/05 not sure if I need to store anything else about a heatmap
-# decided to store the list of row and column reorderings returned from the
-# heatmap function (just in case I need it later)
-setClass("heatmapView", representation(ordering="list"), contains="plotView")
+## 7/28/05 put the graphLayout info in the graphModel object
+#setClass("graphView", representation(grLayout="Ragraph"), contains="plotView")
+#
+## 9/1/05 not sure if I need to store anything else about a heatmap
+## decided to store the list of row and column reorderings returned from the
+## heatmap function (just in case I need it later)
+#setClass("heatmapView", representation(ordering="list"), contains="plotView")
 
 #####
 # accessor functions
@@ -199,17 +192,17 @@ if (is.null(getGeneric("clist")))
 setMethod("clist", "spreadView", function(object)
          object@clist)
 
-if (is.null(getGeneric("ordering")))
-  setGeneric("ordering", function(object)
-            standardGeneric("ordering"))
-setMethod("ordering", "heatmapView", function(object)
-         object@ordering)
-
-if (is.null(getGeneric("grLayout")))
-  setGeneric("grLayout", function(object)
-            standardGeneric("grLayout"))
-setMethod("grLayout", "graphView", function(object)
-         object@grLayout)
+#if (is.null(getGeneric("ordering")))
+#  setGeneric("ordering", function(object)
+#            standardGeneric("ordering"))
+#setMethod("ordering", "heatmapView", function(object)
+#         object@ordering)
+#
+#if (is.null(getGeneric("grLayout")))
+#  setGeneric("grLayout", function(object)
+#            standardGeneric("grLayout"))
+#setMethod("grLayout", "graphView", function(object)
+#         object@grLayout)
 
 #####
 # setting the slots
@@ -314,25 +307,25 @@ setReplaceMethod("clist","spreadView",function(object, value)
          }
 )
 
-if (is.null(getGeneric("ordering<-")))
-  setGeneric("ordering<-", function(object, value)
-            standardGeneric("ordering<-"))
-setReplaceMethod("ordering", "heatmapView", function(object, value)
-         {
-           object@ordering<-value
-           object
-         }
-)
-
-if (is.null(getGeneric("grLayout<-")))
-  setGeneric("grLayout<-", function(object, value)
-            standardGeneric("grLayout<-"))
-setReplaceMethod("grLayout", "graphView", function(object, value)
-         {
-           object@grLayout<-value
-           object
-         }
-)
+#if (is.null(getGeneric("ordering<-")))
+#  setGeneric("ordering<-", function(object, value)
+#            standardGeneric("ordering<-"))
+#setReplaceMethod("ordering", "heatmapView", function(object, value)
+#         {
+#           object@ordering<-value
+#           object
+#         }
+#)
+#
+#if (is.null(getGeneric("grLayout<-")))
+#  setGeneric("grLayout<-", function(object, value)
+#            standardGeneric("grLayout<-"))
+#setReplaceMethod("grLayout", "graphView", function(object, value)
+#         {
+#           object@grLayout<-value
+#           object
+#         }
+#)
 
 #####
 # generic functions for gtk events on view objects
