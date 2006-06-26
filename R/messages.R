@@ -38,6 +38,13 @@ setClass("gSendChildMessage",
          childName="character"),
          contains="gMessage")
 
+# added 6/14/06
+# to ask an ancestor model for information 
+# type is the type of model to look for, mData is the information being asked
+# for, and from is the MVC that this message came from
+setClass("gAskAncestorMessage", representation(type="character", mData="list",
+           from="character"), contains="gMessage")
+
 #####
 # accessor functions
 #####
@@ -45,6 +52,8 @@ if (is.null(getGeneric("from")))
   setGeneric("from", function(object)
             standardGeneric("from"))
 setMethod("from", "gUpdateDataMessage", function(object)
+         object@from)
+setMethod("from", "gAskAncestorMessage", function(object)
          object@from)
 
 if (is.null(getGeneric("childUpdateDataMessage")))
@@ -70,11 +79,15 @@ if (is.null(getGeneric("type")))
             standardGeneric("type"))
 setMethod("type", "gModifyMessage", function(object)
          object@type)
+setMethod("type", "gAskAncestorMessage", function(object)
+         object@type)
 
 if (is.null(getGeneric("mData")))
   setGeneric("mData", function(object)
             standardGeneric("mData"))
 setMethod("mData", "gModifyMessage", function(object)
+         object@mData)
+setMethod("mData", "gAskAncestorMessage", function(object)
          object@mData)
 
 if (is.null(getGeneric("dataName")))
@@ -90,6 +103,12 @@ if (is.null(getGeneric("from<-")))
   setGeneric("from<-", function(object, value)
             standardGeneric("from<-"))
 setReplaceMethod("from", "gUpdateDataMessage", function(object, value)
+         {
+           object@from<-value
+           object
+         }
+)
+setReplaceMethod("from", "gAskAncestorMessage", function(object, value)
          {
            object@from<-value
            object
@@ -135,11 +154,23 @@ setReplaceMethod("type", "gModifyMessage", function(object, value)
            object
          }
 )
+setReplaceMethod("type", "gAskAncestorMessage", function(object, value)
+         {
+           object@type<-value
+           object
+         }
+)
 
 if (is.null(getGeneric("mData<-")))
   setGeneric("mData<-",function(object, value)
             standardGeneric("mData<-"))
 setReplaceMethod("mData", "gModifyMessage", function(object, value)
+         {
+           object@mData<-value
+           object
+         }
+)
+setReplaceMethod("mData", "gAskAncestorMessage", function(object, value)
          {
            object@mData<-value
            object

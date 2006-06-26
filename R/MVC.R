@@ -12,9 +12,12 @@ setOldClass("GtkCList")
 # that links the model to its parent model (a list of 2 functions:
 # toParent and fromParent), virtualData is any data that
 # is needed for views of the model, and modelName is the name of the model
-# (a way for the user to refer to the data)
+# (a way for the user to refer to the data), modelVar are any variables that
+# can be calculated from the modelData (or that refer to members of the
+# modelData slot), but do not belong with the modelData
 setClass("gModel", representation(modelData="ANY", linkData="list", 
-         virtualData="ANY", modelName="character"), contains=("VIRTUAL"))
+         virtualData="ANY", modelName="character", modelVar="list"), 
+         contains=("VIRTUAL"))
 
 ## for a model that has graph data
 #setClass("graphModel", representation(modelData="graph"), contains="gModel")
@@ -94,6 +97,22 @@ setReplaceMethod("virtualData", "gModel", function(object,value)
          }
 )
 
+if (is.null(getGeneric("modelVar")))
+  setGeneric("modelVar", function(object)
+            standardGeneric("modelVar"))
+setMethod("modelVar", "gModel", function(object)
+         object@modelVar)
+
+if (is.null(getGeneric("modelVar<-")))
+  setGeneric("modelVar<-", function(object, value)
+            standardGeneric("modelVar<-"))
+setReplaceMethod("modelVar", "gModel", function(object, value)
+         {
+           object@modelVar<-value
+           object
+         }
+)
+
 ##########
 # create a method to update a model
 ##########
@@ -101,7 +120,9 @@ if (is.null(getGeneric("updateModel")))
   setGeneric("updateModel", function(object, type, data)
             standardGeneric("updateModel"))
 
-
+if (is.null(getGeneric("provideInfo")))
+  setGeneric("provideInfo", function(object, type, data)
+            standardGeneric("provideInfo"))
 
 
 ###########
