@@ -139,6 +139,9 @@ setClass("plotView", representation(plotDevice="numeric", plotPar="list",
 setClass("sPlotView", representation(dfRows="character", xvar="character",
          yvar="character"), contains="plotView")
 
+setClass("qqPlotView", representation(xval="numeric", yval="numeric"),
+          contains="plotView")
+
 setClass("spreadView", representation(clist="GtkCList"), 
          contains="genView")
 
@@ -212,6 +215,18 @@ if (is.null(getGeneric("clist")))
             standardGeneric("clist"))
 setMethod("clist", "spreadView", function(object)
          object@clist)
+
+if (is.null(getGeneric("xval")))
+  setGeneric("xval", function(object)
+            standardGeneric("xval"))
+setMethod("xval", "qqPlotView", function(object)
+         object@xval)
+
+if (is.null(getGeneric("yval")))
+  setGeneric("yval", function(object)
+            standardGeneric("yval"))
+setMethod("yval", "qqPlotView", function(object)
+         object@yval)
 
 #if (is.null(getGeneric("ordering")))
 #  setGeneric("ordering", function(object)
@@ -324,6 +339,26 @@ if (is.null(getGeneric("clist<-")))
 setReplaceMethod("clist","spreadView",function(object, value)
          {
            object@clist<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("xval<-")))
+  setGeneric("xval<-",function(object, value)
+            standardGeneric("xval<-"))
+setReplaceMethod("xval", "qqPlotView", function(object, value)
+         {
+           object@xval<-value
+           object
+         }
+)
+
+if (is.null(getGeneric("yval<-")))
+  setGeneric("yval<-",function(object, value)
+            standardGeneric("yval<-"))
+setReplaceMethod("yval","qqPlotView", function(object, value)
+         {
+           object@yval<-value
            object
          }
 )

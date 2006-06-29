@@ -7,7 +7,7 @@ exportClasses(gEventFun,
               dfModel, gModel,
               MVC, singleModelMVC, linkedModelMVC,
               plotView, sPlotView, spreadView,
-              genView, gAskAncestorMessage)
+              genView, gAskAncestorMessage, qqPlotView)
  
 # export all generic functions and methods
 # not sure if I need to export all assignment methods (those with '<-')???
@@ -20,7 +20,7 @@ exportMethods(callFun, shortName, preprocessFun,
               win, winNum, plotDevice, plotPar, drArea, dfRows,
               xvar, yvar, clist, motionEvent, clickEvent, 
               identifyView,
-              updateView, redrawView, 
+              updateView, redrawView, xval, yval,
               "callFun<-", "shortName<-", "preprocessFun<-",
               "from<-", "childUpdateDataMessage<-", 
               "parentUpdateDataMessage<-", "childName<-", "type<-", "mData<-",
@@ -29,4 +29,5 @@ exportMethods(callFun, shortName, preprocessFun,
               "model<-", "viewList<-", "controller<-", "parentMVC<-",
               "childMVCList<-",  
               "win<-", "winNum<-", "plotDevice<-", "plotPar<-",
-              "drArea<-", "dfRows<-", "xvar<-", "yvar<-", "clist<-")
+              "drArea<-", "dfRows<-", "xvar<-", "yvar<-", "clist<-",
+              "xval<-", "yval<-")
