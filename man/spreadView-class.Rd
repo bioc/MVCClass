@@ -22,7 +22,7 @@ iSNetwork and iSPlot packages).
 	 \describe{
     \item{\code{clist}:}{an object of class \code{"GtkCList"}, i.e. the
     spreadsheet }
-    \item{\code{dataName}:}{a character string describing what data is shown
+    \item{\code{dataName}:}{a character string describing what data are shown
     in the view }
     \item{\code{win}:}{an object of class \code{"GtkWindow"} that holds the
     view }

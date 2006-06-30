@@ -26,7 +26,7 @@
 \section{Objects from the Class}{A virtual Class: No objects may be created from it.}
 \section{Slots}{
 	 \describe{
-    \item{\code{dataName}:}{a character string describing what data is shown
+    \item{\code{dataName}:}{a character string describing what data are shown
     in the view }
     \item{\code{win}:}{an object of class \code{"GtkWindow"} that holds the
     view }

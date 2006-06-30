@@ -31,7 +31,7 @@ from it. }
     \item{\code{plotDevice}:}{the plot device number }
     \item{\code{plotPar}:}{the parameter list for the plot, see par() }
     \item{\code{drArea}:}{an object of class \code{"GtkDrawingArea"} }
-    \item{\code{dataName}:}{a character string describing what data is shown
+    \item{\code{dataName}:}{a character string describing what data are shown
     in the view }
     \item{\code{win}:}{an object of class \code{"GtkWindow"} that holds the
     view } 
