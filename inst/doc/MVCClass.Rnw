@@ -39,7 +39,7 @@
 
 \title{Model-View-Controller Package}
 \author{Elizabeth Whalen}
-\date{June 5, 2006}
+\date{July 19, 2006}
 
 \begin{document}
 \maketitle
@@ -48,16 +48,13 @@
 
 The purpose of the \Rpackage{MVCClass} package is to provide the definitions of
 classes and generic functions that will be used by other packages to create 
-model-view-controller applications.  Currently, the packages that use the 
-\Rpackage{MVCClass} package are \Rpackage{iSPlot} and \Rpackage{iSNetwork}.  
-Both packages use the definitions from \Rpackage{MVCClass} to create linked, 
-interactive views of data.
-
-Note: this vignette covers classes in both the \Rpackage{MVCClass} and the
-\Rpackage{BioMVCClass} packages.  The following classes are defined in
-\Rpackage{BioMVCClass}: \Robject{graphModel}, \Robject{exprModel},
-\Robject{graphView}, and \Robject{heatmapView}.  All other classes are defined
-in \Rpackage{MVCClass}.
+model-view-controller applications.  Currently, the \Rpackage{iSPlot} and the
+\Rpackage{iSNetwork} packages use the \Rpackage{MVCClass} package to create
+linked, interactive views of data.  The \Rpackage{BioMVCClass} package extends
+the classes in the \Rpackage{MVCClass} package to include more model and view
+classes.  These definitions were put in a separate R package because the
+\Rpackage{BioMVCClass} packages depends on the following R packages:
+\Rpackage{Biobase}, \Rpackage{graph}, and \Rpackage{Rgraphviz}.
 
 \section{MVC Class}\label{Sec:MVC}
 
@@ -101,22 +98,23 @@ Thus, the \Robject{singleModelMVC} class binds the model, view, and controller
 objects together and the \Robject{linkedModelMVC} class allows the MVC objects
 to be related to each through a parent-child (tree) hierarchy because of the
 slots, parentMVC and childMVCList.  These two slots also show that a MVC
-object can have at most one parent MVC and can have as many children MVCs as
-it wants.  
+object can have at most one parent MVC and can have many children MVCs.  
 
 \section{Model Classes}\label{Sec:Model}
 
 The model class is responsible for storing and updating the data.  These two
 functions are reflected in Figure \ref{Fig:Model}, which shows the inheritance
 structure for the model classes.  Here the virtual class,
-\Robject{gModel}, has the slots modelData, linkData, virtualData, and
-modelName.  These four slots are common information that all models will
-need.  The modelData slot is the data set for this model, the linkData slot is
+\Robject{gModel}, has the slots: modelData, linkData, virtualData, modelName,
+and modelVar.  These five slots are common information that all models need.
+The modelData slot is the data set for this model, the linkData slot is
 a list of two functions, \Rfunction{toParent} and \Rfunction{fromParent},
 which link this model to its parent and child models, respectively (see Section
 \ref{Sec:MVC}), the virtualData slot is data pertaining to the views
 that needs to be stored with the model so that it can be shown in all views of
-this model, and the modelName slot is the name of the model. 
+this model, the modelName slot is the name of the model (and the name of the
+MVC), and the modelVar slot is a list of named model variables (for example, a
+statistic for each element in the model). 
 
 \begin{figure}[ht]
   \begin{center}
@@ -126,18 +124,22 @@ this model, and the modelName slot is the name of the model.
   \end{center}
 \end{figure}
 
-For specific model classes, there are \Robject{dfModel}, \Robject{graphModel},
-and \Robject{exprModel}.  The \Robject{dfModel} class represents a model where
-the modelData has class data frame (or matrix), the \Robject{graphModel} class
-represents a model where the modelData has class graph, and the
-\Robject{exprModel} class represents a model where the modelData has class
-exprSet. 
+In this package, the only specific model class is \Robject{dfModel}.
+The \Robject{dfModel} class represents a model where the modelData has class
+data frame (or matrix).  Other model classes are defined in the
+\Rpackage{BioMVCClass} package. 
 
 As mentioned previously, the model classes are also responsible for updating
 the data so a generic function \Rfunction{updateModel} has also been 
 defined.  The \Rfunction{updateModel} methods will be defined in packages that 
 use this package (i.e. the methods will be defined in \Rpackage{iSNetwork} and 
 \Rpackage{iSPlot}).
+
+The model classes may also be asked to provide information by a
+\Robject{gAskAncestorMessage} object (which is discussed in Section
+\ref{Sec:Message}) and thus, the generic function \Rfunction{provideInfo} has
+been defined.  Again, the \Rfunction{provideInfo} methods are defined in
+packages that use this package, such as \Rpackage{iSNetwork}.
 
 \section{View Classes}\label{Sec:View}
 
@@ -173,10 +175,10 @@ When creating a plot of a data set, there is a general class, called
 store the device number of the plot, the plotting parameters, and the Gtk
 drawing area object, respectively.  This class is a virtual class because it
 is not intended to have any objects as it just represents a general plot.  The
-plot classes that can have
-objects are the specific plot classes, \Robject{sPlotView},
-\Robject{graphView}, and \Robject{heatmapView}, which inherit from the
-\Robject{plotView} class.  
+plot classes that can have objects are the specific plot classes,
+\Robject{sPlotView} and \Robject{qqPlotView}, which inherit from the
+\Robject{plotView} class.  More view classes are defined in the
+\Rpackage{BioMVCClass} package.
 
 The \Robject{sPlotView} class represents a scatterplot view and it has the
 extra slots, dfRows, xvar, and yvar, where dfRows are the row names from the
@@ -184,29 +186,23 @@ model that are shown in the plot, xvar is the variable name (the column name
 if the model is a data frame) from the model that
 is shown as the x variable in the plot, and yvar is the variable name (the
 column name if the model is a data frame) from the
-model that is shown as the y variable in the plot.  The \Robject{graphView}
-class represents a graph plot view and it has the extra slot, grLayout, which
-holds a \Robject{Ragraph} object that represents the layout of the graph plot.
-The \Robject{heatmapView} represents a heatmap view of the data and it contains
-the slot, ordering, which is a list that is returned from the
-\Rfunction{heatmap} function to give information about the dendrogram
-ordering.  Note that some of these views are only applicable for certain model
-types.  For example, the \Robject{graphView} class will only make sense for a
-view of a graph object, which would be stored in the \Robject{graphModel}
-class. 
+model that is shown as the y variable in the plot.  The \Robject{qqPlotView}
+represents a qq-plot view and it has the extra slots, xval and yval, where
+xval are the numeric values of the points on the x-axis and yval are the
+numeric values of the points on the y-axis.  
 
 Several generic functions have been defined that refer to operations 
 performed on views.  These generic functions are \Rfunction{motionEvent}, 
 \Rfunction{clickEvent}, \Rfunction{updateView}, \Rfunction{redrawView} and
-\Rfunction{identifyView}.  Methods for these generic 
-functions will be defined in packages that use this package (in 
-\Rpackage{iSPlot} and \Rpackage{iSNetwork}).  When these methods are defined, 
-the \Rfunction{motionEvent} method will be used to respond to a mouse over 
-event on a view, the \Rfunction{clickEvent} method will be used to respond to 
-a click event over a view, the \Rfunction{updateView} method will be used to 
-update only a portion of the view, the \Rfunction{redrawView} method will 
-be used to completely redraw the view, and the \Rfunction{identifyView} method
-will be used to identify an object (such as a point, a node, etc.) on a view.
+\Rfunction{identifyView}.  Methods for these generic functions are defined in
+packages that use this package, such as \Rpackage{iSPlot} and
+\Rpackage{iSNetwork}.  When these methods are defined, the
+\Rfunction{motionEvent} method responds to a mouse over event on a view, the
+\Rfunction{clickEvent} method responds to a click event over a view, the
+\Rfunction{updateView} method updates only a portion of the view, the
+\Rfunction{redrawView} method completely redraws the view, and the
+\Rfunction{identifyView} method identifies an object (such as a point, a node,
+etc.) on a view. 
 
 \section{Message Classes}\label{Sec:Message}
 
@@ -234,9 +230,9 @@ constructed, and this model is shown in Figure \ref{Fig:Mess}.
 \end{figure}
 
 The figure shows the inheritance structure for message objects that can 
-be passed within one MVC object and a later figure in this section will show 
-the inheritance structure for messages objects that can be passed between MVC 
-objects.
+be passed within one MVC object and Figure \ref{Fig:BetwMess} in this section
+shows the inheritance structure for messages objects that can be passed
+between MVC objects.
 
 As with the view classes, the top message class, \Robject{gMessage}, is a
 virtual class.  It contains no slots and its purpose is to bind the other
@@ -251,7 +247,7 @@ three slots, dataName, mData, and type.  dataName is the character
 string that gives the name of the model, mData is a list of data needed to
 perform the addition or alteration operation, and type is a character string
 that gives the type of addition or alteration to perform.  Both
-\Robject{gAddMessage} and \Robject{gUpdateMessage} are virtual classes.
+\Robject{gAddMessage} and \Robject{gUpdateMessage} are also virtual classes.
 
 Since adding a view requires different information and methods from adding a
 model (and similarly with updating views versus models), it makes sense to
@@ -282,15 +278,17 @@ sources: the message can occur because of user interaction with a view
 of this model or the message may occur because a different model that is
 linked to this model has been updated.  So the update data message may come
 from within this MVC object or it may come from a different MVC object that
-has changed its model and is related to this MVC object.  
-Information on passing messages between MVC
-objects will be given later in this section.  Finally, the
-\Robject{gUpdateViewMessage} class represents a message to update a view.
+has changed its model and is related to this MVC object.  Information on
+passing messages between MVC objects is given later in this section.  Finally,
+the \Robject{gUpdateViewMessage} class represents a message to update a view.
 
-Message classes have also been defined to pass information between MVC objects.
-The two main types of messages, the add and update messages, will also be used 
-here.  The inheritance structure for messages passed between MVC objects is 
-shown in the figure below.
+Message classes have also been defined to pass information between MVC
+objects.  The message types for passing information between \Robject{MVCs} are
+similar to the messages that are passed within \Robject{MVC} objects.  Now the
+add child message is similar to the add model message, and the send parent
+message and the send child message are similar to the update model message.
+The inheritance structure for messages passed between MVC objects is shown in
+the Figure \ref{Fig:BetwMess}.
  
 %\clearpage
 
@@ -303,7 +301,7 @@ shown in the figure below.
 \end{figure}
 
 The first message class that will be discussed is \Robject{gAddChildMessage}.
-A \Robject{gAddChildMessage} object will be very similar to a
+A \Robject{gAddChildMessage} object is very similar to a
 \Robject{gAddDataMessage} object because they are both adding a new
 model and a new MVC object.  The difference with a \Robject{gAddChildMessage}
 object is that it must fill in some extra information to tie this new MVC
@@ -312,8 +310,7 @@ inherits from the \Robject{gAddMessage} class, with the same slots of
 dataName, mData, and type.  The dataName slot is the name of the new model (and
 new MVC), the mData slot is a list that contains the model data and virtual
 data to fill the modelData and virtualData slots, respectively, of the new
-model, and the type slot gives the type of the model (currently, the options
-are ``exprSet'', ``graph'', or ``data.frame'').  
+model, and the type slot gives the type of the model.  
 
 The next two message classes pertain to updating MVC objects when a parent MVC
 or child MVC object has changed.  These classes are
@@ -330,27 +327,38 @@ that was used to update the parent model and the childName slot contains the
 name of the child model that is being updated (because a parent MVC can have
 more than one child MVC). 
 
-A generic function, \Rfunction{handleMessage}, is defined that will be used to 
-read message objects.  Methods for this generic function will be defined in 
-packages that use this package (\Rpackage{iSPlot} and \Rpackage{iSNetwork}).
+Finally, the \Robject{gAskAncestorMessage} class, which inherits from the
+\Robject{gMessage} class, is used to to ask an ancestor MVC for information
+about its model.  This class is used when a child MVC is being created and it
+needs information from more than just its immediate parent, i.e. it also needs
+some information from its grandparent or a different ancestor.  The
+\Robject{gAskAncestorMessage} class has three slots, from, type, and mData.
+The from slot is the name of the MVC that asked for the information (i.e. where
+this message came from), the type slot is the type of model to look for in an
+ancestor, and the mData slot is the information being asked for in the model. 
+
+A generic function, \Rfunction{handleMessage}, is defined that is used to 
+read message objects.  Methods for this generic function are defined in 
+packages that use this package, such as \Rpackage{iSPlot} and
+\Rpackage{iSNetwork}. 
 
 \section{Event-Callback Function Class}\label{Sec:EventFun}
 
 Linking callback functions to events, such as a button click, a mouse movement
 or a key press event, is what allows users to have an interactive
-environment.  Then when an event happens something will occur in response
+environment.  Then when an event happens something occurs in response
 depending on the callback function linked to the event.  Now to create a
 flexible environment we do not want a callback function that always does the
 same thing when an event occurs.  For example, when a left button press event
 occurs, we may sometimes want a point to be colored and at other times we may
 want a point to be hidden.  To allow this flexibility, a class called
-\Robject{gEventFun} was created.  By using this class, users will be able to
+\Robject{gEventFun} was created.  By using this class, users are able to
 change the response to an event.  
 
 The \Robject{gEventFun} class stores all of the information about a potential
 callback function.  Having the callback function information stored in an 
-object will allow a user to connect events to callback functions.  The class 
-definition for \Robject{gEventFun} is shown in the figure below.
+object allows a user to connect events to callback functions.  The class 
+definition for \Robject{gEventFun} is shown in Figure \ref{Fig:EventFun}.
 
 \begin{figure}[ht]
   \begin{center}
@@ -362,24 +370,22 @@ definition for \Robject{gEventFun} is shown in the figure below.
 
 As shown in Fig \ref{Fig:EventFun}, the slots in the \Robject{gEventFun} class
 are callFun, shortName, and preprocessFun.  The callFun slot is the callback
-function, the shortName slot is a short description of the 
-function, and the preprocessFun slot is a list of all
-preprocessing functions that must be called before the callback function.
+function, the shortName slot is a short description of the function, and the
+preprocessFun slot is a list of all preprocessing functions that must be
+called before the callback function. 
 
 The callback function that is stored in the callFun slot must take only one
-parameter and the class of this parameter will depend on the model class in
-the active MVC object.  For example, for a graph model, the
-parameter will be of class \Robject{AgNode}, representing a node in the graph.
-For a data frame model, the parameter will be of class character, representing
-a row in the data frame.
+parameter and the class of this parameter depends on the model class in
+the active MVC object.  For example, for a data frame model, the parameter
+is of class character, representing a row in the data frame.
 
-The preprocessing functions that are stored in the preprocessFun slot will
+The preprocessing functions that are stored in the preprocessFun slot
 take no parameters.  The purpose of the preprocessing functions is to set some
-variables that the callback function will need.  Thus, not all callback
+variables that the callback function needs.  Thus, not all callback
 functions need preprocessing functions and if no preprocessing functions
 are needed, then this slot is set to NULL.  If the callback function sets the
 color of a node in a graph, then a preprocessing function is needed to
-determine what color this will be.  So in this example, the preprocessing
+determine what color is used.  So in this example, the preprocessing
 function opens a color browser to allow the user to choose what the new
 color is.
 
@@ -394,7 +400,8 @@ classes can be created if new views or messages are needed by a user.
 As mentioned in Section \ref{Sec:Overview} this package is intended to be a 
 behind the scenes package that is used by other packages for its class and 
 generic function definitions.  Currently, this package is used by the 
-\Rpackage{iSPlot} and \Rpackage{iSNetwork} packages.
+\Rpackage{iSPlot} and \Rpackage{iSNetwork} packages, and is extended by the
+\Rpackage{BioMVCClass} package.
 
 \end{document}
 
