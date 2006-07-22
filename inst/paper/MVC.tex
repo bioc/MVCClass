@@ -1,9 +1,9 @@
-\documentclass{article}[11pt]
+\documentclass[11pt]{article}
 \setlength{\topmargin}{-2cm}
 \setlength{\textheight}{24cm}
-\setlength{\oddsidemargin}{10mm}
-\setlength{\evensidemargin}{10mm}
-\setlength{\textwidth}{15cm}
+\setlength{\oddsidemargin}{-.5in}
+%\setlength{\evensidemargin}{.5in}
+\setlength{\textwidth}{7.5in}
 \setlength{\parskip}{3mm}
 \setlength{\parindent}{0mm}
 
@@ -12,6 +12,7 @@
 \usepackage{graphics}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{times}
 \usepackage[authoryear,round]{natbib}
 
 
@@ -31,14 +32,16 @@
 
 \maketitle
 
-\abstract{ In this paper we consider a generalization of the model
+\begin{abstract} 
+In this paper we consider a generalization of the model
   view controller (MVC) paradigm to allow for more flexible handling
   of submodels. Instead of using a single MVC we develop a tree
   structure of related MVCs, where each MVC has a single parent, but a
   parent can spawn many different child MVCs. Communication between
   parent and child MVCs allows for very flexible linking of the
   MVCs. We provide an implementation of our work in the R package
-\Rpackage{MVCClass} available at \url{http://www.bioconductor.org}. }
+\Rpackage{MVCClass} available at \url{http://www.bioconductor.org}. 
+\end{abstract}
 
 
 \section{Introduction}
