@@ -236,7 +236,7 @@ number of samples.  By \textit{linked view} we mean that if a
 component that represents data (such as a point on a plot or a row in
 a spreadsheet) changes its appearance on one view, then the
 corresponding component in all other views also changes appearance.
-In our example, correspondence would be measured through the sample,
+In our example, correspondence is determined by the sample,
 but there are other possibilities, as we shall explain later.  As an
 example, suppose that the model consists of the gene expression levels
 from say 50 samples and 10,000 genes.  The model can be represented as
@@ -250,6 +250,8 @@ components.  If instead we had chosen to link on samples, then we
 could produce pairwise plots of gene expression values and would link
 them through the sample IDs.
 
+%%FIXME: need to reference iPlots from Simon, and some of these refs need
+%%to be put up at the front where I have a citations in parens
 Linked views, which have a long history in statistics, are now
 considered a standard feature of interactive data visualization
 software \cite{GGobi}.  Linked views have been implemented in several
@@ -426,7 +428,7 @@ In essence the MVC design assumes that there is one data set, which is
 called the model, that all views reference.  But problems arise when
 the data consist of more than one conceptual grouping.  For example,
 consider data stored in a relational database, such as the data shown in
-Figure \ref{FigDBTab}.  Here the database
+panel (a) of Figure~\ref{Fig:OneDBTab}.  Here the database
 consists of three tables, State, City and StateCity.  The State table
 has three columns, State (the key), Life Expectancy, and Income.  The
 City table has three columns, City (the key), Precipitation, and
@@ -436,7 +438,7 @@ example, each city can be in only one state, but each state can have
 more than one city so there is a one-to-many relationship between
 states and cities.  In order to support interactive views of all data
 tables, in a standard MVC paradigm, it seems that either all data must
-be combined into a single large table (Figure \ref{Fig:OneDBTab}), or
+be combined into a single large table (panel (b) of Figure~\ref{Fig:OneDBTab}), or
 the processing and accessing of the model data must become much more
 complex. 
 
