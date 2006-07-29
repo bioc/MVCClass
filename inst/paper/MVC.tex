@@ -14,7 +14,7 @@
 \usepackage{hyperref}
 \usepackage{times}
 \usepackage[authoryear,round]{natbib}
-
+\usepackage{subfigure}
 
 \newcommand{\Rfunction}[1]{{\textsf{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
@@ -51,33 +51,36 @@ In this paper we consider a generalization of the model
 %\label{Ssec:Backg}
 
 There are many ways to visualize multivariate data when more than
-two or three dimensions are needed to view the data. Many authors
-(citations) have suggested that linked, interactive views of the data
+two or three dimensions are needed to view the data.  Many authors
+\cite{intGrUnwin} \cite{iPlots} \cite{MONDRIAN} \cite{GGobi}
+have suggested that linked, interactive views of the data
 provide a valuable and important set of tools for comprehending such
-data. The model view controller (MVC) paradigm is now a standard
-mechanism for implementing such systems. The paradigm has proven very
+data.  The model view controller (MVC) paradigm is now a standard
+mechanism for implementing such systems.  The paradigm has proven very
 effective and allows for clear separation of different components.
 In this paper we consider an extension of the MVC paradigm to allow
 for, what we believe to be, an easy expansion to linked data sets.
 
 The sorts of problems we are interested in, are those where a user
 might begin with a large data set, identify some interesting subset
-and want to create interactive views of that subset. In some cases the
+and want to create interactive views of that subset.  In some cases the
 natural data representation of the subset is in a form other than that
-of the initial data set. This leads to complications in the usual MVC
+of the initial data set.  This leads to complications in the usual MVC
 paradigm, where the data (i.e. the model) are often presumed to be in
-a standard format. We found that adding new views under such
-conditions could be quite problematic and often leads to very complex
-code. Hence we considered an approach that created new instances of
+a single, standard format.  We found that adding new views under such
+conditions could be quite problematic and often led to very complex
+code.  As we shall demonstrate, there are also issues that arise due to
+mappings that are not one-to-one between elements on different views.
+Hence we considered an approach that created new instances of
 the MVC that were linked to the parent that spawned them.
 
 In particular, our implementation consists of a hierarchy of MVCs,
-stored as a tree. Each parent can have multiple children, but the
-children can have a single parent. Communication between parent and
+stored as a tree.  Each parent can have multiple children, but the
+children have a single parent.  Communication between parent and
 child is bidirectional, and a variety of different filters can be used
-to control flow. Thus, we can devise a number of purpose built MVC
+to control flow.  Thus, we can devise a number of purpose built MVC
 classes, each with a model appropriate to the specific data of
-interest, that are linked in a natural way. Interacting with the view
+interest, that can be linked in a natural way.  Interacting with the view
 in a child MVC, first sends a message to the child MVC, which will
 update all of its views, but the message will also propagate to the
 parent MVC (and further up to the root). The parent MVC can choose to
@@ -88,9 +91,9 @@ the hands of the users, should they want it.
 \label{sec:micro}
 
 Our development of this model was driven primarily by an interest in
-analyzing high throughput biological data. Such data tend to be large
+analyzing high throughput biological data.  Such data tend to be large
 and very complex, and hence ideally suited to interactive
-visualization. In order to provide the reader with some idea of the
+visualization.  In order to provide the reader with some idea of the
 sorts of interactions we would like to support, we provide here a short
 description of a type of experiment and some of the likely
 interactions that would be of interest to a data analyst.
@@ -131,7 +134,26 @@ from Chronic Lymphocytic Leukemia (CLL) patients and the corresponding GO
 graph are shown, respectively.  By interacting with the heatmap to color one
 gene blue (shown as gene PDE8A on the heatmap), which causes the corresponding
 GO nodes to be colored blue, one can easily see how this gene relates to the
-GO terms. 
+GO terms.  Also by interacting with the node with an arrow next to it in
+Figure \ref{Fig:GOgraph}, which represents the signal transducer activity GO
+term, one can create a heatmap view that shows only the genes annotated at
+that node, as shown in Figure \ref{Fig:heatmapsub}.  Notice how all genes
+annotated at the signal transducer activity GO term have a blue label in
+Figure \ref{Fig:heatmapsub}, which shows that this view was derived from a
+blue colored node in Figure \ref{Fig:GOgraph}.  Compare the heatmaps in
+Figures \ref{Fig:heatmapsub} and \ref{Fig:heatmap}.  The heatmap in Figure
+\ref{Fig:heatmapsub} is just a subset of the heatmap in Figure
+\ref{Fig:heatmap}, however in Figure \ref{Fig:heatmapsub} eleven genes have a
+blue label and in Figure \ref{Fig:heatmap} only one gene has a blue label.
+This difference in these heatmaps indicates that views are synchronized based
+on the parent-child relationships.  Figure \ref{Fig:heatmap} is the parent of
+Figure \ref{Fig:GOgraph}, which is the parent of Figure \ref{Fig:heatmapsub}.
+Figures \ref{Fig:heatmap} and \ref{Fig:GOgraph} are synchronized, and Figures
+\ref{Fig:GOgraph} and \ref{Fig:heatmapsub} are synchronized, but Figures
+\ref{Fig:heatmap} and \ref{Fig:heatmapsub} are not synchronized by color
+because they do not have a parent-child relationship: Figure \ref{Fig:heatmap}
+is the grandparent of Figure \ref{Fig:heatmapsub}.
+
 
 \begin{figure}[ht]
   \begin{center}
@@ -144,12 +166,34 @@ GO terms.
 
 \begin{figure}[ht]
   \begin{center}
-    \includegraphics[height=4.3in, width=4.3in]{GOgraph.jpg}
+    \includegraphics[height=4.3in, width=4.3in]{GOgraph2.jpg}
     \caption{ Gene Ontology (GO) graph that is associated with the genes
-      displayed in the heatmap.  Notice that one gene (PDE8A) is colored blue
-      in the heatmap and all of the corresponding GO terms are colored blue in
-      the graph. }
+      displayed in the heatmap in Figure \ref{Fig:heatmap}.  Notice that one
+      gene (PDE8A) is colored blue in the heatmap and all of the corresponding
+      GO terms are colored blue in the graph.  The arrow next to one of the
+      nodes indicates that this node was used to create the view shown in
+      Figure \ref{Fig:heatmapsub}.  The node with the arrow next to it
+      represents the signal transducer activity GO term. }
     \label{Fig:GOgraph}
+  \end{center}
+\end{figure}
+
+\begin{figure}[ht]
+  \begin{center}
+    \includegraphics[height=5in, width=5in]{heatmapsub.jpg}
+    \caption{ A heatmap view that shows only the genes that are annotated at
+      the node in Figure \ref{Fig:GOgraph} that has an arrow next to it.  This
+      node represents the GO term, signal transducer activity, and as shown in
+      this heatmap, eleven genes are annotated at this node.  Notice that all
+      the labels in this heatmap are colored blue, indicating that the parent
+      node that was used to create this view was also colored blue.  
+      % should I also mention that this is different from the genes that are
+      % selected in the grandparent model, which is shown in Figure
+      % \ref{Fig:heatmap}??  These eleven genes are also shown in the
+      % grandparent view, but only one of them is colored blue showing that
+      % views are synchronized by parent-child relationships.
+     }
+    \label{Fig:heatmapsub}
   \end{center}
 \end{figure}
 
@@ -186,7 +230,7 @@ available both through the GUI and through command line functions.
 \section{Methods}
 
 We first give our definitions of linked views, interactive views and
-linked data sets. Our model is typically a statistical data
+linked data sets.  Our model is typically a statistical data
 matrix which represents data on a number of variables, for a
 number of samples.  By \textit{linked view} we mean that if a
 component that represents data (such as a point on a plot or a row in
@@ -233,25 +277,42 @@ familiar to users of relational databases.  Data in a relational
 database are typically stored in many linked tables with rows in
 different tables linked to each other through a unique identifier
 called a key.  In this example, each table can be considered a data set
-and they are linked through the keys.  But the idea is more general
-and we shall discuss other situations where the linked data sets do
-not easily correspond to tables, however, we must have a map that goes
-from the entities in one data set to those in the other as well as the
-inverse map, in order to propagate signals between the MVCs.
+and they are linked through the keys. 
+Linked relational database tables could be combined into one
+large table, but doing so would result in a large amount of redundancy if
+the elements in the different tables are linked in one-to-many or many-to-many
+relationships.  Instead in relational databases, the tables are created such
+that each data element only needs to be stored in one table and then is linked
+to data elements in other tables.  Our design will build on this
+concept, but the idea is more general and we shall discuss other situations
+where the linked data sets do not easily correspond to tables.  As an example
+suppose we have gene expression data and we
+also know the Gene Ontology (GO) molecular function terms for these genes. 
+These data have a many-to-many relationship where each gene can be
+annotated at more than one GO term and each GO term can describe more than one
+gene.  Now these data could be combined in one data structure, but in
+our design we find that creating a MVC for the gene expression data and a MVC
+for the GO graph allows us to create views where we can explore the
+relationships between the genes and the GO terms.  To explore these
+relationships between data elements in different MVCs, we
+must have a map that goes from the entities in one data set to those in the
+other, as well as the inverse map, in order to propagate signals between the
+MVCs.  
 
 Consider Figure \ref{Fig:firstMP}, which provides a cartoon
 description of the steps that occur when a user interacts with a
-view. In the cartoon there are only two views, one of data set A and the
-other of data set B, which is linked to data set A.  When a user
-interacts with the scatter plot view of data set B, the response to
-this interaction is for data set B to update itself (this is indicated
+view.  In the cartoon there are only two views, one of model A (note 
+that once a data set is loaded in a MVC, we call it a model) and the
+other of the linked model B.  When a user
+interacts with the scatter plot view of model B, the response to
+this interaction is for model B to update itself (this is indicated
 on the figure as a circled 1).  In Step 2, the scatter plot view is
-told to update itself.  Next, in Step 3, because data set B is linked
-to data set A, data set B sends a message to data set A.  In Step 4,
-the information from data set B is converted into information that
-data set A understands.  In Step 5, this information is received by
-data set A and data set A updates itself.  Finally, in Step 6, data
-set A tells its view to update itself.
+told to update itself.  Next, in Step 3, because model B is linked
+to model A, model B sends a message to model A.  In Step 4,
+the information from model B is converted into information that
+model A understands.  In Step 5, this information is received by
+model A and model A updates itself.  Finally, in Step 6, model
+A tells its view to update itself.
 
 % In the design presented in this paper, the components consist of
 % \Robject{MVC} objects and communication within and between
@@ -272,16 +333,16 @@ set A tells its view to update itself.
 %%EAW: it's changed
 \begin{figure}[ht]
   \begin{center}
-    \includegraphics[height=3.3in, width=5in]{firstMessagePassing.jpg}
-    \caption{ Linked views of linked data sets.  When a user interacts with
+    \includegraphics[height=3.3in, width=6in]{firstMessagePassing.jpg}
+    \caption{ Linked views of linked models.  When a user interacts with
       the y versus x scatter plot, the first step, indicated by a circled one,
-      is to tell data set B to update.  Then all views of data set B must be
-      updated.  Next any data that are linked to data set B must be notified
-      that data set B changed.  This information from data set B must be
-      altered so that it can be understood by linked data sets, which is shown
-      in the fourth step.  Finally, data set A is notified that it should
-      update in response to the change in data set B and then all views of
-      data set A are updated. }
+      is to tell model B to update.  Then all views of model B must be
+      updated.  Next any data that are linked to model B must be notified
+      that model B changed.  This information from model B must be
+      altered so that it can be understood by linked models, which is shown
+      in the fourth step.  Finally, model A is notified that it should
+      update in response to the change in model B and then all views of
+      model A are updated. }
     \label{Fig:firstMP}
   \end{center}
 \end{figure}
@@ -364,22 +425,8 @@ set A tells its view to update itself.
 In essence the MVC design assumes that there is one data set, which is
 called the model, that all views reference.  But problems arise when
 the data consist of more than one conceptual grouping.  For example,
-consider data stored in a relational database, where there are
-multiple tables of data and rows in different tables are linked
-through a unique identifier called a key.  Although these tables of
-data could be combined into one large table, there are several reasons
-not to do this.  Keeping the data in separate tables reduces
-redundancy, particularly when the rows are related by a one-to-many or
-a many-to-many relationship.
-
-%  Also separate data tables generally lead
-% to more maintainable data.  By storing only one copy of each piece of
-% information (in a row in one table), it is easier to ensure that the
-% data are correctly updated when a change occurs.  All other tables
-% that are connected with this information can then just reference this
-% row that has been updated.
-
-Consider Figure \ref{Fig:DBTab} shown below.  Here the database
+consider data stored in a relational database, such as the data shown in
+Figure \ref{FigDBTab}.  Here the database
 consists of three tables, State, City and StateCity.  The State table
 has three columns, State (the key), Life Expectancy, and Income.  The
 City table has three columns, City (the key), Precipitation, and
@@ -389,32 +436,76 @@ example, each city can be in only one state, but each state can have
 more than one city so there is a one-to-many relationship between
 states and cities.  In order to support interactive views of all data
 tables, in a standard MVC paradigm, it seems that either all data must
-be combined into a single large table (Figure~\ref{Fig:OneDBTab}), or
+be combined into a single large table (Figure \ref{Fig:OneDBTab}), or
 the processing and accessing of the model data must become much more
 complex. 
 
+%where there are
+%multiple tables of data and rows in different tables are linked
+%through a unique identifier called a key.  Although these tables of
+%data could be combined into one large table, there are several reasons
+%not to do this.  Keeping the data in separate tables reduces
+%redundancy, particularly when the rows are related by a one-to-many or
+%a many-to-many relationship.
+
+%  Also separate data tables generally lead
+% to more maintainable data.  By storing only one copy of each piece of
+% information (in a row in one table), it is easier to ensure that the
+% data are correctly updated when a change occurs.  All other tables
+% that are connected with this information can then just reference this
+% row that has been updated.
+
+%Consider Figure \ref{Fig:DBTab} shown below.  Here the database
+%consists of three tables, State, City and StateCity.  The State table
+%has three columns, State (the key), Life Expectancy, and Income.  The
+%City table has three columns, City (the key), Precipitation, and
+%Temperature.  The StateCity table has two columns, State and City.
+%This last table relates which cities are in which states.  In this
+%example, each city can be in only one state, but each state can have
+%more than one city so there is a one-to-many relationship between
+%states and cities.  In order to support interactive views of all data
+%tables, in a standard MVC paradigm, it seems that either all data must
+%be combined into a single large table (Figure \ref{Fig:OneDBTab}), or
+%the processing and accessing of the model data must become much more
+%complex. 
+
+%\begin{figure}[ht]
+%  \begin{center}
+%    \includegraphics[height=0.9in, width=3.5in]{newDatabaseTables.jpg}
+%    \caption{ Example of relational database tables. }
+%    \label{Fig:DBTab}
+%  \end{center}
+%\end{figure}
+
+%\begin{figure}[ht]
+%  \begin{center}
+%    \includegraphics[height=1.2in, width=1.5in]{newOneDatabaseTable.jpg}
+%    \caption{ Example of a combined table. }
+%    \label{Fig:OneDBTab}
+%  \end{center}
+%\end{figure}
+
 \begin{figure}[ht]
   \begin{center}
-    \includegraphics[height=0.9in, width=3.5in]{newDatabaseTables.jpg}
-    \caption{ Example of Relational Database Tables. }
+    \subfigure[Example of relational database
+    tables.]{
     \label{Fig:DBTab}
-  \end{center}
-\end{figure}
-
-\begin{figure}[ht]
-  \begin{center}
-    \includegraphics[height=1.2in, width=1.5in]{newOneDatabaseTable.jpg}
-    \caption{ Example of a Combined Table. }
+    \includegraphics[height=1.2in, width=3.5in]{newDatabaseTables.jpg}}
+    \hspace{.3in}
+    \subfigure[Example of a combined table.]{
     \label{Fig:OneDBTab}
+    \includegraphics[height=1.2in, width=1.5in]{newOneDatabaseTable.jpg}}
+    \caption{Relational database tables.}
+%    \label{Fig:DBTab}
   \end{center}
 \end{figure}
 
-We felt that neither approach had much appeal. A single large table
+We felt that neither approach had much appeal.  A single large table
 suggests that all data are similar, and still leaves issues about how
 to deal with ensuring that when, for example, a state is selected all
-cities within it are highlit. The second approach requires writing a
-large amount of code, but is likely to provide little
-extensibility. We should also mention that our main area of
+cities within it are highlighted.  The second approach requires writing a
+large amount of code, but is unlikely to be extensible.
+We should also mention that our main area of
 application is a setting where one representation of the data is as a
 graph (with nodes and edges) while the other is as a matrix. We can
 envisage lots of different MVCs that operate on graph based data, and
@@ -480,19 +571,23 @@ be linked to any one of a variety of other MVCs.
 
 As discussed in Section \ref{Sec:Intro}, the MVC design typically uses a single
 conceptual unit, such as a data frame or a matrix, for the model.  And
-we believe that such an approach is a good one. MVCs should be
+we believe that such an approach is a good one.  MVCs should be
 specialized to certain types of data, as this allows them to provide
-better and more natural interactions. However, we additionally argue
+better and more natural interactions.  However, we additionally argue
 that there is great benefit to considering linking these different
 MVCs when the underlying data themselves are derived from the same source.
+We believe that there will often be a hierarchical relationship
+between the models and the MVCs that contain them.  We have found
+that allowing the user to create new MVCs based on a current MVC is an
+important and useful paradigm.
 
 Each \Robject{MVC} is a coherent object and the interactions between
 \Robject{MVCs} are encapsulated in a set of messages.  We use one
-\Robject{MVC} object to handle each data set.  Thus, within a
+\Robject{MVC} object to handle each model.  Thus, within a
 \Robject{MVC} object, one can create linked views of that particular
-data set, using the standard MVC design.  Between \Robject{MVC}
+model, using the standard MVC design.  Between \Robject{MVC}
 objects we propose a second messaging system that allows messages to
-be sent between linked data sets.
+be sent between linked models.
 
 % \small
 % \begin{tabular}[t]{ | l | r | r | }
@@ -559,7 +654,7 @@ be sent between linked data sets.
 In Figure \ref{Fig:MultMVC} we show one view for state-level data and
 one view for the city-level data.  The state and city data are linked
 based on the color.  Even though there are two \Robject{MVC} objects
-here, one \Robject{MVC} for each data set, the views are linked.
+here, one \Robject{MVC} for each model, the views are linked.
 
 % Not only does this solution use the power and simplicity of the MVC design, but
 % this multiple MVC design is structured to fit the linking seen in the multiple
@@ -572,11 +667,6 @@ here, one \Robject{MVC} for each data set, the views are linked.
 % objects.  As for the relationship between the \Robject{MVC} objects, it should
 % reflect the relationship between the data sets. 
 
-We believe that there will often be a hierarchical relationship
-between the data sets and the MVCs that contain them. We have found
-that allowing the user to create new MVCs based on a current MVC is an
-important and useful paradigm.  The original MVC is the parent
-MVC and the new MVC the child.
 
 \section{MVC Design Details}
 \label{Sec:OneMVC}
@@ -605,12 +695,17 @@ Information can be sent to the model to add, update, and remove data
 and after every change the model is responsible for sending messages
 to the views indicating which changes have occurred.  In our
 implementation we created a single virtual class that represents an
-abstract model and that has storage locations for data that will be
-needed by all models. Then, we created a number of subclasses, one for
-each type of model. In Figure~\ref{Fig:Model} we show the inheritance
-structure for the three types of models we have implemented, one based
-on data frames, one based on graphs and one based on the expression
-set class of data used by the Bioconductor project \citep{BIOC}.
+abstract model and that has storage locations for data that are
+needed by all models.  Then, we created a number of subclasses, one for
+each type of model.  Currently, we have implemented three types of models, 
+one based on data frames, one based on graphs, and one based on the 
+expression set class of data used by the Bioconductor project \citep{BIOC}.
+
+%In Figure~\ref{Fig:Model} we show the inheritance
+%structure for the three types of models we have implemented, one based
+%on data frames, one based on graphs and one based on the expression
+%set class of data used by the Bioconductor project \citep{BIOC}.
+
 %%FIXME: we need to send the complete paper2 to the BioC tech report
 %%series and then cite it here, saying something like: Complete
 %%implementation details are provided in XXX.
@@ -630,13 +725,13 @@ set class of data used by the Bioconductor project \citep{BIOC}.
 % name of the model. 
 
 
-\begin{figure}[ht]
-  \begin{center}
-    \includegraphics[height=3in, width=4.7in]{ModelClass.jpg}
-    \caption{ Inheritance for Model Objects. }
-    \label{Fig:Model}
-  \end{center}
-\end{figure}
+%\begin{figure}[ht]
+%  \begin{center}
+%    \includegraphics[height=3in, width=4.7in]{ModelClass.jpg}
+%    \caption{ Inheritance for Model Objects. }
+%    \label{Fig:Model}
+%  \end{center}
+%\end{figure}
 
 
 % We encapsulate the particular data model in the class definition, which allows
@@ -666,7 +761,7 @@ her own package.
 \subsection{Views}\label{Ssec:OneViews}
 
 The view classes represent the visual depictions, or renderings, of
-the model.  There are some data that are required by all views and all
+the model.  There are some data that are required by all views, and all views
 must respond to a certain subset of events so we have implemented the view
 classes by first creating a single, virtual class which the specialized
 views extend.  As with our model classes, this allows us to define
@@ -718,21 +813,25 @@ from \Rclass{plotView}, perhaps called \Rclass{dPlotView}.
 \subsection{Controller}
 \label{Ssec:OneCont}
 
-The controller performs two tasks: the first task is to store
-information and the second task is to allow the user to determine the
-course of actions.  The information that must be stored primarily
-pertains to state. In order for the user to be able to alter the
-effects of different interactions, such as changing the response to a
-key-click event, or the appearance of the views, the controller must
-retain information as to the state.
+The controller performs two tasks: the first task is to maintain state,
+such as what response will occur for a particular user interaction, 
+and the second task is to control message passing.  Messages, which are
+discussed in Sections \ref{Ssec:OneMess} and \ref{Ssec:MultLink}, are
+responsible for creating new components, such as models and views, and for
+passing information between components, such as a view asking a model for
+information.  The controller determines when these messages are created and
+ensures that they are sent to the proper recipient.
 
 For the second task, the controller gives the user restricted access
 to the state information through an application program interface
-(API). In our implementation users can interact either through a GUI
+(API) and thereby lets the user change the response to different events. 
+In our implementation users can interact either through a GUI
 or through command line functions.  Through the API the user can load
 data, create views, set the response to user interaction with a view,
-quit the program and perform other functions.  On the GUI, there are
-menus to let users decide which action is taken next.  If the user
+quit the program and perform other functions.  On the GUI, which we call the
+control window, users can decide which action is taken next by interacting
+with one of the menus: \texttt{File}, \texttt{Edit},
+\texttt{Display}, \texttt{Event}, and \texttt{Window}.  If the user
 would rather not use the GUI, there are command line functions that
 provide access to the same functionality that is available through the
 GUI.  
@@ -748,9 +847,7 @@ GUI.
 %   \end{center}
 % \end{figure}
 
-Because we support simultaneous linked \Robject{MVC}
-objects, more than one \Robject{MVC} object can be loaded and hence
-more than one model can be present. However, the control window menus
+We support multiple loaded \Robject{MVCs}, but the control window menus
 and the command line functions only perform operations on one
 \Robject{MVC} object at a time.  Thus, we make use of the concept of
 an \textit{active} \Robject{MVC} object, where the active
@@ -760,10 +857,7 @@ command line functions affect that \Robject{MVC} object. Users can
 switch between active models, but since the interactions could be
 quite different, there must always be an active MVC. 
 
-In our implementation we provide a control window, for users that want
-to interact via the GUI.  It has menu items corresponding to
-\texttt{File}, \texttt{Edit}, \texttt{Display}, \texttt{Event}, and
-\texttt{Window}.  These menus always appear on the control window, but
+Although the same menus always appear on the control window,
 the items under each menu may change depending on the type of model
 that is active.  For example, the \texttt{Display} menu allows users
 to create views of the active model, but only certain views are
@@ -772,25 +866,18 @@ Section~\ref{Ssec:OneViews}.  If the active model was a data frame
 model (\Rclass{dfModel}), then the views that the user could create
 are a scatter plot (\Rclass{sPlotView}) and a spreadsheet
 (\Rclass{spreadView}), but a graph plot (\Rclass{graphView}) does not
-make sense.  Thus, when the model in the ``active'' \Robject{MVC} is
+make sense.  Thus, when the model in the \textit{active} \Robject{MVC} is
 of class \Rclass{dfModel}, then the Display menu has menu items to
-create a scatter plot and a spreadsheet.  Also, if the ``active''
-\Robject{MVC} is of class \Rclass{dfModel}, then the command line
-functions only allow the user to create a scatter plot or a spreadsheet
-view of the active model, since these are the only ones we have
-implemented.
+create a scatter plot and a spreadsheet.
 
 Because one of our goals is to create a software package that is
-flexible and extensible, users are able to add menus and menu items to
-the control window through the command line to access new
+flexible and extensible, users and developers can add menus and menu items 
+to the control window through the command line to access new
 functionality that they have created.  As an example if a future
 programmer wants to add a new type of view, such as a histogram, then
 a new menu item for that view could be added to the \texttt{Display}
-menu.  By allowing users to change the controller, they can add new
-functionality that is specific to their problem.  Note that when users
-make additions to the API, they should add new command line functions
-in addition to adding menus and menu items to access that
-functionality.
+menu.  When adding to the API, command line functions should be created as
+well as menu items to access the new functionality.
 
 \subsubsection{Linking Events to Functions}
 \label{Ssec:OneEvent}
@@ -800,15 +887,14 @@ movement or a key press event, is what allows users to have an
 interactive environment.  When an event occurs, the callback function
 linked to the event determines the response to that event.  To create
 a flexible environment it is important to be able to change the
-response, to an event.  For example, when a left button press event
+response to an event.  For example, when a left button press event
 occurs, a user may sometimes want a point to be colored and at other
 times she may want a point to be hidden.  However, different responses
-to an event may require functions with different signatures.  In our
-example coloring a point requires two parameters, the new color to use
-and the point to color, while hiding a point
-requires just one parameter, the point to hide.  Since the intention is
-to be able to interchange the responses to an event, the signatures of
-different callback functions should be the same.
+to an event may require functions with different signatures, where a function
+signature is the combination of the function name along with its parameters.
+In our example coloring a point requires two parameters, the new color to use
+and the point to color, while hiding a point requires just one parameter, the
+point to hide.  
 
 % As shown in Figure \ref{Fig:EventFun}, the slots in the \Rclass{gEventFun}
 % class are \Rslot{callFun}, \Rslot{shortName}, and \Rslot{preprocessFun}.  The
@@ -841,14 +927,20 @@ different callback functions should be the same.
 %% of interest in a plot (and model).  Thus, for plots of data frames,
 %% the object in the plot is considered a row from the data frame and for
 %% plots of graphs, the object in the plot is considered a node in the graph. 
-In our design a callback function takes only one parameter. Further,
-within a specific MVC all callback functions must have the same
-signature so that different callback functions can be interchanged to
-allow different responses to an event.  The class of that parameter
-depends on the type of model represented by the \Robject{MVC}.  For
-example, for a graph model, the parameter corresponds to a node in the
-graph, while for a data frame model, the parameter is of class
-\Rclass{character}, representing a case.
+Since the intention is to be able to interchange the responses to an event,
+the signatures of different callback functions should be the same.
+In our design a callback function takes only one parameter. 
+The class of that parameter depends on the type of model represented by the
+\Robject{MVC}.  For example, for a graph model, the parameter corresponds to
+the name of a node in the graph, while for a data frame model, the parameter
+represents a case.  We expect a one-to-one relationship between the elements
+on a view and the elements in the model.  Continuing the previous example,
+each point on a scatter plot represents one case in the data frame model and
+each node in the graph plot represents one node in the graph model.  Clearly
+it is possible for two points in a scatter plot to overlap if they have the
+same x axis and y axis values, but they are still considered two points
+representing two cases in the model.
+
 
 %%FIXME: I thought we talked about this, and found it to be a little
 %%problematic, as the way this sounds every click will ask me to set a
@@ -857,12 +949,12 @@ graph, while for a data frame model, the parameter is of class
 %% EAW: The preprocessing functions are called once when the callback function
 %% is linked to the event - they are not called each time the event occurs.
 Any other information a callback function may need is set using the
-preprocessing functions, which are called once when the callback function is
-linked to the event.  The preprocessing functions take no
+preprocessing functions, which are automatically called once by the controller
+when the callback
+function is linked to the event.  The preprocessing functions take no
 parameters.  The purpose of the preprocessing functions is to set
 variables that the callback function needs.  Thus, not all callback
-functions need preprocessing functions and if no preprocessing
-functions are needed, then this slot is NULL.  If the callback
+functions need preprocessing functions.  If the callback
 function sets the color of a node in a graph, then a preprocessing
 function is needed to determine what color is used.  So in this
 example, the preprocessing function opens a color browser to allow the
@@ -895,7 +987,6 @@ potentially be linked to.  For example, the developer may only want the color
 a point callback function to be available for a button click event and not a
 mouse over event.
 
-
 \subsection{MVC}
 \label{Ssec:OneMVC}
  
@@ -906,24 +997,27 @@ relationship between the \Robject{MVC} instances and model objects.
 Because of this relationship, the \Robject{MVC} object and the model
 object are identified by the same name.
 
-Our implementation is shown in Figure \ref{Fig:MVCClass}. It consists
+Our implementation consists
 of a virtual class, \Rclass{MVC}, with three slots, which are
 \Rslot{model}, \Rslot{viewList}, and \Rslot{controller}. The three
 slots correspond to the three pieces of information that are needed to
 bind the model, view, and controller into a single unit. This class is
-sufficient for all single MVC activities. To support linked data sets
+sufficient for all single MVC activities. To support linked models
 we extend this class with the \Rclass{linkedModelMVC} class, which has
 two additional slots: \Rslot{parentMVC}, which is the name of the
-parent model and \Rslot{childMVCList}, which is a
-list of the child models.  
+parent model and \Rslot{childMVCList}, which is a list of the child models.
+These are the models that will communicate with each other: parents send
+information to their children and children send information to their parent.
+More information on this communication is given in Section \ref{Sec:MultMVC}.
 
-\begin{figure}[ht]
-  \begin{center}
-    \includegraphics[height=3.2in, width=1.2in]{fullMVCClass.jpg}
-    \caption{ The MVC Class. }
-    \label{Fig:MVCClass}
-  \end{center}
-\end{figure}
+
+%\begin{figure}[ht]
+%  \begin{center}
+%    \includegraphics[height=3.2in, width=1.2in]{fullMVCClass.jpg}
+%    \caption{ The MVC Class. }
+%    \label{Fig:MVCClass}
+%  \end{center}
+%\end{figure}
 
 %%FIXME: at this point we could perhaps even include a real example
 %%with pictures of what is described below?
@@ -956,17 +1050,40 @@ in, and modelF could be the chromosome locations of the genes in modelB.
   \end{center}
 \end{figure}
 
-New models, and thus new \Robject{MVC} objects, can either be loaded
-or they can be created from an existing \Robject{MVC}. As described in
-Section~\ref{sec:micro} we are interested in data analytic settings
-where experimental data are linked to meta-data and that different
-views of the data based on the meta-data are of substantial interest.
-In this situation, the experimental data can be thought of as
-determining what meta-data are studied.  Thus, there is a hierarchical
-relationship between these data sets where one \Robject{MVC} object
-creates another \Robject{MVC} object.  This focus led to the decision
-that a \Robject{MVC} object can have at most one parent \Robject{MVC},
-from which it was derived, but it can have many child \Robject{MVCs}.
+As shown in Figure \ref{Fig:Hier}, there are many cases where there are
+natural submodels that can be derived from a parent model.  We propose that
+each submodel is itself a \Robject{MVC} instance, and hence can have multiple
+linked views.  Even though each submodel is its own \Robject{MVC} instance,
+there will be times when the submodel \Robject{MVC} needs to communicate with
+its parent \Robject{MVC}.  There are many different ways of communicating
+between parent and child \Robject{MVCs} and we discuss this in Section
+\ref{Sec:MultMVC}.
+
+Deciding when new data should be added to the current model versus generating
+a new submodel in a \Robject{MVC} instance is done by comparing the
+relationship between the new data and the data in the current model.  If the
+new data has a one-to-one relationship with the elements in the current model,
+then the new data can be added to the current model.  For example, if there is
+a test statistic for each row in a data frame, then this could be added to the
+model.  However, if the new data has a one-to-many or a many-to-many
+relationship with the elements in the current model, then a submodel is
+generated in a new \Robject{MVC} instance.  An example here is the
+relationship between genes and GO terms.  If the original model contains gene
+expression levels and a user wants to explore the GO terms for these genes,
+then the GO graph representing the GO terms will be placed in a new
+\Robject{MVC} because the genes and GO terms have a many-to-many relationship.
+
+%New models, and thus new \Robject{MVC} objects, can either be loaded
+%or they can be created from an existing \Robject{MVC}. As described in
+%Section~\ref{sec:micro} we are interested in data analytic settings
+%where experimental data are linked to meta-data and that different
+%views of the data based on the meta-data are of substantial interest.
+%In this situation, the experimental data can be thought of as
+%determining what meta-data are studied.  Thus, there is a hierarchical
+%relationship between these data sets where one \Robject{MVC} object
+%creates another \Robject{MVC} object.  This focus led to the decision
+%that a \Robject{MVC} object can have at most one parent \Robject{MVC},
+%from which it was derived, but it can have many child \Robject{MVCs}.
 
 \subsection{Messages Within a MVC Object}
 \label{Ssec:OneMess}
@@ -1022,7 +1139,7 @@ work together and yet, still be independent of each other.
 %% classes are meant to allow communication between the components - thus,
 %% deleting a view may be considered to take place solely within the
 %% controller (i.e. the response to a delete event for a view is handled by
-%% the contoller) and thus, a message between components is not necessary.
+%% the controller) and thus, a message between components is not necessary.
 %% However, deleting a view seems to be the exact opposite operation as adding
 %% a view and we have a message class for that operation.  
 %% Plus, I'm not sure how adding a model is considered a way to communicate
@@ -1128,9 +1245,9 @@ change in the model.
 %%optional, we have that structure, but when sending messages we look
 %%at the subscribers slot, and send the message to all subscribers.
 
-We now describe the support needed for multiple linked data sets.
+We now describe the support needed for multiple linked models.
 Each \Robject{MVC} object represents one model and its views.  In our
-paradigm data sets are linked through some additional meta-data. In
+paradigm models are linked through some additional meta-data. In
 the case of gene expression data the GO view is linked to the heatmap
 view through the mapping of genes to GO categories. In the city and
 state example, the cities are linked via the states in which they are
@@ -1145,10 +1262,10 @@ Thinking of experimental data that are linked to meta-data as an
 example, there are two \Robject{MVC} objects, one for the experimental
 data and one for the meta-data.  In the example of experimental
 microarray data that are linked to the Gene Ontology molecular
-function graph (Section~\ref{sec:micro}, these two data sets are
+function graph (Section~\ref{sec:micro}), these two models are
 linked in the following manner. The gene identifiers in the
 experimental microarray data are linked to the GO terms.  Thus,
-passing information between these two data sets requires that these
+passing information between these two models requires that these
 mappings be available.
 
 %%FIXME: if it is not too much work, lets give the models names, not
@@ -1163,9 +1280,18 @@ that modelB made to its model.  Thus, information passing between
 modelA and modelD, for instance, only occurs through modelB.  So
 messages can only be sent from parent \Robject{MVC} to child
 \Robject{MVC} or from child \Robject{MVC} to parent \Robject{MVC}.
+This communication between parent and child \Robject{MVCs} was shown in Figures
+\ref{Fig:heatmap}, \ref{Fig:GOgraph}, and \ref{Fig:heatmapsub} in Section
+\ref{sec:micro}.  Here views of the parent and child models are
+synchronized, but the selected items in a grandparent model may not
+match the selected items in a grandchild model (as shown by Figures
+\ref{Fig:heatmap} and \ref{Fig:heatmapsub} where the selected genes are
+different in these two heatmaps).  Determining how \Robject{MVC} models are
+linked is a difficult task when the relationship between elements in the two
+models is not one-to-one.
 
 
-\subsection{Linking Data Sets}
+\subsection{Linking Models}
 \label{Ssec:MultLink}
 
 %%FIXME: but we said this above, so let's drop this section and move
@@ -1201,6 +1327,52 @@ function, to make it specific for that child.
 %Thus, the message sent may be specific
 %to the child. 
 
+The link functions, \Rfunction{toParent} and \Rfunction{fromParent}, can
+become quite complex depending on the relationship between the elements in the
+two models.  Suppose that the data elements in the two models have a
+one-to-one relationship where data element 1 in child model A is linked to
+data element 2 in parent model B.  Now if data element 1 in child model A is
+selected, then the \Rfunction{toParent} function will pass along the
+information that data element 2 in parent model B should be selected.  Here
+the linking is straightforward.  However, if the data elements in the two
+models have a one-to-many or many-to-many relationship, the decision about
+which linked elements to update is more complex.  Now suppose that data
+element 1 in child model A is linked to data elements 10, 11, and 12 in parent
+model B and data element 2 in child model A is linked to data elements 12 and
+13 in parent model B.  Here a many-to-many relationship exists between the
+data elements.  If the user selects element 1 in child model A, the
+\Rfunction{toParent} function must decide if elements 10, 11, and 12 should be
+selected in parent model B or if only elements 10 and 11 should be selected in
+parent model B (because element 12 in model B is also linked to element 2,
+which is not selected, in model A).  
+
+These two options for the linking function can be represented as \textit{any}
+versus \textit{all} linking.  In \textit{any} linking, if any element is
+updated, then the corresponding linked element is updated.  This linking could
+also be represented as \textit{or} linking if one is thinking in terms of
+boolean operators.  In \textit{all} linking, the element in the second model
+is updated only if all linked elements are updated in the original model.
+Similarly, this linking could be also be represented as \textit{and} linking
+if one is thinking in terms of boolean operators.  
+
+Making the previous example even more complex suppose that child model A also
+had data element 3 which is linked to data elements 12, 13, and 14 in parent
+model B.  Now if data elements 1 and 3 are selected in child model A, the
+\Rfunction{toParent} function can link based on one of these options: i) select
+data elements 10, 11, 12, 13, and 14 in parent model B, which indicates that
+any items in model B that are linked to elements 1 and 3 in model A are
+selected, ii) select data element 12, which indicates that only data elements
+that are linked to both elements 1 and 3 in model A are selected, or iii)
+select no data elements in model B, which indicates that only elements linked
+to both elements 1 and 3 and no other elements in model A are selected.
+Another consideration in the linking functions may be to change the response
+depending on the type of selection being performed.  For example, \textit{any}
+linking between models may be appropriate when an item in one model was
+highlighted, but if an element is hidden, then \textit{all} linking may be
+suitable.  This flexibility lets developers determine the appropriate
+relationships between models, but also requires thoughtful responses and
+potentially complex linking functions.
+
 The message classes for creating a child \Robject{MVC} from an existing
 \Robject{MVC} and for sending messages between \Robject{MVC} objects are shown
 in Figure \ref{Fig:BetwMess}.  The message types for passing information
@@ -1211,7 +1383,7 @@ child message are similar to the update model message.
 
 \begin{figure}[ht]
   \begin{center}
-    \includegraphics[height=3.4in, width=4.5in]{newMessageClass2.jpg}
+    \includegraphics[height=4in, width=4.5in]{MVCMessageClass2.jpg}
     \caption{ Inheritance for Message Classes that are Passed Between
       \Robject{MVCs}. }
     \label{Fig:BetwMess}
@@ -1339,7 +1511,7 @@ the views are synchronized.
 
 %Several examples of linked data sets were given at the beginning of
 %this paper, including linked tables from a relational database, and
-%meta data that are linked to experimental data.  The MVC paradigm was
+%meta-data that are linked to experimental data.  The MVC paradigm was
 %discussed as a useful design for creating linked views of a data set.
 %Starting with the MVC paradigm, this paper provided a design for
 %implementing linked, interactive views of linked data sets based on
@@ -1410,26 +1582,15 @@ complicated.
 
 The crux of the communication between \Robject{MVC} objects is the link
 function, which converts information that one model can understand into
-information that a linked model can understand.  If there is a one-to-one
-relationship between the elements of the two linked models, then the link
-function is straightforward:  if element E changes in model A and if element E
-in model A is linked to element F in model B, then the link function will
-tell model B that element F should be updated.  However, if there is a
-one-to-many relationship or a many-to-many relationship, then the link
-function may be more complex.  Suppose that element E changes in model A and
-element E is linked to elements G, H, I, and J in model C, but these elements
-in model C are also linked to other elements in model A (in other words, there
-is a many-to-many relationship between the elements in models A and C).  Now
-the link function must decide whether to tell elements G, H, I, and J in model
-C to be updated in response to a change in element E in model A.  The link
-function may think of these relationships as an `any' versus an `all'
-relationship.  In an `any' relationship, the link function tells elements G,
-H, I, and J in model C to be updated if any element they are linked from model
-A is updated.  In an `all' relationship, the link function tells elements G,
-H, I, and J in model C to be updated only if all elements they are linked to
-in model A are updated.  Deciding how to represent these relationships between
-elements in different models is left to the developer when creating the link
-functions.  While this flexibility lets the developer represent different
+information that a linked model can understand.  As discussed previously, the
+linking functions, \Rfunction{toParent} and \Rfunction{fromParent}, can be
+quite complex if the relationship between the data elements in the two models
+is one-to-many or many-to-many.  In response to an update in one model, the
+linking function must decide if all linked elements in the second model
+should be updated, if any linked elements should be updated, or if a subset of
+linked elements should be updated.  These decisions must be made by the
+developer to properly represent the relationship between the data elements in
+the two models.  While this flexibility lets the developer represent different
 relationships between different models, the developer is then responsible for
 knowing what makes sense (for example, biologically) when creating the link
 functions. 
@@ -1451,13 +1612,13 @@ the inheritance structure for classes, which allows for extensions by the
 user, and through command line functions, which let the user create new menu
 items to add to the GUI and also let the user create new callback functions
 that can be linked to events.  However, in terms of extensibility, certain
-design decisions, such as expecting the data sets to be linked through a
-parent-child hierarchy, may not work with some data sets.  As an example, the
+design decisions, such as expecting the models to be linked through a
+parent-child hierarchy, may not work with some models.  As an example, the
 linked tables from a relational database are not related through a tree
 structure and thus, having parent and child \Robject{MVC} objects may not make
-sense with these data sets.  However, the design allows users to add new types
+sense with these models.  However, the design allows users to add new types
 of models, new types of views, and new message classes so there is still
-flexibility for additions as long as the data sets are connected through
+flexibility for additions as long as the models are connected through
 parent-child relationships.  These new class definitions could be created by
 the user in a new package that extends the \Rpackage{MVCClass} package that
 was discussed in this paper.  Other additions that the user may want to
@@ -1471,8 +1632,8 @@ discussed in detail in the Vignette for this R package.  Users can load data,
 create views of the data, interact with these views and change the response to
 the interaction (these interactions include mouse button click events and
 mouse movement events), and users can create child \Robject{MVC} objects
-through the GUI or through command line functions.  Using the functionality in
-the \Rpackage{iSNetwork} package, the user can create views of linked data sets
+through the GUI or through command line functions.  With the functionality in
+the \Rpackage{iSNetwork} package, the user can create views of linked models
 and can explore visually the relationships between variables in different data
 sets.  This functionality was implemented by extending the MVC paradigm in a
 very natural way to encompass a much richer class of models and user

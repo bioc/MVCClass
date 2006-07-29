@@ -2,7 +2,7 @@
 % NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
 % likely to be overwritten.
 %
-%\VignetteDepends{RGtk, gtkDevice, graph, Rgraphviz}
+%\VignetteDepends{methods}
 %\VignetteKeywords{Model, View, Controller}
 %\VignettePackage{MVCClass}
 %\VignetteIndexEntry{MVCClass}
@@ -39,7 +39,7 @@
 
 \title{Model-View-Controller Package}
 \author{Elizabeth Whalen}
-\date{July 19, 2006}
+\date{July 28, 2006}
 
 \begin{document}
 \maketitle
@@ -70,7 +70,7 @@ shows the inheritance structure for the \Robject{MVC} classes.
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.2}{\includegraphics{fullMVCClass.jpg}}
+    \scalebox{0.3}{\includegraphics{fullMVCClass.jpg}}
     \caption{ Inheritance for MVC Objects. }
     \label{Fig:MVCClass}
   \end{center}
@@ -118,7 +118,7 @@ statistic for each element in the model).
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.7}{\includegraphics{VigModelClass.jpg}}
+    \scalebox{0.3}{\includegraphics{VigModelClassMVC.jpg}}
     \caption{ Inheritance for Model Objects. }
     \label{Fig:Model}
   \end{center}
@@ -151,7 +151,7 @@ object model for the view classes is shown in Figure \ref{Fig:View}.
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.7}{\includegraphics{VigViewClass.jpg}}
+    \scalebox{0.8}{\includegraphics{VigViewClassMVC.jpg}}
     \caption{ Inheritance for View Objects. }
     \label{Fig:View}
   \end{center}
@@ -223,7 +223,7 @@ constructed, and this model is shown in Figure \ref{Fig:Mess}.
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.7}{\includegraphics{VigMessageClass.jpg}}
+    \scalebox{0.8}{\includegraphics{VigMessageClass.jpg}}
     \caption{ Inheritance for Message Objects. }
     \label{Fig:Mess}
   \end{center}
@@ -294,7 +294,7 @@ the Figure \ref{Fig:BetwMess}.
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.7}{\includegraphics{newVigMessageClass2.jpg}}
+    \scalebox{0.8}{\includegraphics{VigMessageClassMVC2.jpg}}
     \caption{ Inheritance for Message Classes that are Passed Between MVCs. }
     \label{Fig:BetwMess}
   \end{center}
@@ -362,7 +362,7 @@ definition for \Robject{gEventFun} is shown in Figure \ref{Fig:EventFun}.
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.2}{\includegraphics{EventClass.jpg}}
+    \scalebox{0.3}{\includegraphics{EventClass.jpg}}
     \caption{ The gEventFun Class. }
     \label{Fig:EventFun}
   \end{center}
