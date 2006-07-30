@@ -50,9 +50,21 @@ In this paper we consider a generalization of the model
 %\subsection{Background}
 %\label{Ssec:Backg}
 
+%%Cite DataDesk as a system that does this, 
+%% also this book:  Andreas Buja, Catherine Hurley, and John Alan McDonald. Elements of a viewing pipeline for data analysis. In W. S. Cleveland and M. E. McGill, editors, Dynamic Graphics for Statistics. Wadsworth and Brooks/Cole, Belmont, Ca., 1988.
+
+%% also this paper: Interactive data visualization using focusing and linking
+%%Full text 	pdf formatPdf (541 KB)
+%%Source 	IEEE Visualization archive
+%%Proceedings of the 2nd conference on Visualization '91 table of contents
+%%San Diego, California
+%%SESSION: Multivariate visualization table of contents
+%%Pages: 156 - 163  
+%%Year of Publication: 1991
+%%ISBN:0-8186-2245-8 (PAPER) 
 There are many ways to visualize multivariate data when more than
 two or three dimensions are needed to view the data.  Many authors
-\cite{intGrUnwin} \cite{iPlots} \cite{MONDRIAN} \cite{GGobi}
+\citep{intGrUnwin, iPlots, MONDRIAN, GGobi}
 have suggested that linked, interactive views of the data
 provide a valuable and important set of tools for comprehending such
 data.  The model view controller (MVC) paradigm is now a standard
@@ -207,7 +219,7 @@ also be of substantial interest, regardless of whether there was an
 initial heatmap view or not. Thus, we looked for a solution that was
 based more on component software constructed within an object oriented
 programming environment.
-
+%%FIXME: cite the JSS submission
 We had several objectives, or design criteria. They were that the
 software should be extensible in a high level language. We chose R as
 the language for our implementation and wanted to allow users that
@@ -337,7 +349,7 @@ A tells its view to update itself.
   \begin{center}
     \includegraphics[height=3.3in, width=6in]{firstMessagePassing.jpg}
     \caption{ Linked views of linked models.  When a user interacts with
-      the y versus x scatter plot, the first step, indicated by a circled one,
+      the scatter plot, the first step, indicated by a circled 1,
       is to tell model B to update.  Then all views of model B must be
       updated.  Next any data that are linked to model B must be notified
       that model B changed.  This information from model B must be
@@ -428,7 +440,7 @@ In essence the MVC design assumes that there is one data set, which is
 called the model, that all views reference.  But problems arise when
 the data consist of more than one conceptual grouping.  For example,
 consider data stored in a relational database, such as the data shown in
-panel (a) of Figure~\ref{Fig:OneDBTab}.  Here the database
+Figure~\ref{Fig:DBTab}.  Here the database
 consists of three tables, State, City and StateCity.  The State table
 has three columns, State (the key), Life Expectancy, and Income.  The
 City table has three columns, City (the key), Precipitation, and
@@ -438,7 +450,7 @@ example, each city can be in only one state, but each state can have
 more than one city so there is a one-to-many relationship between
 states and cities.  In order to support interactive views of all data
 tables, in a standard MVC paradigm, it seems that either all data must
-be combined into a single large table (panel (b) of Figure~\ref{Fig:OneDBTab}), or
+be combined into a single large table (Figure~\ref{Fig:OneDBTab}), or
 the processing and accessing of the model data must become much more
 complex. 
 
@@ -509,7 +521,7 @@ cities within it are highlighted.  The second approach requires writing a
 large amount of code, but is unlikely to be extensible.
 We should also mention that our main area of
 application is a setting where one representation of the data is as a
-graph (with nodes and edges) while the other is as a matrix. We can
+graph (with nodes and edges) while the other is as a rectangular array. We can
 envisage lots of different MVCs that operate on graph based data, and
 equally MVCs that operate on matrix based data. Specifying a mechanism
 by which these can interact allows us to create two visible classes
@@ -655,8 +667,9 @@ be sent between linked models.
 
 In Figure \ref{Fig:MultMVC} we show one view for state-level data and
 one view for the city-level data.  The state and city data are linked
-based on the color.  Even though there are two \Robject{MVC} objects
-here, one \Robject{MVC} for each model, the views are linked.
+based on the color.  But there are two distinct MVCs, not one. 
+The city data have one MVC and the state data a second.  Even though 
+there are two \Robject{MVC} objects here the views are linked.
 
 % Not only does this solution use the power and simplicity of the MVC design, but
 % this multiple MVC design is structured to fit the linking seen in the multiple
@@ -691,7 +704,7 @@ necessary for creating linked views.
 \subsection{Model}
 \label{Ssec:OneModel}
 
-In the MVC design, the model stores the data and among other things it
+In our MVC design, the model stores the data and among other things it
 supports all updating and other mechanisms that might be needed.
 Information can be sent to the model to add, update, and remove data
 and after every change the model is responsible for sending messages
@@ -758,7 +771,7 @@ users are welcome to make additions to the model classes for new data
 structures they want to represent.  For example, a user may want to add a new
 model class called \Rclass{tsModel} to represent time series data.
 To make this addition, the user extends the \Rclass{gModel} class in his or
-her own package. 
+her own R software package. 
 
 \subsection{Views}\label{Ssec:OneViews}
 
@@ -781,9 +794,10 @@ in Figure \ref{Fig:View}.
 \end{figure}
 
 As for specific view classes, the \Rclass{spreadView} class represents
-a spreadsheet view of the data.  This view only makes sense for models
-that are a two dimensional data structure, such as a matrix or a data
-frame. Other views we have implemented include: scatter plots
+a spreadsheet view of the data.  This view requires input data that are
+inherently two-dimensional and for graph data, we make a reduction to the 
+list of nodes and some attributes.  Other views we have implemented 
+include: scatter plots
 (\Rclass{sPlotView}), graphs (\Rclass{graphView}), and heatmaps
 (\Rclass{heatmapView}).
 
@@ -996,9 +1010,9 @@ The \Rclass{MVC} class binds the model, view, and controller objects
 into one object.  Thus, whenever a new data set is loaded, an
 appropriate \Robject{MVC} object is created.  There is a one-to-one
 relationship between the \Robject{MVC} instances and model objects.
-Because of this relationship, the \Robject{MVC} object and the model
-object are identified by the same name.
-
+%%FIXME: this seems like an implementation detail
+%%Because of this relationship, the \Robject{MVC} object and the model
+%%object are identified by the same name.
 Our implementation consists
 of a virtual class, \Rclass{MVC}, with three slots, which are
 \Rslot{model}, \Rslot{viewList}, and \Rslot{controller}. The three
@@ -1028,13 +1042,14 @@ More information on this communication is given in Section \ref{Sec:MultMVC}.
 %% structure of the models and not just views of the models.  
 Thus, the \Rclass{linkedModelMVC} class not only binds the model,
 view, and controller objects together, but it also shows
-that the \Robject{linkedModelMVC} objects are related to each other through a
+that the \Robject{linkedModelMVC} objects can be related to each other 
+through a
 parent-child (tree) hierarchy, as shown in Figure \ref{Fig:Hier}.  In this
-picture, `modelA' is the name of the original \Robject{MVC} object
+picture, modelA is the name of the original \Robject{MVC} object
 (model) and from it, two \Robject{MVC} objects were created,
-`modelB' and `modelC'. Then from `modelB', three
-\Robject{MVC} objects were created, `modelD', `modelE', and
-`modelF'.  As an example, modelA could be gene 
+modelB and modelC. Then from `modelB', three
+\Robject{MVC} objects were created, modelD, modelE, and
+modelF.  As an example, modelA could be gene 
 expression data, modelB could be gene expression data that is a subset of
 modelA (based on filtering), modelC could be derived by performing
 multidimensional scaling (MDS) on modelA, modelD could be the Gene Ontology
@@ -1065,15 +1080,19 @@ Deciding when new data should be added to the current model versus generating
 a new submodel in a \Robject{MVC} instance is done by comparing the
 relationship between the new data and the data in the current model.  If the
 new data has a one-to-one relationship with the elements in the current model,
-then the new data can be added to the current model.  For example, if there is
+then we believe that in most cases the new data should be added to the 
+current model.  For example, if there is
 a test statistic for each row in a data frame, then this could be added to the
 model.  However, if the new data has a one-to-many or a many-to-many
-relationship with the elements in the current model, then a submodel is
-generated in a new \Robject{MVC} instance.  An example here is the
+relationship with the elements in the current model, then serious consideration should be given to the creation of a submodel.  If there is already an appropriate MVC class (e.g. if the submodel is a graph) then it can be
+generated by creating a new instance of the appropriate MVC class.  If there
+is no appropriate implementation, then the user will need to create one.  
+As an example, consider the
 relationship between genes and GO terms.  If the original model contains gene
 expression levels and a user wants to explore the GO terms for these genes,
-then the GO graph representing the GO terms will be placed in a new
-\Robject{MVC} because the genes and GO terms have a many-to-many relationship.
+then we encourage the creation of the GO graph representing the GO terms,  and
+creating a new graph \Robject{MVC} object.
+%%FIXME: maybe explicitly name the class in the above line
 
 %New models, and thus new \Robject{MVC} objects, can either be loaded
 %or they can be created from an existing \Robject{MVC}. As described in
@@ -1288,9 +1307,9 @@ This communication between parent and child \Robject{MVCs} was shown in Figures
 synchronized, but the selected items in a grandparent model may not
 match the selected items in a grandchild model (as shown by Figures
 \ref{Fig:heatmap} and \ref{Fig:heatmapsub} where the selected genes are
-different in these two heatmaps).  Determining how \Robject{MVC} models are
-linked is a difficult task when the relationship between elements in the two
-models is not one-to-one.
+different in these two heatmaps).  Deciding how to link \Robject{MVC} models 
+is a difficult task especially when the relationship between elements in the 
+two models is not one-to-one.
 
 
 \subsection{Linking Models}
@@ -1571,7 +1590,7 @@ the views are synchronized.
 %% EAW: I've tried to change the conclusions to include some of your comments.
 
 
-The goals for this paper were to create linked views of linked data sets, to
+The goals for this research were to create software implementations and conceptual paradigms to support the use of linked views of linked data sets, to
 create interactive views where the response to an event can be changed, and to
 create an extensible design that allows future users to make additions.
 The first goal was accomplished by implementing \Robject{MVC} objects as
@@ -1629,7 +1648,7 @@ event can be performed through command line functions that are defined in the
 \Rpackage{iSNetwork} package, which is the front end for the design
 described in this paper. 
 
-The functionality that is defined in the \Rpackage{iSNetwork} package is
+The functionality that is provided in the \Rpackage{iSNetwork} package is
 discussed in detail in the Vignette for this R package.  Users can load data,
 create views of the data, interact with these views and change the response to
 the interaction (these interactions include mouse button click events and
