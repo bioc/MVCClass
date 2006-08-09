@@ -11,33 +11,39 @@
 \usepackage{comment}
 \usepackage{graphics}
 \usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{times}
+\usepackage[authoryear,round]{natbib}
+\usepackage{subfigure}
 
 \newcommand{\Rfunction}[1]{{\textsf{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
 \newcommand{\Rslot}[1]{\textsl{#1}}
 \newcommand{\Rclass}[1]{\texttt{#1}}
+\renewcommand{\baselinestretch}{1.5}
 
 \begin{document}
 
 \bibliographystyle{amsplain}
 
-\begin{titlepage}
-\begin{center}
-\Large
-\vspace*{1in}
-\textbf{Creating Linked, Interactive Views to \linebreak Explore Linked Data} \\
-\vspace{1in}
-\textbf{Dana-Farber Cancer Institute}\\ 
-\textbf{May 6, 2006} \\
-\vspace{1in} 
-\textbf{Elizabeth Whalen} \\
-\end{center}
-\end{titlepage}
-\normalsize
-\newpage
+\author{Elizabeth Whalen\\Harvard School of Public Health}
+\title{Generalizing the Model View Controller Paradigm}
 
-%\renewcommand{\baselinestretch}{1.5}
+\maketitle
+
+\begin{abstract} 
+  In this paper we consider a generalization of the model
+  view controller (MVC) paradigm to allow for more flexible handling
+  of submodels.  Instead of using a single MVC we develop a tree
+  structure of related MVCs, where each MVC has a single parent, but a
+  parent can spawn many different child MVCs.  Communication between
+  parent and child MVCs allows for very flexible linking of the
+  MVCs.  We provide an implementation of our work in the R package
+  \Rpackage{MVCClass} available at \url{http://www.bioconductor.org}. 
+\end{abstract}
+
+
 \section{Introduction}\label{Sec:Intro}
 
 \subsection{Background}\label{Ssec:Backg}
@@ -129,8 +135,6 @@ The signal handler, which is the method that connects the event to the
 callback function, is handled by the system's event loop when a signal is
 emitted. 
 
-%\clearpage
-
 \begin{figure}[!h]
   \begin{center}    
     \scalebox{0.55}{\includegraphics{Event.jpg}}
@@ -192,8 +196,6 @@ starting a new design from scratch.  The strength of this multiple linked MVC
 design is that it uses MVC components, which can be individually created and
 then linked.  Thus, these components are reusable.  These design decisions are
 discussed further in Sections \ref{Sec:OneMVC} and \ref{Sec:MultMVC}. 
-
-%\clearpage
 
 \begin{figure}[ht]
   \begin{center}
@@ -308,8 +310,6 @@ which states.  In this example, each city can be in only one state, but each
 state can have more than one city so there is a one-to-many relationship
 between states and cities.
 
-%\clearpage
-
 \begin{figure}[ht]
   \begin{center}
     \scalebox{0.5}{\includegraphics{newDatabaseTables.jpg}}
@@ -335,8 +335,6 @@ compare the Income data stored in the State table to the Precipitation data
 stored in the City table.  Combining the data tables assumes that there is a
 relationship between the variables in all of the tables.  This example shows
 that there are advantages to storing the data in separate structures.
-
-%\clearpage
 
 \begin{figure}[ht]
   \begin{center}
@@ -584,8 +582,6 @@ pertaining to the views that needs to be stored with the model so that it can
 be shown in all views of this model, and the \Rslot{modelName} slot is the
 name of the model. 
 
-%\clearpage
-
 \begin{figure}[ht]
   \begin{center}
     \scalebox{0.7}{\includegraphics{ModelClass.jpg}}
@@ -729,7 +725,7 @@ defined in the \Rpackage{iSNetwork} package.  This method must take the
 information that a model has just been updated and appropriately update the
 view to reflect that change.  Each method depends on how the view
 represents the data so for a \Robject{spreadView} object the
-\Rfunction{updateView} method may select or unselect a row on the spreadsheeet
+\Rfunction{updateView} method may select or unselect a row on the spreadsheet
 while for a \Robject{sPlotView} object the \Rfunction{updateView} method may
 change the appearance of a point on the plot.  
 
@@ -953,8 +949,6 @@ multidimensional scaling (MDS) on model1, model 3.1 could be the gene ontology
 (GO) graph representing the molecular functions of the genes in model2.1,
 model 3.2 could be the KEGG pathways that the genes in model2.1 are involved
 in, and model 3.3 could be the chromosome locations of the genes in model2.1.
-
-%\clearpage
 
 \begin{figure}[ht]
   \begin{center}
@@ -1211,7 +1205,8 @@ These message types also are seen in passing messages between different
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.6}{\includegraphics{newMessageClass2.jpg}}
+    \scalebox{0.6}{\includegraphics{MVCMessageClass2.jpg}}
+%    \scalebox{0.6}{\includegraphics{newMessageClass2.jpg}}
     \caption{ Inheritance for Message Classes that are Passed Between
       \Robject{MVCs}. }
     \label{Fig:BetwMess}
@@ -1412,6 +1407,11 @@ and can explore visually the relationships between variables in different data
 sets.  This functionality was implemented by extending the MVC paradigm in a
 very natural way to encompass a much richer class of models and user
 interactions. 
+
+\section*{Acknowledgements}
+We are indebted to Dr. Duncan Temple Lang for the creation of the
+\Rpackage{RGtk} and \Rpackage{gtkDevice} packages as well as helpful advice on
+their use.  
 
 \bibliography{paper2}
 
