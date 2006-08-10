@@ -271,7 +271,7 @@ a callback function; and a method that connects the event to the callback
 function, which is referred to as the signal handler.  The events can
 range from the user moving the cursor over a plot, to pressing a button on a
 graphical user interface (GUI), to pressing certain keys.  Events are
-interpreted based on which window has focus.  For example, in the XWindows
+interpreted based on which window has focus.  For example, in the X Windows
 system, if a user types C on the keyboard and the window that has focus is a
 text editor, then the letter C is printed on the text editor's screen.
 Any other open windows that do not have focus do not respond to this event.
@@ -360,7 +360,7 @@ and the communication between the components that are necessary to create
 linked views of underlying linked data.  
 
 In the design presented in this paper, the components consist of \Robject{MVC}
-objects and communication within and between \Robject{MVC} objects is
+objects, and communication within and between \Robject{MVC} objects is
 performed by message objects.  This solution uses the power and simplicity of
 the MVC design and expands it to the multiple data set problem.  Now we can
 build on the original MVC design, which has been well tested, instead of
@@ -818,7 +818,7 @@ views are discussed in Section \ref{Ssec:OneMess}.
 The view classes represent the visual depictions, or renderings, of
 the model.  There are some data that are required by all views, and all views
 must respond to a certain subset of events so we have implemented the view
-classes by first creating a single, virtual class which the specialized
+classes by first creating a single, virtual class, which the specialized
 views extend.  As with our model classes, this allows us to define
 methods and data storage once, for the virtual class, and only extend
 it for views that specifically require additional data storage, or
@@ -1127,7 +1127,7 @@ that the \Robject{linkedModelMVC} objects can be related to each other
 through a parent-child (tree) hierarchy, as shown in Figure \ref{Fig:Hier}.
 In this picture, modelA is the name of the original \Robject{MVC} object
 (model) and from it, two \Robject{MVC} objects were created,
-modelB and modelC. Then from `modelB', three
+modelB and modelC. Then from modelB, three
 \Robject{MVC} objects were created, modelD, modelE, and
 modelF.  As an example, modelA could be gene 
 expression data, modelB could be gene expression data that is a subset of
@@ -1272,7 +1272,7 @@ change in the model.
 
 \begin{figure}[ht]
   \begin{center}
-    \scalebox{0.6}{\includegraphics{newMPwithin.jpg}}
+    \scalebox{0.6}{\includegraphics{newMPwithin2.jpg}}
     \caption{ Message passing within a \Robject{MVC} object.  The first step,
       indicated by a circled one, occurs when a user interacts with the y
       versus x scatter plot (view 1).  Then an update data message is sent to
@@ -1326,8 +1326,8 @@ are two \Robject{MVC} objects, one for the experimental data and one for the
 meta-data.  In the example of experimental microarray data that are linked to
 the Gene Ontology molecular function graph that was first mentioned in Section
 \ref{Ssec:Limit}, these two models are linked in the following manner: the
-Affymetrix identifiers in the experimental microarray data are linked to Locus
-Link identifiers, which are in turn linked to the Gene Ontology molecular
+Affymetrix identifiers in the experimental microarray data are linked to Entrez
+Gene identifiers, which are in turn linked to the Gene Ontology molecular
 function terms.  Thus, to pass information between these two models a table
 that links Affymetrix identifiers to Gene Ontology molecular function terms
 must be stored or there must be a function to call that converts from
@@ -1381,7 +1381,6 @@ child model's \Rslot{linkData} slot is filled with the two functions,
 the child \Robject{MVC} is updated, the \Rfunction{toParent} function in the
 \Rslot{linkData} slot is used to convert the child model's data
 change into useful information for the parent model.  
-
 Now suppose that the parent model changed instead.  This information
 needs to be passed to the child model.  However, a parent can have
 multiple child \Robject{MVC} objects so the parent sends a message to each
