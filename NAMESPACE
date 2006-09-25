@@ -1,3 +1,5 @@
+import("methods")
+
 # export all classes
 exportClasses(gEventFun, 
               gAddDataMessage, gAddViewMessage, gUpdateDataMessage,
