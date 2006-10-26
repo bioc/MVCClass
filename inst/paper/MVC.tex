@@ -27,6 +27,7 @@
 \bibliographystyle{amsplain}
 
 \author{Elizabeth Whalen\\Harvard School of Public Health \\ 
+        Duncan Temple Lang\\University of California at Davis \\
         Robert Gentleman\\Fred Hutchinson Cancer Research Center}
 \title{Generalizing the Model View Controller Paradigm}
 
@@ -69,7 +70,8 @@ two or three dimensions are needed to view the data.  Many authors
 \citep{intGrUnwin, DynGraphics, IEEEVisual, GGobi, DataDesk}
 have suggested that linked, interactive views of the data
 provide a valuable and important set of tools for comprehending such
-data.  The model view controller (MVC) paradigm is now a standard
+data.  The model view controller (MVC) paradigm, as introduced in the
+Smalltalk system \cite{Smalltalk}, is now a standard
 mechanism for implementing such systems.  The paradigm has proven very
 effective and allows for clear separation of different components.
 In this paper we consider an extension of the MVC paradigm to allow
@@ -81,12 +83,13 @@ and want to create interactive views of that subset.  In some cases the
 natural data representation of the subset is in a form other than that
 of the initial data set.  This leads to complications in the usual MVC
 paradigm, where the data (i.e. the model) are often presumed to be in
-a single, standard format.  We found that adding new views under such
-conditions could be quite problematic and often led to very complex
-code.  As we shall demonstrate, there are also issues that arise due to
-mappings that are not one-to-one between elements on different views.
-Hence we considered an approach that created new instances of
-the MVC that were linked to the parent that spawned them.
+a single, standard format when implementing the design.  We found that 
+adding new views under such conditions could be quite problematic and 
+often led to very complex code.  As we shall demonstrate, there are 
+also issues that arise due to mappings that are not one-to-one between 
+elements on different views.  Hence we considered an approach that 
+created new instances of the MVC that were linked to the parent that 
+spawned them. 
 
 In particular, our implementation consists of a hierarchy of MVCs,
 stored as a tree.  Each parent can have multiple children, but the
@@ -97,8 +100,10 @@ classes, each with a model appropriate to the specific data of
 interest, that can be linked in a natural way.  Interacting with the view
 in a child MVC, first sends a message to the child MVC, which will
 update all of its views, but the message will also propagate to the
-parent MVC (and further up to the root). The parent MVC can choose to
-react, or not, to messages from its children -- all control being in
+parent MVC (and further up to the root).  Similarly, messages propagate 
+to the child MVCs if the user initially interacts with a view in the 
+parent MVC.  The MVC can choose to react, or not, to messages from its 
+parent or children -- all control being in
 the hands of the users, should they want it.
 
 \subsection*{A motivating example}
@@ -141,7 +146,8 @@ aspect can be obtained from different sources such as \cite{KEGG}.
 Further, users typically want to begin with a heatmap view. Then from
 that derive a GO graph view, and additionally a chromosomal location
 view. In order to interact with the GO graph, the primary unit is the
-node in that graph (and sometimes one expects with the edges), while
+node in that graph (though edges could also be considered the primary 
+unit), while
 for the heatmap view the basic element is generally the gene.  In Figures
 \ref{Fig:heatmap} and \ref{Fig:GOgraph}, a heatmap view of gene expression
 from Chronic Lymphocytic Leukemia (CLL) patients and the corresponding GO
@@ -227,7 +233,7 @@ software should be extensible in a high level language. We chose R as
 the language for our implementation and wanted to allow users that
 knew no other languages to be able to extend and enhance the
 system. Therefore, we built our software on top the \Rpackage{RGtk} package of
-D. Temple Lang, since it provides such an interface. We also vastly
+D. Temple Lang \cite{RGtk}, since it provides such an interface. We also vastly
 preferred Gtk over Tcl/Tk since its widgets are more sophisticated,
 which we found results in a much shorter development time.
 
@@ -270,16 +276,16 @@ them through the sample IDs.
 Linked views, which have a long history in statistics, are now
 considered a standard feature of interactive data visualization
 software \cite{GGobi}.  Linked views have been implemented in several
-pieces of statistical software, such as XLisp-Stat \cite{Lisp}, iPlots
-\cite{iPlots}, and
+pieces of statistical software, such as DataDesk \cite{DataDesk},
+XLisp-Stat \cite{Lisp}, iPlots \cite{iPlots}, and
 GGobi \cite{GGobiMan}.  Implementing linked views is based on the
 model-view-controller (MVC) design \cite{DesignPatterns}, which is a
 widely used and well understood paradigm. 
 
-We take a fairly general view of interactivity. Users can interact via
+We take a fairly general view of interactivity.  Users can interact via
 a pointing device, such as a mouse, or via key strokes, or any of many
-other types of input devices.  Interactivity means that there is a
-response to some user action.  It is a powerful paradigm and allows
+other types of input devices.  Interactivity means that there is an
+immediate response to some user action.  It is a powerful paradigm and allows
 users to quickly navigate and explore complex documents or complex
 data sets.  As an example, suppose that a user has two views: one view
 is a graph where each node represents a particular set of genes while
@@ -323,7 +329,8 @@ view.  In the cartoon there are only two views, one of model A (note
 that once a data set is loaded in a MVC, we call it a model) and the
 other of the linked model B.  When a user
 interacts with the scatter plot view of model B, the response to
-this interaction is for model B to update itself (this is indicated
+this interaction is for the controller to tell model B to update itself 
+(this is indicated
 on the figure as a circled 1).  In Step 2, the scatter plot view is
 told to update itself.  Next, in Step 3, because model B is linked
 to model A, model B sends a message to model A.  In Step 4,
@@ -354,9 +361,9 @@ A tells its view to update itself.
     \includegraphics[height=3.3in, width=6in]{firstMessagePassing.jpg}
     \caption{ Linked views of linked models.  When a user interacts with
       the scatter plot, the first step, indicated by a circled 1,
-      is to tell model B to update.  Then all views of model B must be
-      updated.  Next any data that are linked to model B must be notified
-      that model B changed.  This information from model B must be
+      is for the controller to tell model B to update.  Then all views of
+      model B must be updated.  Next any data that are linked to model B must
+      be notified that model B changed.  This information from model B must be
       altered so that it can be understood by linked models, which is shown
       in the fourth step.  Finally, model A is notified that it should
       update in response to the change in model B and then all views of
@@ -525,16 +532,19 @@ cities within it are highlighted.  The second approach requires writing a
 large amount of code, but is unlikely to be extensible.
 We should also mention that our main area of
 application is a setting where one representation of the data is as a
-graph (with nodes and edges) while the other is as a rectangular array. We can
+graph (with nodes and edges) while the other is as a rectangular array. 
+We can
 envisage lots of different MVCs that operate on graph based data, and
-equally MVCs that operate on matrix based data. Specifying a mechanism
+equally MVCs that operate on matrix based data.  Specifying a mechanism
 by which these can interact allows us to create two visible classes
 that others can use, but still provide interaction between
-appropriately linked instances of the two classes. We also argue that
+appropriately linked instances of the two classes.  We also argue that
 there are surely other specific types of models that represent
 specific types of data (e.g. time series) and it would make sense to
 implement these as yet another separate, specialized MVC, that could
-be linked to any one of a variety of other MVCs.
+be linked to any one of a variety of other MVCs.  In our design, each 
+MVC will contain one model and thus, linked models also indicate linked 
+MVCs.
 
 % Clearly, this information could be combined into one large table, called
 % CombinedStateCity, as shown in Figure \ref{Fig:OneDBTab}.  The
@@ -673,7 +683,7 @@ In Figure \ref{Fig:MultMVC} we show one view for state-level data and
 one view for the city-level data.  The state and city data are linked
 based on the color.  But there are two distinct MVCs, not one. 
 The city data have one MVC and the state data a second.  Even though 
-there are two \Robject{MVC} objects here the views are linked.
+there are two \Robject{MVC} objects here, the views are linked.
 
 % Not only does this solution use the power and simplicity of the MVC design, but
 % this multiple MVC design is structured to fit the linking seen in the multiple
@@ -775,7 +785,8 @@ users are welcome to make additions to the model classes for new data
 structures they want to represent.  For example, a user may want to add a new
 model class called \Rclass{tsModel} to represent time series data.
 To make this addition, the user extends the \Rclass{gModel} class in his or
-her own R software package. 
+her own R software package.  More information on extending the classes can be
+found in the \Rpackage{MVCClass} and \Rpackage{iSNetwork} Vignettes.
 
 \subsection{Views}\label{Ssec:OneViews}
 
@@ -875,7 +886,7 @@ an \textit{active} \Robject{MVC} object, where the active
 operations performed through the control window menus or through the
 command line functions affect that \Robject{MVC} object. Users can
 switch between active models, but since the interactions could be
-quite different, there must always be an active MVC. 
+quite different, there must always be an active \Robject{MVC}. 
 
 Although the same menus always appear on the control window,
 the items under each menu may change depending on the type of model
@@ -904,8 +915,9 @@ well as menu items to access the new functionality.
 
 Linking callback functions to events, such as a button click, a mouse
 movement or a key press event, is what allows users to have an
-interactive environment.  When an event occurs, the callback function
-linked to the event determines the response to that event.  To create
+interactive environment.  When an event occurs, the callback function linked
+to the event (this information is stored in the controller in the MVC)
+determines the response to that event.  To create
 a flexible environment it is important to be able to change the
 response to an event.  For example, when a left button press event
 occurs, a user may sometimes want a point to be colored and at other
@@ -947,6 +959,7 @@ point to hide.
 %% of interest in a plot (and model).  Thus, for plots of data frames,
 %% the object in the plot is considered a row from the data frame and for
 %% plots of graphs, the object in the plot is considered a node in the graph. 
+
 Since the intention is to be able to interchange the responses to an event,
 the signatures of different callback functions should be the same.
 In our design a callback function takes only one parameter. 
@@ -1203,7 +1216,8 @@ color the point red.  Setting the response to an event was discussed
 in Section~\ref{Ssec:OneEvent}.  Here the user first clicks on a point
 in view 1, which is shown as Step 1 (the circled 1 on the
 figure).  In the figure, the point that has been clicked has an arrow
-next to it.  Then, in Step 2, an update data message is sent to the
+next to it.  Then, in Step 2, an update data message is sent by the 
+controller to the
 model, which updates itself accordingly, i.e. by changing the color
 associated with the corresponding element.  After the model has been
 updated, the views must be notified that a change has occurred so in
@@ -1217,7 +1231,8 @@ change in the model.
     \includegraphics[height=3.5in, width=5in]{newMPwithin2.jpg}
     \caption{ Message Passing within a \Robject{MVC} object.  The first step,
       indicated by a circled one, occurs when a user interacts with the y
-      versus x scatter plot (view 1).  Then an update data message is sent to
+      versus x scatter plot (view 1).  Then an update data message is sent by
+      the controller to
       the model in the second step, which alters the model.  Next in the third
       step all views of this model are sent an update view message, which
       causes the views to be updated in the fourth step. }
@@ -1293,8 +1308,8 @@ Thinking of experimental data that are linked to meta-data as an
 example, there are two \Robject{MVC} objects, one for the experimental
 data and one for the meta-data.  In the example of experimental
 microarray data that are linked to the Gene Ontology molecular
-function graph (Section~\ref{sec:micro}), these two models are
-linked in the following manner. The gene identifiers in the
+function graph (as discussed in Section~\ref{sec:micro}), these two models 
+are linked in the following manner. The gene identifiers in the
 experimental microarray data are linked to the GO terms.  Thus,
 passing information between these two models requires that these
 mappings be available.
@@ -1343,7 +1358,8 @@ child model's \Rslot{linkData} slot is filled with the two functions,
 \Rfunction{toParent} and \Rfunction{fromParent}.  When the model in
 the child \Robject{MVC} is updated, the \Rfunction{toParent} function in the
 \Rslot{linkData} slot is used to convert the child model's data
-change into useful information for the parent model.  
+change into useful information for the parent model if there are any linked
+elements in the parent model.  
 
 Now suppose that the parent model changed instead.  This information
 needs to be passed to the child model.  However, a parent can have
@@ -1497,14 +1513,14 @@ the \Rfunction{toParent} and \Rfunction{fromParent} functions.
     \includegraphics[height=2.8in, width=4.5in]{newMP.jpg}
     \caption{ Message Passing Between and Within \Robject{MVCs}.  When a user
       interacts with the y versus x scatter plot, the first step, indicated by
-      a circled one, is to send an update data message to model B.  After
-      model B has been updated, all views of this model must be notified, which
-      is shown in the second step when an update view message is sent.  Next
-      any data that are linked to model B must be notified that model B
-      changed, which is shown in the third step as a send parent message.
-      This message is converted into useful information for model A in
-      the fourth step by the \Rfunction{toParent} function, and this
-      information is sent to model A in the fifth step when an update data
+      a circled one, is for the controller to send an update data message to
+      model B.  After model B has been updated, all views of this model must
+      be notified, which is shown in the second step when an update view
+      message is sent.  Next any data that are linked to model B must be
+      notified that model B changed, which is shown in the third step as a
+      send parent message.  This message is converted into useful information
+      for model A in the fourth step by the \Rfunction{toParent} function, and
+      this information is sent to model A in the fifth step when an update data
       message is sent.  Finally, after model A is updated, an update view
       message is sent in the sixth step to update all views of model A. }
     \label{Fig:MessPass}
@@ -1600,9 +1616,10 @@ the views are synchronized.
 %% EAW: I've tried to change the conclusions to include some of your comments.
 
 
-The goals for this research were to create software implementations and conceptual paradigms to support the use of linked views of linked data sets, to
-create interactive views where the response to an event can be changed, and to
-create an extensible design that allows future users to make additions.
+The goals for this research were to create software implementations and
+conceptual paradigms to support the use of linked views of linked data sets,
+to create interactive views where the response to an event can be changed, and
+to create an extensible design that allows future users to make additions.
 The first goal was accomplished by implementing \Robject{MVC} objects as
 components that communicate with each other through messages.  Encapsulating
 each data set in a \Robject{MVC} object was particularly useful because it
@@ -1627,12 +1644,12 @@ knowing what makes sense (for example, biologically) when creating the link
 functions. 
 
 The second goal of creating interactive views was met by using the
-\Rpackage{RGtk} and \Rpackage{gtkDevice} packages to create devices that could
-respond to events.  Using these packages made creating interactive views
-particularly straightforward because any static R plot could be made
-interactive by plotting it on a Gtk device and by having the plotting function
-return information about the location of plot objects on the device.  In
-addition the \Rclass{gEventFun} class was designed so that users could alter
+\Rpackage{RGtk} and \Rpackage{gtkDevice} packages \cite{RGtk} to create
+devices that could respond to events.  Using these packages made creating
+interactive views particularly straightforward because any static R plot could
+be made interactive by plotting it on a Gtk device and by having the plotting
+function return information about the location of plot objects on the device.
+In addition the \Rclass{gEventFun} class was designed so that users could alter
 the response to an event.  The response to an event could be as simple as
 selecting the plot object that was just clicked by a mouse button or the
 response could be as complicated as creating a new model.  This flexibility
@@ -1671,10 +1688,10 @@ sets.  This functionality was implemented by extending the MVC paradigm in a
 very natural way to encompass a much richer class of models and user
 interactions. 
 
-\section*{Acknowledgements}
-We are indebted to Dr. Duncan Temple Lang for the creation of the
-\Rpackage{RGtk} and \Rpackage{gtkDevice} packages as well as helpful advice on
-their use.  
+%\section*{Acknowledgements}
+%We are indebted to Dr. Duncan Temple Lang for the creation of the
+%\Rpackage{RGtk} and \Rpackage{gtkDevice} packages as well as helpful advice on
+%their use.  
 
 \bibliography{paper2}
 
