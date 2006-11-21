@@ -45,6 +45,9 @@ In this paper we consider a generalization of the model
 \end{abstract}
 
 
+\setlength{\baselineskip}{20pt}
+
+
 \section{Introduction}
 \label{Sec:Intro}
 
@@ -88,11 +91,12 @@ adding new views under such conditions could be quite problematic and
 often led to very complex code.  As we shall demonstrate, there are 
 also issues that arise due to mappings that are not one-to-one between 
 elements on different views.  Hence we considered an approach that 
-created new instances of the MVC that were linked to the parent that 
+created new MVC instances that were linked to the parent MVC that 
 spawned them. 
 
 In particular, our implementation consists of a hierarchy of MVCs,
-stored as a tree.  Each parent can have multiple children, but the
+stored as a tree, as shown in Figure \ref{Fig:Hier}.  Each parent can 
+have multiple children, but the
 children have a single parent.  Communication between parent and
 child is bidirectional, and a variety of different filters can be used
 to control flow.  Thus, we can devise a number of purpose built MVC
@@ -105,6 +109,14 @@ to the child MVCs if the user initially interacts with a view in the
 parent MVC.  The MVC can choose to react, or not, to messages from its 
 parent or children -- all control being in
 the hands of the users, should they want it.
+
+\begin{figure}[ht]
+  \begin{center}
+    \includegraphics[height=2.5in, width=4.2in]{Hierarchy2.jpg}
+    \caption{ The Parent-Child Relationship Between \Robject{MVCs}. }
+    \label{Fig:Hier}
+  \end{center}
+\end{figure}
 
 \subsection*{A motivating example}
 \label{sec:micro}
@@ -165,7 +177,7 @@ Figures \ref{Fig:heatmapsub} and \ref{Fig:heatmap}.  The heatmap in Figure
 \ref{Fig:heatmapsub} is just a subset of the heatmap in Figure
 \ref{Fig:heatmap}, however in Figure \ref{Fig:heatmapsub} eleven genes have a
 blue label and in Figure \ref{Fig:heatmap} only one gene has a blue label.
-This difference in these heatmaps indicates that views are synchronized based
+The difference in these heatmaps indicates that views are synchronized based
 on the parent-child relationships.  Figure \ref{Fig:heatmap} is the parent of
 Figure \ref{Fig:GOgraph}, which is the parent of Figure \ref{Fig:heatmapsub}.
 Figures \ref{Fig:heatmap} and \ref{Fig:GOgraph} are synchronized, and Figures
@@ -173,7 +185,6 @@ Figures \ref{Fig:heatmap} and \ref{Fig:GOgraph} are synchronized, and Figures
 \ref{Fig:heatmap} and \ref{Fig:heatmapsub} are not synchronized by color
 because they do not have a parent-child relationship: Figure \ref{Fig:heatmap}
 is the grandparent of Figure \ref{Fig:heatmapsub}.
-
 
 \begin{figure}[ht]
   \begin{center}
@@ -217,7 +228,6 @@ is the grandparent of Figure \ref{Fig:heatmapsub}.
   \end{center}
 \end{figure}
 
-
 \subsection*{Overview}
 
 We found that constructing a single MVC that would encompass all
@@ -247,9 +257,20 @@ and create an interactive system, say for the interactive analysis of
 time series data, using our design. Hence, all commands are
 available both through the GUI and through command line functions.
 
-\section{Methods}
+In this paper we describe an extensible design for creating linked,
+interactive views of linked data sets using an extension of the MVC 
+paradigm.  Section \ref{Sec:Back} gives definitions of the terms used in this
+paper and describes the MVC paradigm along with its
+limitations.  Then Section \ref{Sec:OneMVC} describes our implementation of
+the MVC paradigm and how it was extended to accommodate linked data sets.
 
-We first give our definitions of linked views, interactive views and
+\section{Background}
+\label{Sec:Back}
+
+\subsection{Definitions}
+\label{Ssec:Def}
+
+We first give our definitions of linked views, and
 linked data sets.  Our model is typically a statistical data
 matrix which represents data on a number of variables, for a
 number of samples.  By \textit{linked view} we mean that if a
@@ -277,22 +298,22 @@ Linked views, which have a long history in statistics, are now
 considered a standard feature of interactive data visualization
 software \cite{GGobi}.  Linked views have been implemented in several
 pieces of statistical software, such as DataDesk \cite{DataDesk},
-XLisp-Stat \cite{Lisp}, iPlots \cite{iPlots}, and
-GGobi \cite{GGobiMan}.  Implementing linked views is based on the
-model-view-controller (MVC) design \cite{DesignPatterns}, which is a
-widely used and well understood paradigm. 
+XLisp-Stat \cite{Lisp}, iPlots \cite{iPlots}, and GGobi \cite{GGobiMan}.  
+Implementing linked views is generally based on the MVC paradigm
+\cite{DesignPatterns}, which is widely used and well understood.  We describe
+it in detail in Section \ref{Ssec:MVC}.
 
-We take a fairly general view of interactivity.  Users can interact via
-a pointing device, such as a mouse, or via key strokes, or any of many
-other types of input devices.  Interactivity means that there is an
-immediate response to some user action.  It is a powerful paradigm and allows
-users to quickly navigate and explore complex documents or complex
-data sets.  As an example, suppose that a user has two views: one view
-is a graph where each node represents a particular set of genes while
-the other view is a heatmap of gene expression data.  If the user
-clicks on a node then the response to this action could be to
-highlight all genes in the heatmap view that correspond to the
-selected node.
+%We take a fairly general view of interactivity.  Users can interact via
+%a pointing device, such as a mouse, or via key strokes, or any of many
+%other types of input devices.  Interactivity means that there is an
+%immediate response to some user action.  It is a powerful paradigm and allows
+%users to quickly navigate and explore complex documents or complex
+%data sets.  As an example, suppose that a user has two views: one view
+%is a graph where each node represents a particular set of genes while
+%the other view is a heatmap of gene expression data.  If the user
+%clicks on a node then the response to this action could be to
+%highlight all genes in the heatmap view that correspond to the
+%selected node.
 
 By \textit{linked data sets} we mean that the data have more than one
 conceptual grouping and that there is a relationship between these
@@ -323,9 +344,29 @@ must have a map that goes from the entities in one data set to those in the
 other, as well as the inverse map, in order to propagate signals between the
 MVCs.  
 
-Consider Figure \ref{Fig:firstMP}, which provides a cartoon
-description of the steps that occur when a user interacts with a
-view.  In the cartoon there are only two views, one of model A (note 
+\subsection{Model View Controller (MVC) Paradigm}
+\label{Ssec:MVC}
+
+The MVC paradigm \citep{DesignPatterns} is a design that consists of
+three types of objects: the controller, which defines what actions
+occur in response to user input; the view, which consists of displays
+of the data; and the model, which manages the data.  The power of the
+MVC design is that it decouples the views of the model from the model
+itself by creating a subscribe/notify procedure between them. In other
+words, the views subscribe to a particular model and the model must
+notify the views when a change occurs so that the views can be
+updated.  This allows multiple views of the model that are linked, but
+are not aware of each other.  And similarly, the model has no
+particular knowledge of any of the views, just how to notify them of
+changes to the contents of the model.   
+
+In the MVC paradigm the components are separated, but they need a 
+method to communicate with each other, which can be implemented using 
+a messaging system.  If we have linked data sets, then Figure
+\ref{Fig:firstMP} displays the steps that are needed to synchronize 
+each model with its views as well as synchronizing the linked data sets 
+when a user interacts with a view.
+In the figure there are only two views, one of model A (note 
 that once a data set is loaded in a MVC, we call it a model) and the
 other of the linked model B.  When a user
 interacts with the scatter plot view of model B, the response to
@@ -349,7 +390,7 @@ A tells its view to update itself.
 % it uses MVC components, which can be individually created and then
 % linked.  Thus, these components are reusable.  These design decisions
 % are discussed further in Sections \ref{Sec:OneMVC} and
-% \ref{Sec:MultMVC}.
+% \ref{Ssec:MultMVC}.
 
 %\clearpage
 
@@ -372,7 +413,6 @@ A tells its view to update itself.
   \end{center}
 \end{figure}
 
-
 % In Section \ref{Ssec:Design}, the design of linked, interactive views based on
 % the MVC paradigm is discussed.  However, the limitation with this design is
 % that it expects one data set, which limits the type of data we can visualize.
@@ -385,7 +425,7 @@ A tells its view to update itself.
 % linked \Robject{MVC} objects.  The design of individual \Robject{MVC} objects
 % is discussed in 
 % Section \ref{Sec:OneMVC} while the implementation of linked \Robject{MVC}
-% objects is discussed in Section \ref{Sec:MultMVC}.  The goals of the software
+% objects is discussed in Section \ref{Ssec:MultMVC}.  The goals of the software
 % discussed in this paper are to create linked views of linked data sets, to
 % create interactive views where the response to an event can be changed, and to
 % create an extensible design that allows future users to make additions.
@@ -445,13 +485,15 @@ A tells its view to update itself.
 % definitions in the \Rpackage{MVCClass} package to be used by any other R
 % package that wanted to create linked views. 
 
-\subsection{Limitations of the MVC Design}\label{Ssec:Limit}
+\subsection{Limitations of the MVC Paradigm}\label{Ssec:Limit}
 
-In essence the MVC design assumes that there is one data set, which is
-called the model, that all views reference.  But problems arise when
-the data consist of more than one conceptual grouping.  For example,
-consider data stored in a relational database, such as the data shown in
-Figure~\ref{Fig:DBTab}.  Here the database
+When implementing the MVC paradigm, it is often assumed that there is 
+one data set, which is called the model, that all views reference.  
+But problems arise when the data consist of more than one conceptual 
+grouping.  For example, consider data stored in a relational database, 
+such as the data shown in Figure \ref{Fig:MultMVC}.
+%Figure~\ref{Fig:DBTab}.  
+Here the database
 consists of three tables, State, City and StateCity.  The State table
 has three columns, State (the key), Life Expectancy, and Income.  The
 City table has three columns, City (the key), Precipitation, and
@@ -460,10 +502,14 @@ This last table relates which cities are in which states.  In this
 example, each city can be in only one state, but each state can have
 more than one city so there is a one-to-many relationship between
 states and cities.  In order to support interactive views of all data
-tables, in a standard MVC paradigm, it seems that either all data must
-be combined into a single large table (Figure~\ref{Fig:OneDBTab}), or
+tables, in a standard MVC implementation, it seems that either all 
+data must be combined into a single large table, or
 the processing and accessing of the model data must become much more
-complex. 
+complex.  Notice that the MVC paradigm allows a model that is complex, but
+accessing the model data is more straightforward when the data is a single
+conceptual unit.  This single data structure as a model creates a well 
+defined message passing system between the model and its views as well as
+between the model and the controller.
 
 %where there are
 %multiple tables of data and rows in different tables are linked
@@ -510,41 +556,37 @@ complex.
 %  \end{center}
 %\end{figure}
 
-\begin{figure}[ht]
-  \begin{center}
-    \subfigure[Example of relational database
-    tables.]{
-    \label{Fig:DBTab}
-    \includegraphics[height=1.2in, width=3.5in]{newDatabaseTables.jpg}}
-    \hspace{.3in}
-    \subfigure[Example of a combined table.]{
-    \label{Fig:OneDBTab}
-    \includegraphics[height=1.2in, width=1.5in]{newOneDatabaseTable.jpg}}
-    \caption{Relational database tables.}
+%\begin{figure}[ht]
+%  \begin{center}
+%    \subfigure[Example of relational database
+%    tables.]{
 %    \label{Fig:DBTab}
-  \end{center}
-\end{figure}
+%    \includegraphics[height=1.2in, width=3.5in]{newDatabaseTables.jpg}}
+%    \hspace{.3in}
+%    \subfigure[Example of a combined table.]{
+%    \label{Fig:OneDBTab}
+%    \includegraphics[height=1.2in, width=1.5in]{newOneDatabaseTable.jpg}}
+%    \caption{Relational database tables.}
+%%    \label{Fig:DBTab}
+%  \end{center}
+%\end{figure}
 
-We felt that neither approach had much appeal.  A single large table
-suggests that all data are similar, and still leaves issues about how
+We felt that neither approach of combining linked data into one data 
+structure or of having a complex model had much appeal.  A single large 
+table suggests that all data are similar, and still leaves issues about how
 to deal with ensuring that when, for example, a state is selected all
 cities within it are highlighted.  The second approach requires writing a
-large amount of code, but is unlikely to be extensible.
-We should also mention that our main area of
-application is a setting where one representation of the data is as a
+large amount of code, but is unlikely to be extensible.  One area of 
+interest is a setting where one representation of the data is as a
 graph (with nodes and edges) while the other is as a rectangular array. 
-We can
-envisage lots of different MVCs that operate on graph based data, and
+We can envisage lots of different MVCs that operate on graph based data, and
 equally MVCs that operate on matrix based data.  Specifying a mechanism
 by which these can interact allows us to create two visible classes
 that others can use, but still provide interaction between
 appropriately linked instances of the two classes.  We also argue that
-there are surely other specific types of models that represent
+there are other specific types of models that represent
 specific types of data (e.g. time series) and it would make sense to
-implement these as yet another separate, specialized MVC, that could
-be linked to any one of a variety of other MVCs.  In our design, each 
-MVC will contain one model and thus, linked models also indicate linked 
-MVCs.
+implement these as other specialized MVCs.  
 
 % Clearly, this information could be combined into one large table, called
 % CombinedStateCity, as shown in Figure \ref{Fig:OneDBTab}.  The
@@ -594,28 +636,34 @@ MVCs.
 % structures simplifies the processes of storing, updating, and accessing the
 % data.   
 
-\section{Extending the MVC Design}
-\label{Sec:Extend}
+%\subsection{Extending the MVC Design}
+%\label{Ssec:Extend}
 
-As discussed in Section \ref{Sec:Intro}, the MVC design typically uses a single
-conceptual unit, such as a data frame or a matrix, for the model.  And
-we believe that such an approach is a good one.  MVCs should be
-specialized to certain types of data, as this allows them to provide
-better and more natural interactions.  However, we additionally argue
-that there is great benefit to considering linking these different
-MVCs when the underlying data themselves are derived from the same source.
-We believe that there will often be a hierarchical relationship
-between the models and the MVCs that contain them.  We have found
-that allowing the user to create new MVCs based on a current MVC is an
-important and useful paradigm.
+%As discussed in Section \ref{Sec:Intro}, the MVC design typically uses a 
+%single
+%conceptual unit, such as a data frame or a matrix, for the model.  And
+%we believe that such an approach is a good one.  
+%We believe that MVCs should be specialized to certain types of data, such 
+%as a graph or a data frame, as this allows them to provide
+%better and more natural interactions.  However, we additionally argue
+%that there is great benefit to considering linking these different
+%MVCs when the underlying data themselves are derived from the same source.
+%We believe that there will often be a hierarchical relationship
+%between the models and the MVCs that contain them.  We have found
+%that allowing the user to create new MVCs based on a current MVC is an
+%important and useful paradigm.
 
-Each \Robject{MVC} is a coherent object and the interactions between
-\Robject{MVCs} are encapsulated in a set of messages.  We use one
-\Robject{MVC} object to handle each model.  Thus, within a
-\Robject{MVC} object, one can create linked views of that particular
-model, using the standard MVC design.  Between \Robject{MVC}
-objects we propose a second messaging system that allows messages to
-be sent between linked models.
+%Each \Robject{MVC} is a coherent object and the interactions between
+%\Robject{MVCs} are encapsulated in a set of messages.  We use one
+%\Robject{MVC} object to handle each model.  Thus, within a
+%\Robject{MVC} object, one can create linked views of that particular
+%model, using the standard MVC design.  Between \Robject{MVC}
+%objects we propose a second messaging system that allows messages to
+%be sent between linked models.  In Figure \ref{Fig:MultMVC} we show one 
+%view for state-level data and one view for the city-level data.  The state 
+%and city data are linked based on the color.  But there are two distinct 
+%MVCs, not one.  The city data have one MVC and the state data a second.  
+%Even though there are two \Robject{MVC} objects here, the views are linked.
 
 % \small
 % \begin{tabular}[t]{ | l | r | r | }
@@ -667,23 +715,23 @@ be sent between linked models.
 % two \Robject{MVC} objects.  One \Robject{MVC} object for the State data and
 % its views and one \Robject{MVC} object for the City data and its views. 
 
-\begin{figure}[ht]
-  \begin{center}
-    \includegraphics[height=5in, width=6in]{MultipleMVC.jpg}
-    \caption{ Example of two \Robject{MVC} objects.  These two \Robject{MVC}
-      objects are linked by the StateCity table and the color of the points
-    indicates the linking between the data.  The points referring to the state
-    of Pennsylvania are red, the points referring to the state of California
-    are blue, and the points referring to Minnesota are green. }
-    \label{Fig:MultMVC}
-  \end{center}
-\end{figure}
+%\begin{figure}[ht]
+%  \begin{center}
+%    \includegraphics[height=5in, width=6in]{MultipleMVC.jpg}
+%    \caption{ Example of two \Robject{MVC} objects.  These two \Robject{MVC}
+%      objects are linked by the StateCity table and the color of the points
+%    indicates the linking between the data.  The points referring to the state
+%    of Pennsylvania are red, the points referring to the state of California
+%    are blue, and the points referring to Minnesota are green. }
+%    \label{Fig:MultMVC}
+%  \end{center}
+%\end{figure}
 
-In Figure \ref{Fig:MultMVC} we show one view for state-level data and
-one view for the city-level data.  The state and city data are linked
-based on the color.  But there are two distinct MVCs, not one. 
-The city data have one MVC and the state data a second.  Even though 
-there are two \Robject{MVC} objects here, the views are linked.
+%In Figure \ref{Fig:MultMVC} we show one view for state-level data and
+%one view for the city-level data.  The state and city data are linked
+%based on the color.  But there are two distinct MVCs, not one. 
+%The city data have one MVC and the state data a second.  Even though 
+%there are two \Robject{MVC} objects here, the views are linked.
 
 % Not only does this solution use the power and simplicity of the MVC design, but
 % this multiple MVC design is structured to fit the linking seen in the multiple
@@ -697,23 +745,57 @@ there are two \Robject{MVC} objects here, the views are linked.
 % reflect the relationship between the data sets. 
 
 
-\section{MVC Design Details}
+\section{MVC Implementation Details}
 \label{Sec:OneMVC}
 
-\subsection{Implementation Details}
-\label{SSec:OneOver}
+We believe that MVCs should be specialized to certain types of data, such 
+as a graph or a data frame, as this allows them to provide
+better and more natural interactions.  However, we additionally argue
+that there is great benefit to considering linking these different
+MVCs when the underlying data themselves are derived from the same source.
+We believe that there will often be a hierarchical relationship
+between the models and the MVCs that contain them.  We have found
+that allowing the user to create new MVCs based on a current MVC is an
+important and useful paradigm.
 
-We have implemented linked, interactive views of linked data sets
-using an object-oriented programming design which allows for
-extensibility.  We provide this implementation in the
-\Rpackage{MVCClass} package, written in R, which implements the basic
-classes and generic functions.  The \Rpackage{MVCClass} package
-defines the individual model, view, and controller classes as well as
-the \Rclass{MVC} class that binds the individual model, view, and
-controller classes together into one unit.  The package also defines
-the message classes that allow the components to communicate with each
-other.  Thus, the \Rpackage{MVCClass} package contains the classes
-necessary for creating linked views.
+Each \Robject{MVC} is a coherent object and the interactions between
+\Robject{MVCs} are encapsulated in a set of messages.  We use one
+\Robject{MVC} object to handle each model.  Thus, within a
+\Robject{MVC} object, one can create linked views of that particular
+model, using the standard MVC design.  Between \Robject{MVC}
+objects we propose a second messaging system that allows messages to
+be sent between linked models.  In Figure \ref{Fig:MultMVC} we show one 
+view for state-level data and one view for the city-level data.  The state 
+and city data are linked based on the color.  But there are two distinct 
+MVCs, not one.  The city data have one MVC and the state data a second.  
+Even though there are two \Robject{MVC} objects here, the views are linked.
+
+\begin{figure}[ht]
+  \begin{center}
+    \includegraphics[height=5in, width=6in]{MultipleMVC.jpg}
+    \caption{ Example of two \Robject{MVC} objects.  These two \Robject{MVC}
+      objects are linked by the StateCity table and the color of the points
+    indicates the linking between the data.  The points referring to the state
+    of Pennsylvania are red, the points referring to the state of California
+    are blue, and the points referring to Minnesota are green. }
+    \label{Fig:MultMVC}
+  \end{center}
+\end{figure}
+
+%\subsection{Implementation Details}
+%\label{SSec:OneOver}
+%
+%We have implemented linked, interactive views of linked data sets
+%using an object-oriented programming design which allows for
+%extensibility.  We provide this implementation in the
+%\Rpackage{MVCClass} package, written in R, which implements the basic
+%classes and generic functions.  The \Rpackage{MVCClass} package
+%defines the individual model, view, and controller classes as well as
+%the \Rclass{MVC} class that binds the individual model, view, and
+%controller classes together into one unit.  The package also defines
+%the message classes that allow the components to communicate with each
+%other.  Thus, the \Rpackage{MVCClass} package contains the classes
+%necessary for creating linked views.
 
 \subsection{Model}
 \label{Ssec:OneModel}
@@ -747,7 +829,7 @@ expression set class of data used by the Bioconductor project \citep{BIOC}.
 % \Rslot{linkData} slot is a list of two functions, \Rfunction{toParent} and
 % \Rfunction{fromParent}, which let this model send information to its parent
 % model and receive information from its parent model, respectively (see
-% Sections \ref{Ssec:OneMVC} and \ref{Ssec:MultLink} for more information on how
+% Sections \ref{Ssec:OneMVC} and \ref{Sssec:MultLink} for more information on how
 % parent and child models are linked), the \Rslot{virtualData} slot is data
 % pertaining to the views that needs to be stored with the model so that it can
 % be shown in all views of this model, and the \Rslot{modelName} slot is the
@@ -784,9 +866,11 @@ Although only three model classes are currently implemented, future
 users are welcome to make additions to the model classes for new data
 structures they want to represent.  For example, a user may want to add a new
 model class called \Rclass{tsModel} to represent time series data.
-To make this addition, the user extends the \Rclass{gModel} class in his or
+To make this addition, the user extends the \Rclass{gModel} class, which is
+the general model class, in his or
 her own R software package.  More information on extending the classes can be
-found in the \Rpackage{MVCClass} and \Rpackage{iSNetwork} Vignettes.
+found in the \Rpackage{MVCClass} and \Rpackage{iSNetwork} vignettes, which are
+supplied with the software packages.
 
 \subsection{Views}\label{Ssec:OneViews}
 
@@ -847,7 +931,7 @@ from \Rclass{plotView}, perhaps called \Rclass{dPlotView}.
 The controller performs two tasks: the first task is to maintain state,
 such as what response will occur for a particular user interaction, 
 and the second task is to control message passing.  Messages, which are
-discussed in Sections \ref{Ssec:OneMess} and \ref{Ssec:MultLink}, are
+discussed in Sections \ref{Ssec:OneMess} and \ref{Sssec:MultLink}, are
 responsible for creating new components, such as models and views, and for
 passing information between components, such as a view asking a model for
 information.  The controller determines when these messages are created and
@@ -1020,7 +1104,7 @@ potentially be linked to.  For example, the developer may only want the color
 a point callback function to be available for a button click event and not a
 mouse over event.
 
-\subsection{MVC}
+\subsection{Putting it all Together in a MVC Class}
 \label{Ssec:OneMVC}
  
 The \Rclass{MVC} class binds the model, view, and controller objects
@@ -1041,7 +1125,7 @@ two additional slots: \Rslot{parentMVC}, which is the name of the
 parent model and \Rslot{childMVCList}, which is a list of the child models.
 These are the models that will communicate with each other: parents send
 information to their children and children send information to their parent.
-More information on this communication is given in Section \ref{Sec:MultMVC}.
+More information on this communication is given in Section \ref{Ssec:MultMVC}.
 
 
 %\begin{figure}[ht]
@@ -1076,13 +1160,13 @@ in, and modelF could be the chromosome locations of the genes in modelB.
 
 %\clearpage
 
-\begin{figure}[ht]
-  \begin{center}
-    \includegraphics[height=2.5in, width=4.2in]{Hierarchy2.jpg}
-    \caption{ The Parent-Child Relationship Between \Robject{MVCs}. }
-    \label{Fig:Hier}
-  \end{center}
-\end{figure}
+%\begin{figure}[ht]
+%  \begin{center}
+%    \includegraphics[height=2.5in, width=4.2in]{Hierarchy2.jpg}
+%    \caption{ The Parent-Child Relationship Between \Robject{MVCs}. }
+%    \label{Fig:Hier}
+%  \end{center}
+%\end{figure}
 
 As shown in Figure \ref{Fig:Hier}, there are many cases where there are
 natural submodels that can be derived from a parent model.  We propose that
@@ -1091,10 +1175,10 @@ linked views.  Even though each submodel is its own \Robject{MVC} instance,
 there will be times when the submodel \Robject{MVC} needs to communicate with
 its parent \Robject{MVC}.  There are many different ways of communicating
 between parent and child \Robject{MVCs} and we discuss this in Section
-\ref{Sec:MultMVC}.
+\ref{Ssec:MultMVC}.
 
 Deciding when new data should be added to the current model versus generating
-a new submodel in a \Robject{MVC} instance is done by comparing the
+a new submodel in a \Robject{MVC} instance should be done by comparing the
 relationship between the new data and the data in the current model.  If the
 new data has a one-to-one relationship with the elements in the current model,
 then we believe that in most cases the new data should be added to the 
@@ -1190,7 +1274,8 @@ work together and yet, still be independent of each other.
 %% within a MVC object since it creates the MVC object - adding a model
 %% creates the MVC object that is added to the overall environment that stores
 %% information about the system as a whole.
-Currently, there are two types of messages within an MVC: an add
+Currently, two types of messages that are passed within an MVC have been
+implemented : an add
 message and an update message.  Both messages request that some
 modification be carried out.  Since adding a view requires different
 information and methods from adding a model (and similarly with
@@ -1280,8 +1365,8 @@ change in the model.
 % classes is that the design is flexible enough to allow a user to make
 % additions or changes. 
 
-\section{Details of Multiple MVCs}
-\label{Sec:MultMVC}
+\subsection{Details of Multiple MVCs}
+\label{Ssec:MultMVC}
 
 %%In one discussion I had with an interested party, they suggested
 %%that it should be possible to subscribe to a MVC. So a new MVC is
@@ -1337,8 +1422,8 @@ is a difficult task especially when the relationship between elements in the
 two models is not one-to-one.
 
 
-\subsection{Linking Models}
-\label{Ssec:MultLink}
+\subsubsection{Linking Models}
+\label{Sssec:MultLink}
 
 %%FIXME: but we said this above, so let's drop this section and move
 %%this up, integrate with the discussion there. Say we use two
@@ -1420,22 +1505,22 @@ suitable.  This flexibility lets developers determine the appropriate
 relationships between models, but also requires thoughtful responses and
 potentially complex linking functions.
 
-The message classes for creating a child \Robject{MVC} from an existing
-\Robject{MVC} and for sending messages between \Robject{MVC} objects are shown
-in Figure \ref{Fig:BetwMess}.  The message types for passing information
-between \Robject{MVCs} are similar to the messages
-that are passed within \Robject{MVC} objects.  Now the add child message is
-similar to the add model message, and the send parent message and the send
-child message are similar to the update model message.
+%The message classes for creating a child \Robject{MVC} from an existing
+%\Robject{MVC} and for sending messages between \Robject{MVC} objects are shown
+%in Figure \ref{Fig:BetwMess}.  The message types for passing information
+%between \Robject{MVCs} are similar to the messages
+%that are passed within \Robject{MVC} objects.  Now the add child message is
+%similar to the add model message, and the send parent message and the send
+%child message are similar to the update model message.
 
-\begin{figure}[ht]
-  \begin{center}
-    \includegraphics[height=4in, width=4.5in]{MVCMessageClass2.jpg}
-    \caption{ Inheritance for Message Classes that are Passed Between
-      \Robject{MVCs}. }
-    \label{Fig:BetwMess}
-  \end{center}
-\end{figure}
+%\begin{figure}[ht]
+%  \begin{center}
+%    \includegraphics[height=4in, width=4.5in]{MVCMessageClass2.jpg}
+%    \caption{ Inheritance for Message Classes that are Passed Between
+%      \Robject{MVCs}. }
+%    \label{Fig:BetwMess}
+%  \end{center}
+%\end{figure}
 
 % The first message class that is discussed is
 % \Rclass{gAddChildMessage}.  A \Robject{gAddChildMessage} object is very
@@ -1497,10 +1582,10 @@ child message are similar to the update model message.
 % converts it to a \Robject{gUpdateDataMessage} object for the child
 % model using the \Rfunction{fromParent} function. 
 
-An example of how these messages are passed and converted is shown in
-Figure \ref{Fig:MessPass}.  These message classes ensure that when a
-model is updated, its parent and child models are notified of the
-change and most importantly are notified of the change in a way that
+An example of how messages are passed and converted between MVCs 
+is shown in Figure \ref{Fig:MessPass}.  The message classes ensure 
+that when a model is updated, its parent and child models are notified 
+of the change and most importantly are notified of the change in a way that
 each model can properly act upon that information.  Because each
 \Robject{MVC} object has a different model (and thus a different data
 set and potentially a different data structure), information that
