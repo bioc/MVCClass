@@ -1,10 +1,9 @@
 Package: MVCClass
 Title: Model-View-Controller (MVC) Classes
-Version: 1.11.0
+Version: 1.11.1
 Author: Elizabeth Whalen
 Description: Creates classes used in model-view-controller (MVC) design
 Depends: R (>= 2.1.0), methods
-Date: 2006-7-29
 Maintainer: Elizabeth Whalen <ewhalen@hsph.harvard.edu>
 License: LGPL
 biocViews: Visualization, Infrastructure, GraphsAndNetworks
