@@ -23,8 +23,8 @@ setClass("gModel", representation(modelData="ANY", linkData="list",
 #setClass("graphModel", representation(modelData="graph"), contains="gModel")
 
 ## for a model that has expression data - 
-## the data list should include an exprSet object and maybe a vector of LL ids
-#setClass("exprModel", representation(modelData="exprSet"), contains="gModel")
+## the data list should include an ExpressionSet object and maybe a vector of LL ids
+#setClass("exprModel", representation(modelData="ExpressionSet"), contains="gModel")
 
 # for a model that has data frame data
 setClass("dfModel", representation(modelData="data.frame", 
