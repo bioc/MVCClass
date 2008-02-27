@@ -789,8 +789,8 @@ underlying implementation.  The specific model classes used in the
 represents a model where the \Rslot{modelData} slot has class data frame (or
 matrix), the \Rclass{graphModel} class represents a model where the
 \Rslot{modelData} slot has class graph, and the \Rclass{exprModel} class
-represents a model where the \Rslot{modelData} slot has class exprSet, a class
-used to represent gene expression data \cite{BioC}.
+represents a model where the \Rslot{modelData} slot has class ExpressionSet,
+a class used to represent gene expression data \cite{BioC}.
 
 As mentioned previously, the model classes must also perform certain
 operations and these operations are reflected in the methods that are defined
@@ -1478,7 +1478,7 @@ new model (and new \Robject{MVC}), the \Rslot{mData} slot is a list that
 contains the model data and virtual data to fill the \Rslot{modelData} and
 \Rslot{virtualData} slots, respectively, of the new model, and the
 \Rslot{type} slot gives the type of the model (currently, the options are
-``exprSet'', ``graph'', or ``data.frame'').  As with the previous
+``ExpressionSet'', ``graph'', or ``data.frame'').  As with the previous
 message classes, the \Rclass{gAddChildMessage} class has two methods:
 \Rfunction{initialize} and \Rfunction{handleMessage}.  The
 \Rfunction{initialize} method properly fills the slots of the object when it

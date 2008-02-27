@@ -22,7 +22,7 @@ iSNetwork and iSPlot packages).
     \item{\code{dataName}:}{the name of the model to be added }
     \item{\code{mData}:}{a list of information that contains the data to be added }
     \item{\code{type}:}{the type of model to be added (for now, it may be a
-    data.frame, exprSet, or graph) }
+    data.frame, ExpressionSet, or graph) }
   }
 }
 \section{Extends}{

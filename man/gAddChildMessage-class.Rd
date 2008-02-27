@@ -23,7 +23,7 @@ iSNetwork package).
     \item{\code{dataName}:}{the name of the new child model (MVC) }
     \item{\code{mData}:}{a list of information needed to add the new model }
     \item{\code{type}:}{the type of the new model (for now, it may be a
-    data.frame, exprSet, or graph) }
+    data.frame, ExpressionSet, or graph) }
   }
 }
 \section{Extends}{
